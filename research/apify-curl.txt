@@ -1,0 +1,286 @@
+https://api.apify.com/v1/hMf69fRQCWWX84d5Z/crawlers/dHsquLWo7i7TkFsEk/execute?token=Dj2DGqG57MqhSrJZQdcW7h26r 
+
+https://api.apify.com/v1/hMf69fRQCWWX84d5Z/crawlers/bBG5kmupgKJPssdeh/execute?token=ptgJXnS5JYaRCHG8f6RAx5oHM
+
+Download API Blueprint
+IntroductionRate limiting Apify API version 1 Reference The API version 1 is used to provide programmatic access to Apify platform's Crawler. In order to access Actor or Storage, please use the API version 2.Apify API is organized around RESTful HTTP endpoints. Both requests and responses (including errors) are encoded in JSON format with UTF-8.All requests with JSON payloads need to specify the Content-Type: application/json HTTP header.To access the API from a Node.js code, you can use the apify-client NPM package.AuthenticationMost API requests need to be authenticated by passing a secret token to the HTTP request URL as the token query parameter. There are three types of authentication tokens:API token is the master authentication token that you can use for every API endpoint. It enables its holder to get a list of your crawlers, run them and access all their results. You can find this token on your Account page.Execute Crawler token is unique for each crawler and it can be used to execute the crawler and access results from the execution. This token does not grant privileges to access results from other crawler executions, view crawler settings or run other crawlers. It is not recommended to use the token from client-side code, because it allows anyone to run your crawler and override its settings, while the use of the crawler will be charged towards your account. This token is available in the API section of the crawler details page.List Executions token is unique for each crawler and enables a request to fetch the list of all executions of the crawler. This token does not grant privileges to run the crawler or view its settings and is therefore safe to use from both server-side and client-side code, assuming your crawling results and associated data contain no secrets. This token is available in the API section of the crawler details page.IMPORTANT: Do not share authentication tokens with untrusted parties or use them directly from client-side code, unless you fully understand the implications!Note that some API endpoints such as Get results do not require any authentication token, because they contain a hard-to-guess identifier that effectively serves as an authentication key.Additionally, many API endpoints expect your User ID in the URL. It is a unique identifier of your user account and you can find it on your Account page.Basic usageThis section describes the most common API integration workflow.To run a crawler send a POST request to the Start execution API endpoint:https://api.apify.com/v1/[user_id]/crawlers/[crawler_id]/execute?token=[token]Optionally, you can include a Crawler configuration JSON object as the POST payload to override crawler settings. The response to the request is an Execution details JSON object, such as:{
+  "_id": "FsssffdRB3DQmrjdE",
+  "actId": "CwNxxSNdBYw7NWLjb",
+  "startedAt": "2016-12-05T11:09:25.560Z",
+  "finishedAt": null,
+  "status": "RUNNING",
+  "statusMessage": null,
+  "tag": null,
+  "stats": {
+    "downloadedBytes": 0,
+    "pagesInQueue": 0,
+    "pagesCrawled": 0,
+    "pagesOutputted": 0,
+    "pagesFailed": 0,
+    "pagesCrashed": 0,
+    "pagesRetried": 0,
+    "resultCount": 0,
+    "totalPageRetries": 0,
+    "storageBytes": 0
+  },
+  "meta": {
+    "source": "API",
+    "method": "POST",
+    "clientIp": "1.2.3.4",
+    "userAgent": "Mozilla/5.0"
+  },
+  "detailsUrl": "https://api.apify.com/v1/execs/FsssffdRB3DQmrjdE",
+  "resultsUrl": "https://api.apify.com/v1/execs/FsssffdRB3DQmrjdE/results"
+}
+The object includes the following attributes:status indicates the state of the crawler execution. It can have one of the following values: RUNNING, SUCCEEDED, STOPPED, TIMEOUT or FAILED.detailsUrl is a URL of the Execution details API endpoint, where you can GET the same Execution details object but with up-to-date values.resultsUrl a URL of the Get results API endpoint where you can GET raw results of the crawl. The response is a JSON array where each element is a Request object corresponding to a crawled page. Note that while the crawler execution status is RUNNING the results might be incomplete.A typical workflow is as follows:Run the crawler execution using the Start execution API endpointMonitor the execution by periodically polling the Execution details API endpoint (e.g. every 60 seconds) until the execution finishes (i.e. finishedAt is not null).Fetch the results using the Get results API endpoint.Note that instead of active polling you can also use the Finish webhook crawler setting to automatically receive a message when the crawler execution finishes.All the API endpoints are described in detail in the following sections of this API reference.PaginationAll API endpoints returning an array of objects (such as Get results or Get list of executions) support pagination in order to limit the size of their responses. These API endpoints accept the following query parameters:
+limit	Limits the response to contain a specific maximum number records, e.g. limit=20.
+offset	Skips a number of records from the beginning of the record set, e.g. offset=100.
+desc	By default, records are sorted in the order in which they were created or added. This property is useful when fetching all the records, because it ensures that records that were created after the client started the pagination will not be skipped. If you specify desc=1 parameter, the records will be returned in the reverse order, i.e. from newest to oldest records. All API endpoints that support pagination define the following HTTP headers in their response:
+Header	Description
+X-Apifier-Pagination-Offset	The number of items that were skipped at the start. This is equal to the offset query parameter if it was provided, otherwise it is 0.
+X-Apifier-Pagination-Limit	The maximum number of items that can be returned in the HTTP response. It equals to the limit query parameter if it was provided or the maximum limit for the specific API endpoint, whichever is smaller.
+X-Apifier-Pagination-Count	The actual number of items returned in the HTTP response.
+X-Apifier-Pagination-Total	The total number of items available in the database.IMPORTANT: Each API endpoint that supports pagination enforces a certain maximum value for the limit parameter, in order to reduce the load on Apify servers. The maximum might change in the future so you should always use the X-Apifier-Pagination-Xxx headers when querying the API to ensure as follows:Define a variable COUNTER and initialize it to 0Send API request with offset=COUNTER parameterAfter you receive a response:if X-Apifier-Pagination-Count=0, the pagination is finishedotherwise set COUNTER to X-Apifier-Pagination-Offset + X-Apifier-Pagination-Count and continue with step 2.By following the above steps you will be guaranteed to fetch all the available records, as long as you are not using the desc=1 parameter.ErrorsApify API uses common HTTP status codes: 2xx range for success, 4xx range for errors caused by the caller (invalid requests) and 5xx range for server errors (these are rare). Each error response contains a JSON object with type attribute that specifies an error code and a human-readable message attribute. For example:{
+    "type": "TOKEN_NOT_PROVIDED",
+    "message": "Authentication token was not provided"
+}
+The most common errors that can occur for many API endpoints are:
+code	type	message
+400	INVALID_REQUEST	POST data must be a JSON object
+401	TOKEN_NOT_PROVIDED	Authentication token was not provided
+403	INVALID_REQUEST	POST data JSON object has invalid value in pageFunction field
+404	RECORD_NOT_FOUND	Record was not found
+404	USER_OR_TOKEN_NOT_FOUND	User was not found or authentication token is not valid
+404	RECORD_OR_TOKEN_NOT_FOUND	Record was not found or authentication token is not valid
+429	RATE_LIMIT_EXCEEDED	You have exceeded the rate limit of 20 requests per second
+405	METHOD_NOT_ALLOWED	This API endpoint can only be accessed using the following HTTP methods: OPTIONS, POST
+403	CRAWLING_BANNED	User is banned from crawling until 2025-12-31. Please contact support@apify.com
+402	CRAWLING_PROCESS_QUOTA_EXCEEDED	User's quota on parallel crawling processes exceeded, please upgrade your subscription plan (max allowed: 5, already running: 5, requested: 2)
+403	TOO_MANY_CRAWLERS	User cannot have more than 100 crawlers. Please contact support to increase this limit.Rate limitingAll API endpoints limit the rate of requests to 20 per second in order to prevent overloading of Apify servers by misbehaved clients. For authenticated API endpoints, the limit is counted per user, storage API endpoints count the limit per storage object and anonymous API endpoints per IP address of the client.If the client is sending too many requests, the API endpoints respond with the HTTP status code 429 Too Many Requests and the following body:{
+    "error": {
+        "type": "rate-limit-exceeded",
+        "message": "You have exceeded the rate limit of 20 requests per second"
+    }
+}
+If the client receives the rate limit error, it should wait a certain period of time and then retry the request. If the error happens again, the client should double the wait period and retry the request, and so on. This algorithm is known as exponential backoff and can be described in the following pseudo-code:Define a variable DELAY=500Send the HTTP request to the API endpointIf the response has status code not equal to 429 then you're done. Otherwise:Wait for a period of time chosen randomly from the interval DELAY to 2*DELAY millisecondsDouble the future wait period by setting DELAY = 2*DELAYContinue with step 2If all requests send by the client implement the above steps, the client will automatically use the maximum available bandwidth of requests.
+Crawlers The API endpoints described in this section enable you to list user's crawlers and access their settings.
+List of crawlers
+Get list of crawlers
+Gets a list of crawlers belonging to a specific user.The response is a JSON array, where each element is an object with basic information about one crawler. By default, the objects are sorted by the createdAt field in ascending order, therefore you can use pagination to incrementally fetch all crawlers while new ones are still being created. To sort them in descending order, use desc=1 parameter.The endpoint supports pagination. A single response will not return more than 1000 array elements.
+Create crawler
+Creates a new crawler with settings from a JSON object in the POST payload. See main documentation for detailed description of crawler settings. Unknown properties in the object are silently ignored.The response is the full Crawler settings object as returned by the Get crawler settings endpoint.Note that there can be at most 100 crawlers per user account. If you need more crawlers, please contact our support. Crawler settings
+Get crawler settings
+Gets full details and settings of a specific crawler. The response is a Crawler settings object - see main documentation for a detailed description of the settings.To get crawler settings used for a specific crawler execution, use the executionId query parameter.
+Update crawler settings
+Updates a specific crawler with settings from a JSON object in the PUT payload. See main documentation for a detailed description of the settings. The input object might be a subset of the Crawler settings object. If the input object does not define a certain property, the corresponding setting will not be updated and will keep its existing value. Note that the null value will set the corresponding setting to null. Unexpected properties in the object are silently ignored.The response is the full Crawler settings object as returned by the Get crawler settings endpoint.
+Delete crawler
+Deletes a specific crawler.If the crawler was successfully deleted the response will be empty with 204 (No Content) status code, otherwise an error is returned.
+Executions The API endpoints described in this section enable you to execute a specific crawler, list its executions, check their status and stop them.
+Start execution
+Start execution
+Starts execution of a specific crawler. In order to override crawler settings, include a Crawler settings JSON object as the POST payload. Note that if the POST payload is empty or does not define particular properties, the properties from the stored crawler settings are used by default. See main documentation for detailed description of the crawlers settings. The response is an Execution details object.There are basically three ways to determine that the crawler execution finished:For short executions, you can pass a wait=N query parameter to the request which will cause the server to synchronously wait for the execution to finish. If the execution does not finish in N or 120 seconds (whichever is smaller), the endpoint will return an Execution details object with status RUNNING, similarly as if the wait query parameter was not provided. Make sure your HTTP client has a long enough timeout or it will disconnect before the server sends the response.For longer executions, you can periodically poll the corresponding Execution details API endpoint until the execution finishes (i.e. finishedAt becomes not null). When you send a GET request to that endpoint the response will contain the same Execution details object as the original response but with up-to-date values. For your convenience, the URL to the endpoint is provided as the detailsUrl attribute in the responses. IMPORTANT: You must always wait between the polling requests for a reasonable period of time (e.g. 60 seconds) or your requests will be throttled and you will start receiving errors.You can also use the Finish webhook crawler setting to automatically receive a HTTP request to your own endpoint when the crawler execution finishes.Note that it is possible to tag the crawler execution with a custom string by adding a tag query parameter (e.g. tag=my_test_run). The tag will be included in the Execution details object and it can be used for bookkeeping. The maximum length of the tag is 64 characters. Stop execution
+Stop execution
+Stops a specific crawler execution. The response is an Execution details object.Note that if the execution was already stopped or finished, the operation has no effect and returns the Execution details object unchanged.This API endpoint does not use any authentication token. The caller only needs to know a hard-to-guess crawler execution ID, which will not grant them any other privileges except to view execution details, stop execution if still running and access its results. List of executions
+Get list of executions
+Gets a list of executions of a specific crawler. Optionally, you can use status parameter to filter the list to only contain executions with a specific status (for example, status=RUNNING will only return executions that are still running).The response is a JSON array of objects which describe details of the particular executions. By default, the objects are sorted by the startedAt field in ascending order, therefore you can use pagination to incrementally fetch all executions while new ones are still being started. To sort them in descending order, use desc=1 parameter.The endpoint supports pagination. A single response will not return more than 1000 array elements. Execution details
+Get execution details
+Gets details of a single crawler execution.The response is an Execution details object which contains information about the execution.This API endpoint does not use any authentication token. The caller only needs to know a hard-to-guess crawler execution ID, which will not grant them any other privileges except to view execution details, stop execution if still running and access its results. Last execution
+Get last execution
+Gets information about the last execution of a specific crawler. Optionally, you can use status parameter to only get the last execution with a specific status, e.g. status=SUCCEEDED.The response is an Execution details object corresponding to the last execution, or empty response with 204 (No content) status code if there is no matching execution.
+Results The API endpoints described in this section return the results of a particular crawler's execution. The results are generated from the collection of Request objects corresponding to the web pages visited and outputted by the crawler.Response formatThe format of the response depends on combination of the format and simplified query parameters.The format parameter can have one of the following values: json, jsonl, xml, html, csv, xlsx and rss. If the simplified parameter has value 1 then the results will be simplified. If it has any other value or is not specified at all, the results will be in full format.The following table describes how all combinations of the two parameters are treated.
+Format	Full results	Simplified results
+json	The response is a JSON, JSONL or XML array of raw Request objects.	The response is a JSON, JSONL or XML array of objects corresponding to the pageFunctionResult property of each of the crawled pages, extended with the url field that corresponds to the loadedUrl property of the Request object. If the pageFunctionResult is an array, its elements are unrolled into the main array and also extended with the url field.
+jsonl
+xml
+html	The response is a HTML/CSV table or XLSX file where columns correspond to the properties of the Request object and rows correspond to the crawled pages. If the pageFunctionResult is an array, its elements are unrolled so that each array element represents a separate row, in order to make the results easier to read.	Similar to the full results, except that only values from the pageFunctionResult property are shown, extended with a URL column that corresponds to the loadedUrl property of the Request object.
+csv
+xlsx
+rss	The response is a RSS file which is always in the simplified format. Values from pageFunctionResult are displayed as child elements of one <item>. If pageFunctionResult is an array then each of its items is displayed as a separate <item> element.Note that CSV, XLSX and HTML tables are limited to 500 columns and the column names cannot be longer than 200 characters. JSON, XML and RSS formats do not have such restrictions.XML format extensionWhen exporting results to XML or RSS formats, the names of object properties become XML tags and the corresponding values become tag's children. For example, the following JavaScript object:{
+    name: "Paul Newman",
+    address: [
+        { type: "home", street: "21st", city: "Chicago" },
+        { type: "office", street: null, city: null }
+    ]
+}
+will be transformed to the following XML snippet:<name>Paul Newman</name>
+<address>
+  <type>home</type>
+  <street>21st</street>
+  <city>Chicago</city>
+</address>
+<address>
+  <type>office</type>
+  <street/>
+  <city/>
+</address>
+If the JavaScript object contains a property named @ then its sub-properties are exported as attributes of the parent XML element. If the parent XML element does not have any child elements then its value is taken from a JavaScript object property named #. For example, the following JavaScript object:{
+  "address": [{
+    "@": {
+      "type": "home"
+    },
+    "street": "21st",
+    "city": "Chicago"
+  },
+  {
+    "@": {
+      "type": "office"
+    },
+    "#": 'unknown'
+  }]
+}
+will be transformed to the following XML snippet:<address type="home">
+  <street>21st</street>
+  <city>Chicago</city>
+</address>
+<address type="office">unknown</address>
+This feature is also useful to customize your RSS feeds generated for various websites.By default the whole result is wrapped in <results> element and each page object is wrapped in <page> or <result> element. You can change this using xmlRoot and xmlRow url parameters.PaginationAll API endpoints that generate results support pagination. The pagination is always performed with the granularity of the Request objects, regardless whether pageFunctionResult is an array that was unrolled by passing the simplified=0 parameter. By default, the Request objects in the response are sorted by the time they were stored to the database, therefore you can use pagination to incrementally fetch the crawl results as they appear while the crawler execution is still running. The results are always limited to the maximum of 100000 objects. If you specify desc=1 query paremeter, the results are returned in the reverse order than they were stored (i.e. from newest to oldest records). Note that only the order of Request objects is reversed, but not the order of pageFunctionResult array elements.
+Execution results
+Get execution results
+Gets results from a specific crawler execution.The response contains results which are formatted and paginated as described in the beginning of this section. Note that the results might be incomplete if the execution is still running.This API endpoint does not use any authentication token. The caller only needs to know a hard-to-guess crawler execution ID, which will not grant them any other privileges except to view execution details, stop execution if still running and access its results. Last execution results
+Get last execution results
+Gets results from the last crawler execution, i.e. an execution with the latest start time regardless of its status. Optionally, you can provide the status parameter to only get the last execution with a specific status (e.g. status=SUCCEEDED).The response contains results which are formatted and paginated as described in the beginning of this section. Note that the results might be incomplete if the execution is still running.If there is no matching execution or the last execution still has no results, the response will be empty with 204 (No Content) status code.
+Executions / Start execution / Start execution
+Console calls are routed via Apiary
+Use browser
+POSThttps://api.apify.com/v1/hMf69fRQCWWX84d5Z/crawlers/dHsquLWo7i7TkFsEk/execute?token=Dj2DGqG57MqhSrJZQdcW7h26r
+
+{
+  "customId": "My_crawler",
+  "_id": "zDtOpyeYDO9aDEFdK",
+  "comments": "My testing crawler",
+  "startUrls": [
+    {
+      "key": "START",
+      "value": "http://example.com"
+    }
+  ],
+  "crawlPurls": [
+    {
+      "key": "PAGE",
+      "value": "http://example.com/test-2/[.*]"
+    }
+  ],
+  "pageFunction": "function(context) { /* ... */ }",
+  "clickableElementsSelector": "#article a",
+  "interceptRequest": "function interceptRequest(context, newRequest) { return newRequest; }",
+  "considerUrlFragment": true,
+  "loadImages": true,
+  "loadCss": true,
+  "injectJQuery": true,
+  "injectUnderscoreJs": true,
+  "ignoreRobotsTxt": false,
+  "skipLoadingFrames": true,
+  "verboseLog": true,
+  "disableWebSecurity": true,
+  "maxCrawledPages": 60,
+  "maxOutputPages": 60,
+  "maxCrawlDepth": 10,
+  "timeout": 300,
+  "resourceTimeout": 3000,
+  "pageLoadTimeout": 3000,
+  "pageFunctionTimeout": 3000,
+  "maxInfiniteScrollHeight": 600,
+  "randomWaitBetweenRequests": 1000,
+  "maxCrawledPagesPerSlave": 20,
+  "maxParallelRequests": 10,
+  "customHttpHeaders": [
+    {
+      "key": "X-My-Header",
+      "value": "my value"
+    }
+  ],
+  "customProxies": "http://username:password@myproxy.com:8080",
+  "proxyGroups": [
+    "DEFAULT",
+    "SHADER"
+  ],
+  "cookies": [
+    {
+      "domain": ".example.com",
+      "expires": "Thu, 01 Jun 2017 16:14:38 GMT",
+      "expiry": "1496333678",
+      "httponly": "true",
+      "name": "NAME",
+      "path": "/",
+      "secure": "false",
+      "value": "Some value"
+    }
+  ],
+  "cookiesPersistence": "PER_PROCESS",
+  "customData": "some custom content",
+  "finishWebhookUrl": "http://example.com/some/path",
+  "finishWebhookData": "Some value"
+}
+curl --include \
+     --request POST \
+     --header "Content-Type: application/json" \
+     --data-binary "{
+  \"customId\": \"My_crawler\",
+  \"_id\": \"zDtOpyeYDO9aDEFdK\",
+  \"comments\": \"My testing crawler\",
+  \"startUrls\": [
+    {
+      \"key\": \"START\",
+      \"value\": \"http://example.com\"
+    }
+  ],
+  \"crawlPurls\": [
+    {
+      \"key\": \"PAGE\",
+      \"value\": \"http://example.com/test-2/[.*]\"
+    }
+  ],
+  \"pageFunction\": \"function(context) { /* ... */ }\",
+  \"clickableElementsSelector\": \"#article a\",
+  \"interceptRequest\": \"function interceptRequest(context, newRequest) { return newRequest; }\",
+  \"considerUrlFragment\": true,
+  \"loadImages\": true,
+  \"loadCss\": true,
+  \"injectJQuery\": true,
+  \"injectUnderscoreJs\": true,
+  \"ignoreRobotsTxt\": false,
+  \"skipLoadingFrames\": true,
+  \"verboseLog\": true,
+  \"disableWebSecurity\": true,
+  \"maxCrawledPages\": 60,
+  \"maxOutputPages\": 60,
+  \"maxCrawlDepth\": 10,
+  \"timeout\": 300,
+  \"resourceTimeout\": 3000,
+  \"pageLoadTimeout\": 3000,
+  \"pageFunctionTimeout\": 3000,
+  \"maxInfiniteScrollHeight\": 600,
+  \"randomWaitBetweenRequests\": 1000,
+  \"maxCrawledPagesPerSlave\": 20,
+  \"maxParallelRequests\": 10,
+  \"customHttpHeaders\": [
+    {
+      \"key\": \"X-My-Header\",
+      \"value\": \"my value\"
+    }
+  ],
+  \"customProxies\": \"http://username:password@myproxy.com:8080\",
+  \"proxyGroups\": [
+    \"DEFAULT\",
+    \"SHADER\"
+  ],
+  \"cookies\": [
+    {
+      \"domain\": \".example.com\",
+      \"expires\": \"Thu, 01 Jun 2017 16:14:38 GMT\",
+      \"expiry\": \"1496333678\",
+      \"httponly\": \"true\",
+      \"name\": \"NAME\",
+      \"path\": \"/\",
+      \"secure\": \"false\",
+      \"value\": \"Some value\"
+    }
+  ],
+  \"cookiesPersistence\": \"PER_PROCESS\",
+  \"customData\": \"some custom content\",
+  \"finishWebhookUrl\": \"http://example.com/some/path\",
+  \"finishWebhookData\": \"Some value\"
+}" \
+
+'https://api.apify.com/v1/hMf69fRQCWWX84d5Z/crawlers/dHsquLWo7i7TkFsEk/execute?token=Dj2DGqG57MqhSrJZQdcW7h26r'You haven’t made any call yet. To see the diff, please make a call.jk
+
