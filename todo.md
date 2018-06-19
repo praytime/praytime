@@ -1,0 +1,16 @@
+# TODO
+- follow results
+- extract pageFunctionResults
+- bash refactor into code - golang or nodejs
+- research geo db - mongodb
+  - hosted geo db
+- static site or webapp
+- more masaajid!
+  - ifs
+  - icc
+  - maps
+  - cimic
+- post to github
+  - praytime github user?
+- register domain
+- cron
