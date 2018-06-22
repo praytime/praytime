@@ -18,9 +18,13 @@ resultsUrl="$(curl \
     
 echo "resultsUrl is $resultsUrl"
 
-sleep 10
+while 
+    sleep 1
+    results=$(curl -fsSL "$resultsUrl")
+    resultsLen=${#results}
+    (( resultsLen == 2 ))
+do
+    continue
+done
 
-curl -v -v "$resultsUrl"
-    
-#    | jq '.[].pageFunctionResult'
-
+echo "$results" | jq '.[].pageFunctionResult'
