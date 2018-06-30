@@ -1,5 +1,7 @@
 # TODO
-- bash refactor into code - golang or nodejs
+- golang store results
+  - how to set unique name / id
+- static webapp query results
 - more masaajid!
   - ifs
   - icc
@@ -7,6 +9,4 @@
   - cimic
 - register domain
 - cron
-- golang store results
-  - golang api for storing geo
-- static webapp query results
+- bash refactor into code - golang or nodejs
