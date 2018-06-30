@@ -8,6 +8,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"os"
 
@@ -32,11 +33,19 @@ type PrayerEventSet struct {
 
 func main() {
 
-	dec := json.NewDecoder(os.Stdin)
 	var v PrayerEventSet
-	if err := dec.Decode(&v); err != nil {
-		log.Println(err)
-		return
+
+	dec := json.NewDecoder(os.Stdin)
+
+	for {
+		err := dec.Decode(&v)
+		if err == io.EOF {
+			return
+		}
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		fmt.Printf("%+v\n", v)
 	}
-	fmt.Printf("%+v\n", v)
 }

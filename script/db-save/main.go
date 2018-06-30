@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"golang.org/x/net/context"
 	"google.golang.org/genproto/googleapis/type/latlng"
+	"io"
 	"log"
 	"os"
 	//	"google.golang.org/api/iterator"
@@ -28,14 +29,6 @@ type PrayerEventSet struct {
 
 func main() {
 
-	dec := json.NewDecoder(os.Stdin)
-	var v PrayerEventSet
-	if err := dec.Decode(&v); err != nil {
-		log.Println(err)
-		return
-	}
-	log.Printf("Uploading: %+v\n", v)
-
 	ctx := context.Background()
 
 	// Sets your Google Cloud Platform project ID.
@@ -52,10 +45,23 @@ func main() {
 	// Close client when done.
 	defer client.Close()
 
-	_, _, err = client.Collection("Events").Add(ctx, v)
-	if err != nil {
-		log.Fatalf("Failed adding icn ogden: %v", err)
-	} else {
-		log.Println("added.")
+	dec := json.NewDecoder(os.Stdin)
+
+	for {
+		var v PrayerEventSet
+
+		if err := dec.Decode(&v); err != nil {
+			if err != io.EOF {
+				log.Println(err)
+			}
+			break
+		}
+		log.Printf("Uploading: %+v\n", v)
+
+		if _, _, err = client.Collection("Events").Add(ctx, v); err != nil {
+			log.Fatalf("Failed adding %s: %v", v.Name, err)
+		} else {
+			log.Printf("added %s\n", v.Name)
+		}
 	}
 }
