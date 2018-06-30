@@ -4,8 +4,13 @@
 
 set -euf -o pipefail
 
+echoerr() { 
+    >&2 echo "$@"
+}
+
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+# shellcheck source=/dev/null
 . "${SCRIPT_DIR}/../.env"
 
 resultsUrl="$(curl \
@@ -16,7 +21,7 @@ resultsUrl="$(curl \
     https://api.apify.com/v1/hMf69fRQCWWX84d5Z/crawlers/bBG5kmupgKJPssdeh/execute?token="${APIFY_TOKEN}" \
     | jq --raw-output '.resultsUrl')"  
     
-echo "resultsUrl is $resultsUrl"
+echoerr "resultsUrl is $resultsUrl"
 
 while 
     sleep 1
@@ -27,4 +32,6 @@ do
     continue
 done
 
-echo "$results" | jq '.[].pageFunctionResult'
+# echo "$results"
+# echo "$results" | jq '.[].pageFunctionResult'
+echo "$results" | jq '.[].pageFunctionResult.results[]'
