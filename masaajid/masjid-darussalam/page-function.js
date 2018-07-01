@@ -1,11 +1,14 @@
 function pageFunction(context) {
     // called on every page the crawler visits, use it to extract data from it
     var $ = context.jQuery;
+    var date = new Date();
     var result = {
         results: [
             {
                 name: "Masjid DarusSalam",
                 url: "http://masjidds.org",
+                address: "21W525 North Avenue, Lombard, IL 60148",
+                crawlTime: date,
                 geo: {
                     latitude: 41.9030038,
                     longitude: -88.0475275

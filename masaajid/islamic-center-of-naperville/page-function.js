@@ -11,8 +11,9 @@ function pageFunction(context) {
     var result = { 
         results: [
             {
-                name: "Islamic Center of Naperville - Ogden",
+                name: "ICN Al-Hilal (Ogden)",
                 url: "https://islamiccenterofnaperville.org",
+                address: "2844 West Ogden Ave, Naperville IL, 60540",
                 geo: {
                     latitude: 41.7540917,
                     longitude: -88.202011
@@ -26,8 +27,9 @@ function pageFunction(context) {
                 juma2: j2
             },
             {
-                name: "Islamic Center of Naperville - Olesen",
+                name: "ICN Al-Hidayah (Olesen)",
                 url: "https://islamiccenterofnaperville.org",
+                address: "450 Olesen Dr, Naperville, IL 60540",
                 geo: {
                     latitude: 41.7682887,
                     longitude: -88.1223378

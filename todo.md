@@ -1,6 +1,4 @@
 # TODO
-- golang store results
-  - how to set unique name / id
 - static webapp query results
 - more masaajid!
   - ifs
