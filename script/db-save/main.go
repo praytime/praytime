@@ -3,6 +3,7 @@ package main
 import (
 	"cloud.google.com/go/firestore"
 	"encoding/json"
+	"fmt"
 	"golang.org/x/net/context"
 	"google.golang.org/genproto/googleapis/type/latlng"
 	"io"
@@ -52,16 +53,20 @@ func main() {
 
 		if err := dec.Decode(&v); err != nil {
 			if err != io.EOF {
-				log.Println(err)
+				log.Printf("[ERROR] error parsing json: %v", err)
 			}
 			break
 		}
-		log.Printf("Uploading: %+v\n", v)
+		log.Printf("Uploading: %+v", v)
 
-		if _, _, err = client.Collection("Events").Add(ctx, v); err != nil {
-			log.Fatalf("Failed adding %s: %v", v.Name, err)
+		docName := fmt.Sprintf("%s %f,%f", v.Name, v.Geo.Latitude, v.Geo.Longitude)
+
+		evt := client.Collection("Events").Doc(docName)
+
+		if _, err = evt.Set(ctx, v); err != nil {
+			log.Printf("[ERROR] Failed setting %s: %v", docName, err)
 		} else {
-			log.Printf("added %s\n", v.Name)
+			log.Printf("set %s\n", docName)
 		}
 	}
 }
