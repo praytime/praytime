@@ -1,4 +1,5 @@
 function pageFunction(context) {
+    var date = new Date();
     var $ = context.jQuery;
     var fi =  $( "td:contains('FAJR') + td").text().trim()
     var zi =  $( "td:contains('ZUHR') + td").text().trim()
@@ -11,6 +12,7 @@ function pageFunction(context) {
     var result = { 
         results: [
             {
+                crawlTime: date,
                 name: "Masjid Al-Islam",
                 address: "560 E N Frontage Rd, Bolingbrook, IL 60440",
                 url: "https://bolingbrookmasjid.com",
@@ -27,6 +29,7 @@ function pageFunction(context) {
                 juma2: j2
             },
             {
+                crawlTime: date,
                 name: "Masjid Al-Jumu'ah",
                 address: "351 Veterans Pkwy, Bolingbrook, IL 60490",
                 url: "https://bolingbrookmasjid.com",

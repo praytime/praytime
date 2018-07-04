@@ -1,8 +1,10 @@
 function pageFunction(context) {
+    var date = new Date();
     var $ = context.jQuery;
     var result = { 
         results: [
             {
+                crawlTime: date,
                 name: "Madani Masjid",
                 url: "https://www.madanimasjid.org",
                 address: "40 North Lincoln Street, Westmont, IL, 60559",

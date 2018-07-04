@@ -18,3 +18,6 @@
       - dev console
       - iframe
 - scrape / calculate adhan timings
+- db-save
+  - json must have crawl time
+  - flag newly empty fields

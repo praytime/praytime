@@ -1,8 +1,10 @@
 function pageFunction(context) {
+    var date = new Date();
     var $ = context.jQuery;
     var result = { 
         results: [
             {
+                crawlTime: date,
                 name: "Islamic Foundation",
                 url: "http://www.islamicfoundation.org/",
                 address: "300 W. Highridge Road, Villa Park, IL 60181",

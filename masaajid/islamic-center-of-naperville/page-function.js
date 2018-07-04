@@ -1,4 +1,5 @@
 function pageFunction(context) {
+    var date = new Date();
     var $ = context.jQuery;
     var fi =  $( "td:contains('Fajr') + td").text()
     var zi =  $( "td:contains('Dhuhr') + td").text()
@@ -11,6 +12,7 @@ function pageFunction(context) {
     var result = { 
         results: [
             {
+                crawlTime: date,
                 name: "ICN Al-Hilal (Ogden)",
                 url: "https://islamiccenterofnaperville.org",
                 address: "2844 West Ogden Ave, Naperville IL, 60540",
@@ -27,6 +29,7 @@ function pageFunction(context) {
                 juma2: j2
             },
             {
+                crawlTime: date,
                 name: "ICN Al-Hidayah (Olesen)",
                 url: "https://islamiccenterofnaperville.org",
                 address: "450 Olesen Dr, Naperville, IL 60540",
