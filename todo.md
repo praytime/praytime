@@ -1,6 +1,7 @@
 # TODO
 - static webapp query results
 - more masaajid!
+  - masjid usman
   - icc
   - icw
   - msi
@@ -8,4 +9,12 @@
   - cimic
 - register domain
 - cron
+  - read apify doc
+  - build docker image
 - bash refactor into code - golang or nodejs
+- doc
+  - how to add a new masjid
+    - scraping tips
+      - dev console
+      - iframe
+- scrape / calculate adhan timings
