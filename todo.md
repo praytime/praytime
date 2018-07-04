@@ -1,8 +1,9 @@
 # TODO
 - static webapp query results
 - more masaajid!
-  - ifs
   - icc
+  - icw
+  - msi
   - maps
   - cimic
 - register domain
