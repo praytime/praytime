@@ -1,5 +1,6 @@
 # TODO
 - static webapp query results
+  - POC - google maps?
 - more masaajid!
   - masjid usman
   - icc
@@ -7,17 +8,30 @@
   - msi
   - maps
   - cimic
-- register domain
 - cron
-  - read apify doc
   - build docker image
+    - inject credentials
+      - ejson?
 - bash refactor into code - golang or nodejs
 - doc
   - how to add a new masjid
+    - video / screencast tutorial
     - scraping tips
       - dev console
       - iframe
 - scrape / calculate adhan timings
 - db-save
-  - json must have crawl time
   - flag newly empty fields
+- site features
+  - web form to add css selector paths for particular times
+  - report incorrect times
+  - edit times (verify based on GPS)
+  - become 'owner' of masjid
+- auto-generate google calendar
+- write a readme
+- pick a license
+
+## roadmap
+- mobile apps
+- notify when your masjid times change
+- calculate drive times and alert when its time to leave
