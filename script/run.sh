@@ -11,7 +11,7 @@ echoerr() {
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 # shellcheck source=/dev/null
-. "${SCRIPT_DIR}/../.env"
+[[ -e "${SCRIPT_DIR}/../.env" ]] && . "${SCRIPT_DIR}/../.env"
 
 resultsUrl="$(curl \
     -fsSL \
