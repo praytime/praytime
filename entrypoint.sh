@@ -12,8 +12,6 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 curl -fsSLo input.json "https://api.apify.com/v2/key-value-stores/${APIFY_DEFAULT_KEY_VALUE_STORE_ID}/records/INPUT?disableRedirect=1"
 
-cat input.json
-
 # set 'env' section vars
 # -r: raw output, strips quotes
 for k in $(jq -r ".env | keys[]" input.json) ; do
