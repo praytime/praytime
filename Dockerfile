@@ -16,3 +16,4 @@ COPY . /praytime
 
 WORKDIR /praytime
 
+ENTRYPOINT [ "./entrypoint.sh" ]
