@@ -1,7 +1,8 @@
 function pageFunction(context) {
     var date = new Date();
     var $ = context.jQuery;
-    var fi =  $( "td:contains('Fajr') + td").text()
+    var fi =  $( "td:contains('Fajr')" ).first().next( "td" ).text()
+    var foi = $( "td:contains('Fajr at Olesen')" ).first().next( "td" ).text()
     var zi =  $( "td:contains('Dhuhr') + td").text()
     var ai =  $( "td:contains('Asr') + td").text()
     var mi =  $( "td:contains('Maghrib') + td").text()
@@ -37,7 +38,7 @@ function pageFunction(context) {
                     latitude: 41.7682887,
                     longitude: -88.1223378
                 },
-                fajrIqama: fi,
+                fajrIqama: foi,
                 zuhrIqama: zi,
                 asrIqama: ai,
                 maghribIqama: mi,
