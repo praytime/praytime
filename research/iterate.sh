@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # -r: raw output, strips quotes
 for k in $(jq -r ".env | keys[]" input.json) ; do

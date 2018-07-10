@@ -1,14 +1,15 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-# TODO: set trap
-
-set -euf -o pipefail
-
-echoerr() {
-    >&2 echo "$@"
-}
+set -eu -o pipefail
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_DIR="${SCRIPT_DIR}"
+
+# shellcheck source=/dev/null
+. "${PROJECT_DIR}/script/common.sh"
+
+trap exiterr EXIT
+
 
 curl -fsSLo input.json "https://api.apify.com/v2/key-value-stores/${APIFY_DEFAULT_KEY_VALUE_STORE_ID}/records/INPUT?disableRedirect=1"
 
@@ -24,6 +25,7 @@ for k in $(jq -r ".files | keys[]" input.json) ; do
     jq -r ".files[\"$k\"]" input.json > "$k"
 done
 
-cd "${SCRIPT_DIR}/masaajid/islamic-center-of-naperville"
+"${PROJECT_DIR}/script/run-all.sh" | "${PROJECT_DIR}/script/save.sh"
 
-"${SCRIPT_DIR}/script/run-and-save.sh"
+
+trap - EXIT
