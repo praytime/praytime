@@ -10,5 +10,7 @@ function exiterr {
 }
 
 # shellcheck source=/dev/null
-[[ -e "${PROJECT_DIR}/.env" ]] && . "${PROJECT_DIR}/.env"
+if [[ -e "${PROJECT_DIR}/.env" ]] ; then
+    . "${PROJECT_DIR}/.env"
+fi
 
