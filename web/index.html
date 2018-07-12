@@ -1,0 +1,39 @@
+<html>
+    <head>
+        <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+        <!-- Firebase App is always required and must be first -->
+        <script src="https://www.gstatic.com/firebasejs/5.2.0/firebase-app.js"></script>
+
+        <!-- Add additional services that you want to use -->
+        <script src="https://www.gstatic.com/firebasejs/5.2.0/firebase-firestore.js"></script>
+    </head>
+
+    <body>
+
+        <div id="app">
+            <table>
+                <tr>
+                    <td>Masjid</td>
+                    <td>Fajr</td>
+                    <td>Zuhr</td>
+                    <td>Asr</td>
+                    <td>Maghrib</td>
+                    <td>Isha</td>
+                </tr>
+                <tr v-for="event in events">
+                    <td><a :href="event.url">{{ event.name }}</a></td>
+                    <td>{{ event.fajrIqama }}</td>
+                    <td>{{ event.zuhrIqama }}</td>
+                    <td>{{ event.asrIqama }}</td>
+                    <td>{{ event.maghribIqama }}</td>
+                    <td>{{ event.ishaIqama }}</td>
+                </tr>
+            </table>
+        </div>
+
+        <script src="praytime.js"></script>
+    </body>
+
+</html>
+
