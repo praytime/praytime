@@ -10,8 +10,8 @@ function pageFunction(context) {
                 address: "21W525 North Avenue, Lombard, IL 60148",
                 crawlTime: date,
                 geo: {
-                    latitude: 41.9030038,
-                    longitude: -88.0475275
+                    latitude: 41.903020, 
+                    longitude:-88.045350
                 },
                 fajrIqama: $( "td:contains('Iqamah') + td").text(),
                 zuhrIqama: $( "td:contains('Iqamah') ~ td:nth-child(4)").text(),

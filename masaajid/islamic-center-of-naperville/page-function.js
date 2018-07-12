@@ -18,8 +18,8 @@ function pageFunction(context) {
                 url: "https://islamiccenterofnaperville.org",
                 address: "2844 West Ogden Ave, Naperville IL, 60540",
                 geo: {
-                    latitude: 41.7540917,
-                    longitude: -88.202011
+                    latitude: 41.753939, 
+                    longitude:-88.201674
                 },
                 fajrIqama: fi,
                 zuhrIqama: zi,
@@ -35,8 +35,8 @@ function pageFunction(context) {
                 url: "https://islamiccenterofnaperville.org",
                 address: "450 Olesen Dr, Naperville, IL 60540",
                 geo: {
-                    latitude: 41.7682887,
-                    longitude: -88.1223378
+                    latitude: 41.768294, 
+                    longitude:-88.120147
                 },
                 fajrIqama: foi,
                 zuhrIqama: zi,

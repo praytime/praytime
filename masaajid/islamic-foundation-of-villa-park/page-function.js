@@ -9,8 +9,8 @@ function pageFunction(context) {
                 url: "http://www.islamicfoundation.org/",
                 address: "300 W. Highridge Road, Villa Park, IL 60181",
                 geo: {
-                    latitude: 41.8679137,
-                    longitude: -87.9880130
+                    latitude: 41.867930, 
+                    longitude:-87.985824
                 },
                 fajrIqama: $( "#daily > div.list.plusG > ul > li:nth-child(1) > div.prayer_iqama_div" ).first().text().trim(),
                 zuhrIqama: $( "#daily > div.list.plusG > ul > li:nth-child(2) > div.prayer_iqama_div" ).first().text().trim(),

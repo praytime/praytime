@@ -22,7 +22,9 @@
                     <td>Isha</td>
                 </tr>
                 <tr v-for="event in events">
-                    <td><a :href="event.url">{{ event.name }}</a></td>
+                    <td><a :href="event.url">{{ event.name }}</a><br>
+                        <a :href="'https://maps.google.com/?q=' + event.geo.latitude + ',' + event.geo.longitude">{{ event.address }}</a>
+                    </td>
                     <td>{{ event.fajrIqama }}</td>
                     <td>{{ event.zuhrIqama }}</td>
                     <td>{{ event.asrIqama }}</td>

@@ -9,8 +9,8 @@ function pageFunction(context) {
                 url: "http://meccacenter.org",
                 address: "16W560 91st Street, Willowbrook, IL 60527",
                 geo: {
-                    latitude: 41.724156,
-                    longitude: -87.9502227
+                    latitude: 41.724164, 
+                    longitude:-87.948055
                 },
                 fajrIqama: $( "#dailyprayertime-4 > table > tbody > tr:nth-child(3) > td:nth-child(3)" ).first().text().trim(),
                 zuhrIqama: $( "#dailyprayertime-4 > table > tbody > tr:nth-child(5) > td:nth-child(3)" ).first().text().trim(),

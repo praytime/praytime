@@ -17,8 +17,8 @@ function pageFunction(context) {
                 address: "560 E N Frontage Rd, Bolingbrook, IL 60440",
                 url: "https://bolingbrookmasjid.com",
                 geo: {
-                    latitude: 41.6983307,
-                    longitude: -88.0451163
+                    latitude: 41.698385, 
+                    longitude:-88.044029
                 },
                 fajrIqama: fi,
                 zuhrIqama: zi,
@@ -34,8 +34,8 @@ function pageFunction(context) {
                 address: "351 Veterans Pkwy, Bolingbrook, IL 60490",
                 url: "https://bolingbrookmasjid.com",
                 geo: {
-                    latitude: 41.6882016,
-                    longitude: -88.1203472
+                    latitude: 41.688226, 
+                    longitude:-88.118169
                 },
                 fajrIqama: fi,
                 zuhrIqama: zi,

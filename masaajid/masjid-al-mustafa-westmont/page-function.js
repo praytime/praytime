@@ -9,8 +9,8 @@ function pageFunction(context) {
                 url: "https://masjidalmustafa.weebly.com",
                 address: "300 East 55th Street, Westmont, IL 60559",
                 geo: {
-                    latitude: 41.7886227,
-                    longitude: -87.969663
+                    latitude: 41.788639, 
+                    longitude:-87.967464
                 },
                 fajrIqama: document.evaluate('/html/body/div[1]/div[3]/div/div/div/div[1]/div/div/div/div[1]/text()[1]', document, null, XPathResult.STRING_TYPE, null).stringValue,
                 zuhrIqama:document.evaluate('/html/body/div[1]/div[3]/div/div/div/div[1]/div/div/div/div[1]/text()[2]', document, null, XPathResult.STRING_TYPE, null).stringValue,

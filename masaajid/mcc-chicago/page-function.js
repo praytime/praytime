@@ -9,8 +9,8 @@ function pageFunction(context) {
                 address: "4380 N. Elston Ave. Chicago, IL 60641",
                 crawlTime: date,
                 geo: {
-                    latitude: 41.9602844,
-                    longitude: -87.7289386
+                    latitude: 41.960308, 
+                    longitude:-87.728960
                 },
                 fajrIqama: $( "div.prar-timming > ul > li:nth-child(2) > div.pull-right > div.time-r" ).first().text(),
                 zuhrIqama: $( "div.prar-timming > ul > li:nth-child(3) > div.pull-right > div.time-r" ).first().text(),
@@ -25,8 +25,8 @@ function pageFunction(context) {
                 address: "8601 Menard Ave. Morton Grove, IL 60053",
                 crawlTime: date,
                 geo: {
-                    latitude: 42.0376837,
-                    longitude: -87.8411493
+                    latitude: 42.037729, 
+                    longitude:-87.771120
                 },
                 fajrIqama: $( "div.prar-timming > ul > li:nth-child(2) > div.pull-right > div.time-l" ).first().text(),
                 zuhrIqama: $( "div.prar-timming > ul > li:nth-child(3) > div.pull-right > div.time-l" ).first().text(),
