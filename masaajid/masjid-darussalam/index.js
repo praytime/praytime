@@ -1,10 +1,3 @@
-const ApifyClient = require('apify-client');
-
-const apifyClient = new ApifyClient({ 
-    userId: process.env.APIFY_USER_ID,
-    token: process.env.APIFY_TOKEN
-}); 
-
 const settings = {
     _id: "bBG5kmupgKJPssdeh",
     startUrls: [ { "value": "http://masjidds.org/" } ],
@@ -37,41 +30,35 @@ const settings = {
     }.toString()
 }
 
-apifyClient.crawlers.startExecution({
-    crawlerId: settings._id, 
-    wait: 60,
-    settings: settings
-})
-    .then((execution) => {
-        apifyClient.crawlers.getExecutionResults({
-            executionId: execution._id
-        })
-        .then((results) => {
-            console.log("%j", results.items[0].pageFunctionResult.results[0])
-        })
-        .catch((err) => {
-            console.log("getExecutionResults error: ")
-            console.log(err)
+const run = async (apifyClient) => {
+    try {
+        const execution = await apifyClient.crawlers.startExecution({ 
+            crawlerId: settings._id, 
+            wait: 60,
+            settings: settings
         });
-    })
-    .catch((err) => {
-        console.log("startExecution error: ")
-        console.log(err)
-    });
 
-// try {
-//     const execution = await apifyClient.crawlers.startExecution({ 
-//         crawlerId: settings._id, 
-//         wait: 5,
-//         settings: settings
-//     });
-// 
-//     const results = await apifyClient.crawlers.getExecutionResults({ 
-//         executionId: execution._id 
-//     });
-// 
-//     console.log(results.items[0].pageFunctionResult)
-// } catch (err) {
-//     console.log("Error: ")
-//     console.log(err)
-// }
+        const results = await apifyClient.crawlers.getExecutionResults({ 
+            executionId: execution._id 
+        });
+
+        console.log("%j", results.items[0].pageFunctionResult.results[0])
+    } catch (err) {
+        console.log("Error: ")
+        console.log(err)
+    }
+}
+
+exports.settings = settings
+exports.run = run
+
+if (require.main === module) {
+    const ApifyClient = require('apify-client')
+
+    const apifyClient = new ApifyClient({ 
+        userId: process.env.APIFY_USER_ID,
+        token: process.env.APIFY_TOKEN
+    })
+
+    run(apifyClient)
+}

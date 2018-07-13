@@ -1,0 +1,22 @@
+{
+  "name": "praytime",
+  "version": "1.0.0",
+  "description": "Praytime scraping backend",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/praytime/praytime.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/praytime/praytime/issues"
+  },
+  "homepage": "https://github.com/praytime/praytime#readme",
+  "dependencies": {
+    "apify-client": "^0.2.10"
+  }
+}
