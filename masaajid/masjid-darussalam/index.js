@@ -42,10 +42,21 @@ const run = async (apifyClient) => {
             executionId: execution._id 
         });
 
-        console.log("%j", results.items[0].pageFunctionResult.results[0])
+        if (results && results.items) {
+            results.items.forEach((v) => {
+                if (v.pageFunctionResult && v.pageFunctionResult.results) {
+                    v.pageFunctionResult.results.forEach((r) => {
+                        console.log("%j", r)
+                    })
+                } else {
+                    console.error("empty pageFunctionResult")
+                }
+            });
+        } else {
+            console.error("empty results")
+        }
     } catch (err) {
-        console.log("Error: ")
-        console.log(err)
+        console.error(err)
     }
 }
 
