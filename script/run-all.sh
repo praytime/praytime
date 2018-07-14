@@ -11,7 +11,7 @@ PROJECT_DIR="${SCRIPT_DIR}/.."
 trap exiterr EXIT
 
 
-for d in "${PROJECT_DIR}"/masaajid/* ; do
+for d in "${PROJECT_DIR}"/lib/* ; do
 
     cd "${d}"
 
