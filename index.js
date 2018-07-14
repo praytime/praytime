@@ -32,7 +32,10 @@ function run() {
     }
 }
 
+console.log(process.env)
+
 if (process.env.APIFY_DEFAULT_KEY_VALUE_STORE_ID) {
+    console.error("actor mode")
     // in actor environment
     const keyValueStores = apifyClient.keyValueStores
     keyValueStores.getRecord({ 
@@ -40,6 +43,8 @@ if (process.env.APIFY_DEFAULT_KEY_VALUE_STORE_ID) {
         key: "INPUT"
     })
         .then((input) => {
+            console.error("got input")
+            console.error(input)
             if (input.jsonFiles) {
                 const fs = require('fs');
                 Object.keys(input.jsonFiles).forEach((key) => {
@@ -53,6 +58,7 @@ if (process.env.APIFY_DEFAULT_KEY_VALUE_STORE_ID) {
             console.error(err)
         })
 } else {
+    console.error("console mode")
     // kick off loop
     run()
 }
