@@ -20,7 +20,7 @@ for d in "${PROJECT_DIR}"/lib/* ; do
         --request POST \
         --header "Content-Type: application/json" \
         --data-binary "$(./post-data.sh)" \
-        https://api.apify.com/v1/hMf69fRQCWWX84d5Z/crawlers/bBG5kmupgKJPssdeh/execute?token="${APIFY_CRAWLER_TOKEN}" \
+        https://api.apify.com/v1/hMf69fRQCWWX84d5Z/crawlers/bBG5kmupgKJPssdeh/execute?token="${APIFY_TOKEN}" \
         | jq --raw-output '.resultsUrl')"
 
     while
