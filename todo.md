@@ -1,4 +1,8 @@
 # TODO
+- sanitize data in page function
+  - tolower
+  - extract time only
+- rotate keys
 - backend
   - retry crawler in use errors
   - poll when crawler finished
@@ -15,6 +19,7 @@
     - scraping tips
       - dev console
       - iframe
+- add timezones
 - scrape / calculate adhan timings
 - site features
   - web form to add css selector paths for particular times
