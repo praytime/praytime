@@ -1,19 +1,14 @@
 # TODO
-- retry crawler in use errors
-- poll when crawler finished
-- docker hub image
-- nightly bash => node
-  - node read INPUT/kv store and write credential file
+- backend
+  - retry crawler in use errors
+  - poll when crawler finished
+  - docker hub image
+  - golang refactor to node
+  - db-save
+    - flag newly empty fields
 - static webapp query results
   - POC - google maps?
-- more masaajid!
-  - masjid usman
-  - icc
-  - icw
-  - msi
-  - maps
-  - cimic
-- golang refactor to node
+- more masaajid
 - doc
   - how to add a new masjid
     - video / screencast tutorial
@@ -21,8 +16,6 @@
       - dev console
       - iframe
 - scrape / calculate adhan timings
-- db-save
-  - flag newly empty fields
 - site features
   - web form to add css selector paths for particular times
   - report incorrect times
