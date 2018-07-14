@@ -1,4 +1,9 @@
 # TODO
+- retry crawler in use errors
+- poll when crawler finished
+- docker hub image
+- nightly bash => node
+  - node read INPUT/kv store and write credential file
 - static webapp query results
   - POC - google maps?
 - more masaajid!
@@ -8,11 +13,7 @@
   - msi
   - maps
   - cimic
-- cron
-  - build docker image
-    - inject credentials
-      - ejson?
-- bash refactor into code - golang or nodejs
+- golang refactor to node
 - doc
   - how to add a new masjid
     - video / screencast tutorial

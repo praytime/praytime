@@ -7,13 +7,16 @@ RUN apk add --no-cache \
         go \
         jq \
         musl-dev \
+        nodejs \
         python && \
     go get -v cloud.google.com/go/firestore && \
     go get -v golang.org/x/net/context && \ 
     go get -v google.golang.org/genproto/googleapis/type/latlng
 
-COPY . /praytime
+COPY . /usr/src/app
 
-WORKDIR /praytime
+WORKDIR /usr/src/app
+
+RUN npm install --production
 
 ENTRYPOINT [ "./entrypoint.sh" ]
