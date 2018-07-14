@@ -7,11 +7,11 @@ RUN apk add --no-cache \
         go \
         jq \
         musl-dev \
-        nodejs \
+        nodejs-npm \
         python && \
-    go get -v cloud.google.com/go/firestore && \
-    go get -v golang.org/x/net/context && \ 
-    go get -v google.golang.org/genproto/googleapis/type/latlng
+    go get cloud.google.com/go/firestore && \
+    go get golang.org/x/net/context && \ 
+    go get google.golang.org/genproto/googleapis/type/latlng
 
 COPY . /usr/src/app
 
