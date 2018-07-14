@@ -45,13 +45,15 @@ if (process.env.APIFY_DEFAULT_KEY_VALUE_STORE_ID) {
         .then((input) => {
             console.error("got input")
             console.error(input)
-            if (input.jsonFiles) {
+            if (input.body.jsonFiles) {
+                const jsFiles = input.body.jsonFiles
                 const fs = require('fs');
-                Object.keys(input.jsonFiles).forEach((key) => {
+                Object.keys(jsFiles).forEach((key) => {
                     console.error("Writing %s", key)
-                    fs.writeFileSync(key, JSON.stringify(input.jsonFiles[key]))
+                    fs.writeFileSync(key, JSON.stringify(jsFiles[key]))
                 })
             }
+            // input processed, begin run
             run()
         })
         .catch((err) => {
