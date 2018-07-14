@@ -9,7 +9,13 @@ const masaajid = [
     './lib/islamic-center-of-naperville',
     './lib/islamic-center-of-romeoville',
     './lib/islamic-center-of-wheaton',
+    './lib/islamic-foundation-of-villa-park',
+    './lib/madani-masjid-westmont',
+    './lib/masjid-al-mustafa-westmont',
     './lib/masjid-darussalam',
+    './lib/mcc-chicago',
+    './lib/mecca-center',
+    './lib/muslim-association-of-bolingbrook',
 ]
 
 let masjidIdx = 0
