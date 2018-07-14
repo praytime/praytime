@@ -32,5 +32,27 @@ function run() {
     }
 }
 
-// kick off loop
-run()
+if (process.env.APIFY_DEFAULT_KEY_VALUE_STORE_ID) {
+    // in actor environment
+    const keyValueStores = apifyClient.keyValueStores
+    keyValueStores.getRecord({ 
+        storeId: process.env.APIFY_DEFAULT_KEY_VALUE_STORE_ID, 
+        key: "INPUT"
+    })
+        .then((input) => {
+            if (input.jsonFiles) {
+                const fs = require('fs');
+                Object.keys(input.jsonFiles).forEach((key) => {
+                    console.error("Writing %s", key)
+                    fs.writeFileSync(key, JSON.stringify(input.jsonFiles[key]))
+                })
+            }
+            run()
+        })
+        .catch((err) => {
+            console.error(err)
+        })
+} else {
+    // kick off loop
+    run()
+}
