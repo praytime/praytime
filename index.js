@@ -5,7 +5,7 @@ const apifyClient = new ApifyClient({
 })
 const lib = require('./lib')
 
-const masaajid = [
+let masaajid = [
     './lib/islamic-center-of-naperville',
     './lib/islamic-center-of-romeoville',
     './lib/islamic-center-of-wheaton',
@@ -32,5 +32,11 @@ const main = async () => {
         }
     }
 }
+
+const argv = process.argv.slice(2);
+
+if (argv.length > 0) {
+    masaajid = argv
+} 
 
 main()

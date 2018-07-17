@@ -3,7 +3,7 @@ package main
 import (
 	"cloud.google.com/go/firestore"
 	"encoding/json"
-	"fmt"
+	// "fmt"
 	"golang.org/x/net/context"
 	"google.golang.org/genproto/googleapis/type/latlng"
 	"io"
@@ -19,6 +19,7 @@ type PrayerEventSet struct {
 	URL          string         `json:"url,omitempty" firestore:"url,omitempty"`
 	Address      string         `json:"address,omitempty" firestore:"address,omitempty"`
 	Geo          *latlng.LatLng `json:"geo" firestore:"geo"`
+	UUID4        string         `json:"uuid4" firestore:"uuid4"`
 	CrawlTime    time.Time      `json:"crawlTime" firestore:"crawlTime"`
 	FajrIqama    string         `json:"fajrIqama,omitempty" firestore:"fajrIqama,omitempty"`
 	ZuhrIqama    string         `json:"zuhrIqama,omitempty" firestore:"zuhrIqama,omitempty"`
@@ -61,14 +62,14 @@ func main() {
 		}
 		log.Printf("Uploading: %+v", v)
 
-		docName := fmt.Sprintf("%s %f,%f", v.Name, v.Geo.Latitude, v.Geo.Longitude)
+		docName := v.UUID4
 
 		evt := client.Collection("Events").Doc(docName)
 
 		if _, err = evt.Set(ctx, v); err != nil {
-			log.Printf("[ERROR] Failed setting %s: %v", docName, err)
+			log.Printf("[ERROR] Failed setting %s[%s]: %v", v.Name, docName, err)
 		} else {
-			log.Printf("set %s\n", docName)
+			log.Printf("set %s[%s]\n", v.Name, docName)
 		}
 	}
 }
