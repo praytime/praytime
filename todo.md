@@ -1,18 +1,16 @@
 # TODO
+- uuid generation
 - sanitize data in page function
   - tolower
   - extract time only
-- rotate keys
 - backend
   - retry crawler in use errors
-  - poll when crawler finished
-  - docker hub image
   - golang refactor to node
   - db-save
     - flag newly empty fields
 - static webapp query results
   - POC - google maps?
-- more masaajid
+- all chicago masaajid
 - doc
   - how to add a new masjid
     - video / screencast tutorial
