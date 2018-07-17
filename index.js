@@ -18,19 +18,19 @@ const masaajid = [
     './lib/muslim-association-of-bolingbrook',
 ]
 
-let masjidIdx = 0
+const main = async () => {
+    for (const masjid of masaajid) {
+        try {
+            console.error("starting %s", masjid)
+            const results = await lib.getPagefunctionResults(apifyClient, require(masjid).settings)
 
-function run() {
-    let masjid = masaajid[masjidIdx++]
-    console.error("starting %s", masjid)
-    lib.getPagefunctionResults(apifyClient, require(masjid).settings, (r) => {
-        console.log("%j", r)
-    })
-    if (masjidIdx < masaajid.length) {
-        // delay before starting next
-        setTimeout(run, 20000)
+            results.forEach((r) => {
+                console.log("%j", r)
+            });
+        } catch (err) {
+            console.error(err)
+        }
     }
 }
 
-// kick off loop
-run()
+main()
