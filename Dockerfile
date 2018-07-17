@@ -1,22 +1,11 @@
-FROM alpine
-
-RUN apk add --no-cache \
-        bash \
-        curl \
-        git \
-        go \
-        jq \
-        musl-dev \
-        nodejs-npm \
-        python && \
-    go get cloud.google.com/go/firestore && \
-    go get golang.org/x/net/context && \ 
-    go get google.golang.org/genproto/googleapis/type/latlng
-
-COPY . /usr/src/app
+FROM apify/actor-node-basic
 
 WORKDIR /usr/src/app
 
+COPY package.json package-lock.json .
+
 RUN npm install --production
 
-ENTRYPOINT [ "./entrypoint.sh" ]
+COPY . .
+
+CMD [ "./entrypoint.sh" ]

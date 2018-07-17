@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/praytime/praytime#readme",
   "dependencies": {
+    "@google-cloud/firestore": "^0.15.2",
     "apify-client": "^0.2.10"
   }
 }
