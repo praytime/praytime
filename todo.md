@@ -1,5 +1,4 @@
 # TODO
-- uuid generation
 - sanitize data in page function
   - tolower
   - extract time only

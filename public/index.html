@@ -16,23 +16,25 @@
         <div id="app">
             <table>
                 <tr>
-                    <td>Masjid</td>
                     <td>Fajr</td>
                     <td>Zuhr</td>
                     <td>Asr</td>
                     <td>Maghrib</td>
                     <td>Isha</td>
                 </tr>
-                <tr v-for="event in events">
-                    <td><a :href="event.url">{{ event.name }}</a><br>
-                        <a :href="'https://maps.google.com/?q=' + event.geo.latitude + ',' + event.geo.longitude">{{ event.address }}</a>
-                    </td>
-                    <td>{{ event.fajrIqama }}</td>
-                    <td>{{ event.zuhrIqama }}</td>
-                    <td>{{ event.asrIqama }}</td>
-                    <td>{{ event.maghribIqama }}</td>
-                    <td>{{ event.ishaIqama }}</td>
-                </tr>
+                <template v-for="event in events">
+                    <tr>
+                        <td colspan=5><a :href="event.url">{{ event.name }}</a> <a :href="'https://maps.google.com/?q=' + event.geo.latitude + ',' + event.geo.longitude">{{ event.address }}</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>{{ event.fajrIqama }}</td>
+                        <td>{{ event.zuhrIqama }}</td>
+                        <td>{{ event.asrIqama }}</td>
+                        <td>{{ event.maghribIqama }}</td>
+                        <td>{{ event.ishaIqama }}</td>
+                    </tr>
+                </template>
             </table>
         </div>
 
