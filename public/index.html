@@ -28,7 +28,7 @@
                 </tr>
                 <template v-for="event in events">
                     <tr>
-                        <td colspan=5>{{ event.distance }} <a :href="event.url">{{ event.name }}</a> <a :href="'https://maps.google.com/?q=' + event.geo.latitude + ',' + event.geo.longitude">{{ event.address }}</a>
+                        <td colspan=5>{{ event.distLabel }} km <a :href="event.url">{{ event.name }}</a> <a :href="'https://maps.google.com/?q=' + event.geo.latitude + ',' + event.geo.longitude">{{ event.address }}</a>
                         </td>
                     </tr>
                     <tr>
