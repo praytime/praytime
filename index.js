@@ -13,6 +13,7 @@ let masaajid = [
     './lib/madani-masjid-westmont',
     './lib/masjid-al-mustafa-westmont',
     './lib/masjid-darussalam',
+    './lib/masjid-haqq-lombard',
     './lib/mcc-chicago',
     './lib/mecca-center',
     './lib/muslim-association-of-bolingbrook',
