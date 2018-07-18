@@ -9,11 +9,15 @@
         <!-- Add additional services that you want to use -->
         <!--script src="https://www.gstatic.com/firebasejs/5.2.0/firebase-firestore.js"></script-->
         <script src="/__/firebase/5.2.0/firebase-firestore.js"></script>
+
+        <script src="geodesy/latlon-spherical.js"></script>
+        <script src="geodesy/dms.js"></script>
     </head>
 
     <body>
 
         <div id="app">
+            {{ message }}
             <table>
                 <tr>
                     <td>Fajr</td>
@@ -24,7 +28,7 @@
                 </tr>
                 <template v-for="event in events">
                     <tr>
-                        <td colspan=5><a :href="event.url">{{ event.name }}</a> <a :href="'https://maps.google.com/?q=' + event.geo.latitude + ',' + event.geo.longitude">{{ event.address }}</a>
+                        <td colspan=5>{{ event.distance }} <a :href="event.url">{{ event.name }}</a> <a :href="'https://maps.google.com/?q=' + event.geo.latitude + ',' + event.geo.longitude">{{ event.address }}</a>
                         </td>
                     </tr>
                     <tr>
