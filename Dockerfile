@@ -15,10 +15,10 @@ RUN apk add --no-cache \
 
 WORKDIR /usr/src/app
 
-COPY package.json package-lock.json .
+COPY package.json package-lock.json /usr/src/app/
 
 RUN npm install --production
 
-COPY . .
+COPY . /usr/src/app/
 
 ENTRYPOINT [ "./entrypoint.sh" ]
