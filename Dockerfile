@@ -13,10 +13,12 @@ RUN apk add --no-cache \
     go get golang.org/x/net/context && \ 
     go get google.golang.org/genproto/googleapis/type/latlng
 
-COPY . /usr/src/app
-
 WORKDIR /usr/src/app
 
+COPY package.json package-lock.json .
+
 RUN npm install --production
+
+COPY . .
 
 ENTRYPOINT [ "./entrypoint.sh" ]

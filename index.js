@@ -5,10 +5,12 @@ const apifyClient = new ApifyClient({
 })
 const lib = require('./lib')
 
+
 let masaajid = [
     './lib/islamic-center-of-naperville',
     './lib/islamic-center-of-romeoville',
     './lib/islamic-center-of-wheaton',
+    './lib/islamic-foundation-of-southwest-suburbs',
     './lib/islamic-foundation-of-villa-park',
     './lib/madani-masjid-westmont',
     './lib/masjid-al-mustafa-westmont',
@@ -23,7 +25,15 @@ const main = async () => {
     for (const masjid of masaajid) {
         try {
             console.error("starting %s", masjid)
-            const results = await lib.getPagefunctionResults(apifyClient, require(masjid).settings)
+
+            const masjidLib = require(masjid)
+
+            let results = {}
+            if (masjidLib.settings) {
+                results = await lib.getPagefunctionResults(apifyClient, masjidLib.settings)
+            } else if (masjidLib.run) {
+                results = await masjidLib.run()
+            }
 
             results.forEach((r) => {
                 console.log("%j", r)
