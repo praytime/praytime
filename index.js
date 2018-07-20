@@ -7,6 +7,7 @@ const lib = require('./lib')
 
 
 let masaajid = [
+    './lib/fox-valley-muslim-community-center',
     './lib/islamic-center-of-naperville',
     './lib/islamic-center-of-romeoville',
     './lib/islamic-center-of-wheaton',
@@ -19,6 +20,7 @@ let masaajid = [
     './lib/mcc-chicago',
     './lib/mecca-center',
     './lib/muslim-association-of-bolingbrook',
+    './lib/muslim-society-inc-bloomingdale',
 ]
 
 const main = async () => {
