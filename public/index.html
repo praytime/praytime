@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
     <head>
         <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
@@ -10,25 +11,31 @@
         <!--script src="https://www.gstatic.com/firebasejs/5.2.0/firebase-firestore.js"></script-->
         <script src="/__/firebase/5.2.0/firebase-firestore.js"></script>
 
-        <script src="geodesy/latlon-spherical.js"></script>
-        <script src="geodesy/dms.js"></script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC-GheSc0eKtS4paXu3SjJDsPGxA5WReRk&libraries=geometry,places"></script>
+
     </head>
 
     <body>
 
+        <div id="locationField">
+            <input id="autocomplete" placeholder="Enter a location" type="text" />
+        </div>
+
         <div id="app">
             {{ message }}
             <table>
-                <tr>
-                    <td>Fajr</td>
-                    <td>Zuhr</td>
-                    <td>Asr</td>
-                    <td>Maghrib</td>
-                    <td>Isha</td>
-                </tr>
+                <template v-if="events.length > 0">
+                    <tr>
+                        <td>Fajr</td>
+                        <td>Zuhr</td>
+                        <td>Asr</td>
+                        <td>Maghrib</td>
+                        <td>Isha</td>
+                    </tr>
+                </template>
                 <template v-for="event in events">
                     <tr>
-                        <td colspan=5>{{ event.distLabel }} km <a :href="event.url">{{ event.name }}</a> <a :href="'https://maps.google.com/?q=' + event.geo.latitude + ',' + event.geo.longitude">{{ event.address }}</a>
+                        <td colspan=5>{{ event.distLabel }} mi <a :href="event.url">{{ event.name }}</a> <a :href="'https://maps.google.com/?q=' + event.geo.latitude + ',' + event.geo.longitude">{{ event.address }}</a>
                         </td>
                     </tr>
                     <tr>
@@ -43,6 +50,8 @@
         </div>
 
         <script src="praytime.js"></script>
+
+        <a href="https://github.com/praytime/praytime">github</a>
     </body>
 
 </html>
