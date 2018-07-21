@@ -6,7 +6,7 @@ Praytime aggregates iqamah times and places from masjid websites.
 
 ## motivation
 
-> Abu Hurairah (May Allah be pleased with him) reported: The Messenger of Allah (sallallaahu 'alayhi wa sallam) said, “A man’s Salat in congregation is twenty-five times more rewarding than his Salat at home or in his shop, and that is because when he performs his Wudu’ properly and proceeds towards the mosque with the purpose of performing Salat in congregation, he does not take a step without being raised a degree (in rank) for it and having a sin remitted for it, till he enters the mosque. When he is performing Salat, the angels continue to invoke Blessings of Allah on him as long as he is in his place of worship in a state of Wudu’. They say: `O Allah! Have mercy on him! O Allah! Forgive him.’ He is deemed to be engaged in Salat as long as he waits for it.”
+> Abu Hurairah (رضي الله عنه) reported: The Messenger of Allah (ﷺ) said, “A man’s Salat in congregation is twenty-five times more rewarding than his Salat at home or in his shop, and that is because when he performs his Wudu’ properly and proceeds towards the mosque with the purpose of performing Salat in congregation, he does not take a step without being raised a degree (in rank) for it and having a sin remitted for it, till he enters the mosque. When he is performing Salat, the angels continue to invoke Blessings of Allah on him as long as he is in his place of worship in a state of Wudu’. They say: `O Allah! Have mercy on him! O Allah! Forgive him.’ He is deemed to be engaged in Salat as long as he waits for it.”
 
 https://abdurrahman.org/2014/09/04/riyad-us-saliheen-imaam-nawawi-chapter-191/
 

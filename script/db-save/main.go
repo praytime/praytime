@@ -21,6 +21,8 @@ type PrayerEventSet struct {
 	Geo          *latlng.LatLng `json:"geo" firestore:"geo"`
 	UUID4        string         `json:"uuid4" firestore:"uuid4"`
 	CrawlTime    time.Time      `json:"crawlTime" firestore:"crawlTime"`
+	TimeZoneID   string         `json:"timeZoneId" firestore:"timeZoneId"`
+	PlaceID      string         `json:"placeId" firestore:"placeId"`
 	FajrIqama    string         `json:"fajrIqama,omitempty" firestore:"fajrIqama,omitempty"`
 	ZuhrIqama    string         `json:"zuhrIqama,omitempty" firestore:"zuhrIqama,omitempty"`
 	AsrIqama     string         `json:"asrIqama,omitempty" firestore:"asrIqama,omitempty"`
