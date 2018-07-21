@@ -3,12 +3,10 @@
   - tolower
   - extract time only
 - backend
-  - retry crawler in use errors
   - golang refactor to node
   - db-save
     - flag newly empty fields
-- static webapp query results
-  - POC - google maps?
+- better UI
 - all chicago masaajid
 - doc
   - how to add a new masjid
@@ -27,7 +25,3 @@
 - write a readme
 - pick a license
 
-## roadmap
-- mobile apps
-- notify when your masjid times change
-- calculate drive times and alert when its time to leave
