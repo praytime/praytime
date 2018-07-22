@@ -20,11 +20,24 @@ The UI is a static webapp which uses the client-side Firestore JavaScript librar
 
 ### project layout
 
-Each masjid has its own directory under [lib](lib). 
- 
+Each masjid has its own directory under [lib](lib).
+
 ## how to contribute
 
-https://google-developers.appspot.com/maps/documentation/utils/geocoder/
+TODO
+
+- npm install
+- .env file
+- uuid
+- https://google-developers.appspot.com/maps/documentation/utils/geocoder/
+  - address, lat/lng, placeid
+- timezone
+- date
+- standardjs, editorconfig
+- chrome dev tools
+  - selector vs xpath
+  - iframes
+  - regexs
 
 ## roadmap
 - mobile app
