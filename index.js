@@ -8,6 +8,7 @@ const lib = require('./lib')
 let masaajid = [
   './lib/fox-valley-muslim-community-center',
   './lib/islamic-center-of-naperville',
+  './lib/islamic-center-of-oakbrook-terrace',
   './lib/islamic-center-of-romeoville',
   './lib/islamic-center-of-wheaton',
   './lib/islamic-foundation-of-southwest-suburbs',
@@ -16,6 +17,7 @@ let masaajid = [
   './lib/masjid-al-mustafa-westmont',
   './lib/masjid-darussalam',
   './lib/masjid-haqq-lombard',
+  './lib/masjid-uthman-lombard',
   './lib/mcc-chicago',
   './lib/mecca-center',
   './lib/muslim-association-of-bolingbrook',
@@ -30,10 +32,15 @@ const main = async () => {
       const masjidLib = require(masjid)
 
       let results = {}
-      if (masjidLib.settings) {
-        results = await lib.getPagefunctionResults(apifyClient, masjidLib.settings)
+      if (masjidLib.apifySettings) {
+        // run an apify crawler
+        results = await lib.getPagefunctionResults(apifyClient, masjidLib.apifySettings)
       } else if (masjidLib.run) {
+        // generic run function
         results = await masjidLib.run()
+      } else if (masjidLib.results) {
+        // static results, nothing to execute
+        results = masjidLib.results
       }
 
       results.forEach((r) => {
