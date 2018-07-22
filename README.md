@@ -2,7 +2,7 @@
 
 ## about
 
-Praytime aggregates iqamah times and places from masjid websites.
+Praytime aggregates masjid iqamah times primarily by scraping websites.
 
 ## motivation
 
@@ -40,6 +40,7 @@ TODO
   - regexs
 
 ## roadmap
+
 - mobile app
 - notify when watched masjid times change
 - calculate drive times and alert when its time to leave
