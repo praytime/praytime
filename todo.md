@@ -6,7 +6,11 @@
   - golang refactor to node
   - db-save
     - flag newly empty fields
-- better UI
+- UI
+  - timezone warning
+  - center search box
+  - title / intro
+  - footer
 - all chicago masaajid
 - doc
   - how to add a new masjid
@@ -18,10 +22,6 @@
 - scrape / calculate adhan timings
 - site features
   - web form to add css selector paths for particular times
-  - report incorrect times
   - edit times (verify based on GPS)
   - become 'owner' of masjid
 - auto-generate google calendar
-- write a readme
-- pick a license
-
