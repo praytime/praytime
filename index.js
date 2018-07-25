@@ -17,15 +17,18 @@ let masaajid = [
   './lib/islamic-foundation-of-southwest-suburbs',
   './lib/islamic-foundation-of-villa-park',
   './lib/madani-masjid-westmont',
+  './lib/masjid-al-huda-schaumburg',
   './lib/masjid-al-mustafa-westmont',
   './lib/masjid-darussalam',
   './lib/masjid-haqq-lombard',
+  './lib/masjid-ul-islam-elgin',
   './lib/masjid-uthman-lombard',
   './lib/mcc-chicago',
   './lib/mecca-center',
   './lib/mosque-foundation-bridgeview',
   './lib/muslim-association-of-bolingbrook',
-  './lib/muslim-society-inc-bloomingdale'
+  './lib/muslim-society-inc-bloomingdale',
+  './lib/prayer-center-of-orland-park'
 ]
 
 const main = async () => {
