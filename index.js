@@ -6,6 +6,7 @@ const apifyClient = new ApifyClient({
 const lib = require('./lib')
 
 let masaajid = [
+  './lib/al-hira-community-center-wooddale',
   './lib/aqsa-community-center-plainfield',
   './lib/batavia-islamic-center',
   './lib/fox-valley-muslim-community-center',
