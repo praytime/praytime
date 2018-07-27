@@ -77,3 +77,6 @@ TODO
 - notify when watched masjid times change
 - calculate drive times and alert when its time to leave
 
+## see also
+
+https://github.com/praytime/praytime.app - praytime.app frontend
