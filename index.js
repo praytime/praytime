@@ -8,8 +8,12 @@ const lib = require('./lib')
 let masaajid = [
   './lib/al-hira-community-center-wooddale',
   './lib/aqsa-community-center-plainfield',
+  './lib/at-takaful-islamic-society-chicago',
   './lib/batavia-islamic-center',
+  './lib/chicago-mosque',
   './lib/fox-valley-muslim-community-center',
+  './lib/icc-des-plaines',
+  './lib/icci-chicago',
   './lib/islamic-center-of-naperville',
   './lib/islamic-center-of-oakbrook-terrace',
   './lib/islamic-center-of-romeoville',

@@ -1,4 +1,5 @@
 # TODO
+- allow arbitrary key-value fields
 - sanitize data in page function
   - tolower
   - extract time only
@@ -9,7 +10,6 @@
 - UI
   - timezone warning
   - center search box
-  - title / intro
   - footer
 - all chicago masaajid
 - doc
