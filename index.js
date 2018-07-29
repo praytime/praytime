@@ -27,6 +27,7 @@ let masaajid = [
   './lib/isns-rolling-meadows',
   './lib/madani-masjid-westmont',
   './lib/makki-masjid-chicago',
+  './lib/maps-redmond',
   './lib/masjid-al-huda-schaumburg',
   './lib/masjid-al-mustafa-westmont',
   './lib/masjid-darussalam',
