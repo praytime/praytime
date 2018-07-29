@@ -35,6 +35,7 @@ let masaajid = [
   './lib/masjid-tawheed-chicago',
   './lib/masjid-ul-islam-elgin',
   './lib/masjid-uthman-lombard',
+  './lib/mca-bay-area',
   './lib/mcc-chicago',
   './lib/mecca-center',
   './lib/mosque-foundation-bridgeview',
