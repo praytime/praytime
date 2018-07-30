@@ -1,4 +1,6 @@
 # TODO
+- add direct link support, query arg parsing
+- add link to create issue for new masjid
 - allow arbitrary key-value fields
 - sanitize data in page function
   - tolower
@@ -8,10 +10,8 @@
   - db-save
     - flag newly empty fields
 - UI
-  - timezone warning
-  - center search box
+  - host all sources
   - footer
-- all chicago masaajid
 - doc
   - how to add a new masjid
     - video / screencast tutorial
