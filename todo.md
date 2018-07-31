@@ -1,4 +1,5 @@
 # TODO
+- split nightly by timezone
 - add direct link support, query arg parsing
 - add link to create issue for new masjid
 - allow arbitrary key-value fields

@@ -12,11 +12,13 @@ let masaajid = [
   './lib/batavia-islamic-center',
   './lib/chicago-islamic-center',
   './lib/chicago-mosque',
+  './lib/cimic',
   './lib/dar-us-sunnah-evanston',
   './lib/downtown-islamic-center-chicago',
   './lib/fox-valley-muslim-community-center',
   './lib/icc-des-plaines',
   './lib/icci-chicago',
+  './lib/islamic-center-of-contra-costa',
   './lib/islamic-center-of-naperville',
   './lib/islamic-center-of-oakbrook-terrace',
   './lib/islamic-center-of-romeoville',
@@ -37,11 +39,13 @@ let masaajid = [
   './lib/masjid-uthman-lombard',
   './lib/mca-bay-area',
   './lib/mcc-chicago',
+  './lib/mcc-east-bay-pleasanton',
   './lib/mecca-center',
   './lib/mosque-foundation-bridgeview',
   './lib/muslim-association-of-bolingbrook',
   './lib/muslim-society-inc-bloomingdale',
   './lib/prayer-center-of-orland-park',
+  './lib/san-ramon-valley-islamic-center',
   './lib/shariaboard-chicago'
 ]
 
