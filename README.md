@@ -63,7 +63,7 @@ TODO
 - uuid
 - https://google-developers.appspot.com/maps/documentation/utils/geocoder/
   - address, lat/lng, placeid
-- timezone
+- timezone - https://time.is/
 - date
 - standardjs, editorconfig
 - chrome dev tools
