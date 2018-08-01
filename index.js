@@ -26,6 +26,7 @@ let masaajid = [
   './lib/islamic-center-of-wheaton',
   './lib/islamic-foundation-of-southwest-suburbs',
   './lib/islamic-foundation-of-villa-park',
+  './lib/islamic-society-of-delaware',
   './lib/isns-rolling-meadows',
   './lib/madani-masjid-westmont',
   './lib/makki-masjid-chicago',
