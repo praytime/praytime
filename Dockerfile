@@ -13,12 +13,12 @@ RUN apk add --no-cache \
     go get golang.org/x/net/context && \ 
     go get google.golang.org/genproto/googleapis/type/latlng
 
-WORKDIR /usr/src/app
+WORKDIR /root/go/src/github.com/praytime/praytime
 
-COPY package.json package-lock.json /usr/src/app/
+COPY package.json package-lock.json /root/go/src/github.com/praytime/praytime/
 
 RUN npm install --production
 
-COPY . /usr/src/app/
+COPY . /root/go/src/github.com/praytime/praytime/
 
 ENTRYPOINT [ "./entrypoint.sh" ]
