@@ -11,7 +11,7 @@ PROJECT_DIR="${SCRIPT_DIR}/.."
 trap exiterr EXIT
 
 
-go run "${SCRIPT_DIR}/db-save/main.go" <&0
+go run "${PROJECT_DIR}/go/cmd/praytime-load/main.go" <&0
 
 
 trap - EXIT
