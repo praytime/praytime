@@ -40,6 +40,9 @@ func main() {
 			}
 			break
 		}
+
+		v.NormalizeTimes()
+
 		log.Printf("Uploading: %+v", v)
 
 		docName := v.UUID4

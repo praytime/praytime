@@ -3,12 +3,9 @@
 - add direct link support, query arg parsing
 - add link to create issue for new masjid
 - allow arbitrary key-value fields
-- sanitize data in page function
-  - tolower
-  - extract time only
 - backend
   - golang refactor to node
-  - db-save
+  - praytime-load
     - flag newly empty fields
 - UI
   - host all sources

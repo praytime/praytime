@@ -87,7 +87,7 @@ const main = async () => {
         console.log('%j', r)
       })
     } catch (err) {
-      console.error('caught error:' + err)
+      console.error('caught error processing ' + masjid + ':' + err)
       console.trace()
     }
   }
