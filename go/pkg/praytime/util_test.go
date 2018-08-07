@@ -33,3 +33,23 @@ func TestNormalizeTime(t *testing.T) {
 		t.Errorf("expecting 12:00p, got %s", r[1])
 	}
 }
+
+func TestHourMinutesToMinutes(t *testing.T) {
+	var r int
+	r, _ = HourMinutesToMinutes("01:00a")
+	if r != 60 {
+		t.Errorf("expecting 60, got %d", r)
+	}
+	r, _ = HourMinutesToMinutes("12:00p")
+	if r != 720 {
+		t.Errorf("expecting 720, got %d", r)
+	}
+	r, _ = HourMinutesToMinutes("12:00a")
+	if r != 0 {
+		t.Errorf("expecting 0, got %d", r)
+	}
+	r, _ = HourMinutesToMinutes("11:59p")
+	if r != 1439 {
+		t.Errorf("expecting 1439, got %d", r)
+	}
+}

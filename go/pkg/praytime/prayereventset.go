@@ -8,22 +8,30 @@ import (
 
 // PrayerEventSet - a daily set of prayer times in a single location
 type PrayerEventSet struct {
-	Name         string         `json:"name" firestore:"name"`
-	URL          string         `json:"url,omitempty" firestore:"url,omitempty"`
-	Address      string         `json:"address,omitempty" firestore:"address,omitempty"`
-	Geo          *latlng.LatLng `json:"geo" firestore:"geo"`
-	UUID4        string         `json:"uuid4" firestore:"uuid4"`
-	CrawlTime    time.Time      `json:"crawlTime" firestore:"crawlTime"`
-	TimeZoneID   string         `json:"timeZoneId" firestore:"timeZoneId"`
-	PlaceID      string         `json:"placeId" firestore:"placeId"`
-	FajrIqama    string         `json:"fajrIqama,omitempty" firestore:"fajrIqama,omitempty"`
-	ZuhrIqama    string         `json:"zuhrIqama,omitempty" firestore:"zuhrIqama,omitempty"`
-	AsrIqama     string         `json:"asrIqama,omitempty" firestore:"asrIqama,omitempty"`
-	MaghribIqama string         `json:"maghribIqama,omitempty" firestore:"maghribIqama,omitempty"`
-	IshaIqama    string         `json:"ishaIqama,omitempty" firestore:"ishaIqama,omitempty"`
-	Juma1        string         `json:"juma1,omitempty" firestore:"juma1,omitempty"`
-	Juma2        string         `json:"juma2,omitempty" firestore:"juma2,omitempty"`
-	Juma3        string         `json:"juma3,omitempty" firestore:"juma3,omitempty"`
+	Name                 string         `json:"name" firestore:"name"`
+	URL                  string         `json:"url,omitempty" firestore:"url,omitempty"`
+	Address              string         `json:"address,omitempty" firestore:"address,omitempty"`
+	Geo                  *latlng.LatLng `json:"geo" firestore:"geo"`
+	UUID4                string         `json:"uuid4" firestore:"uuid4"`
+	CrawlTime            time.Time      `json:"crawlTime" firestore:"crawlTime"`
+	TimeZoneID           string         `json:"timeZoneId" firestore:"timeZoneId"`
+	PlaceID              string         `json:"placeId" firestore:"placeId"`
+	FajrIqama            string         `json:"fajrIqama,omitempty" firestore:"fajrIqama,omitempty"`
+	FajrIqamaModified    time.Time      `json:"fajrIqamaModified,omitempty" firestore:"fajrIqamaModified,omitempty"`
+	ZuhrIqama            string         `json:"zuhrIqama,omitempty" firestore:"zuhrIqama,omitempty"`
+	ZuhrIqamaModified    time.Time      `json:"zuhrIqamaModified,omitempty" firestore:"zuhrIqamaModified,omitempty"`
+	AsrIqama             string         `json:"asrIqama,omitempty" firestore:"asrIqama,omitempty"`
+	AsrIqamaModified     time.Time      `json:"asrIqamaModified,omitempty" firestore:"asrIqamaModified,omitempty"`
+	MaghribIqama         string         `json:"maghribIqama,omitempty" firestore:"maghribIqama,omitempty"`
+	MaghribIqamaModified time.Time      `json:"maghribIqamaModified,omitempty" firestore:"maghribIqamaModified,omitempty"`
+	IshaIqama            string         `json:"ishaIqama,omitempty" firestore:"ishaIqama,omitempty"`
+	IshaIqamaModified    time.Time      `json:"ishaIqamaModified,omitempty" firestore:"ishaIqamaModified,omitempty"`
+	Juma1                string         `json:"juma1,omitempty" firestore:"juma1,omitempty"`
+	Juma1Modified        time.Time      `json:"juma1Modified,omitempty" firestore:"juma1Modified,omitempty"`
+	Juma2                string         `json:"juma2,omitempty" firestore:"juma2,omitempty"`
+	Juma2Modified        time.Time      `json:"juma2Modified,omitempty" firestore:"juma2Modified,omitempty"`
+	Juma3                string         `json:"juma3,omitempty" firestore:"juma3,omitempty"`
+	Juma3Modified        time.Time      `json:"juma3Modified,omitempty" firestore:"juma3Modified,omitempty"`
 }
 
 // NormalizeTimes normalizes prayer times into HH:MMm
@@ -86,5 +94,71 @@ func (p *PrayerEventSet) NormalizeTimes() *PrayerEventSet {
 		p.Juma3 = html.EscapeString(p.Juma3)
 	}
 
+	return p
+}
+
+// ignore changes in time less than minutes
+func ignoreModification(curr, prev string, minutes uint) bool {
+	prevMin, err := HourMinutesToMinutes(curr)
+	if err != nil {
+		return false
+	}
+	currMin, err := HourMinutesToMinutes(prev)
+	if err != nil {
+		return false
+	}
+
+	return Abs(prevMin-currMin) < minutes
+}
+
+// CompareToPrevious flags changed times and updates Modified timestamps
+func (p *PrayerEventSet) CompareToPrevious(prev *PrayerEventSet) *PrayerEventSet {
+	if p.FajrIqama != prev.FajrIqama && !ignoreModification(p.FajrIqama, prev.FajrIqama, 4) {
+		p.FajrIqamaModified = time.Now()
+	} else {
+		p.FajrIqamaModified = prev.FajrIqamaModified
+	}
+
+	if p.ZuhrIqama != prev.ZuhrIqama && !ignoreModification(p.ZuhrIqama, prev.ZuhrIqama, 4) {
+		p.ZuhrIqamaModified = time.Now()
+	} else {
+		p.ZuhrIqamaModified = prev.ZuhrIqamaModified
+	}
+
+	if p.AsrIqama != prev.AsrIqama && !ignoreModification(p.AsrIqama, prev.AsrIqama, 4) {
+		p.AsrIqamaModified = time.Now()
+	} else {
+		p.AsrIqamaModified = prev.AsrIqamaModified
+	}
+
+	if p.MaghribIqama != prev.MaghribIqama && !ignoreModification(p.MaghribIqama, prev.MaghribIqama, 4) {
+		p.MaghribIqamaModified = time.Now()
+	} else {
+		p.MaghribIqamaModified = prev.MaghribIqamaModified
+	}
+
+	if p.IshaIqama != prev.IshaIqama && !ignoreModification(p.IshaIqama, prev.IshaIqama, 4) {
+		p.IshaIqamaModified = time.Now()
+	} else {
+		p.IshaIqamaModified = prev.IshaIqamaModified
+	}
+
+	if p.Juma1 != prev.Juma1 && !ignoreModification(p.Juma1, prev.Juma1, 4) {
+		p.Juma1Modified = time.Now()
+	} else {
+		p.Juma1Modified = prev.Juma1Modified
+	}
+
+	if p.Juma2 != prev.Juma2 && !ignoreModification(p.Juma2, prev.Juma2, 4) {
+		p.Juma2Modified = time.Now()
+	} else {
+		p.Juma2Modified = prev.Juma2Modified
+	}
+
+	if p.Juma3 != prev.Juma3 && !ignoreModification(p.Juma3, prev.Juma3, 4) {
+		p.Juma3Modified = time.Now()
+	} else {
+		p.Juma3Modified = prev.Juma3Modified
+	}
 	return p
 }

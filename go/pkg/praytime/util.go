@@ -1,6 +1,7 @@
 package praytime
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 )
@@ -52,4 +53,35 @@ func NormalizeTime(t string, p Prayer) []string {
 		rv = append(rv, fmt.Sprintf("%d:%02d%s", hour, minute, meridiem))
 	}
 	return rv
+}
+
+// HourMinutesToMinutes converts a normalized time string hh:mmp to minutes
+// since midnight
+func HourMinutesToMinutes(t string) (int, error) {
+	var hour, minute int
+	var meridiem string
+	matches, err := fmt.Sscanf(t, "%d:%d%s", &hour, &minute, &meridiem)
+	if err != nil {
+		return 0, err
+	}
+	if matches != 3 || hour < 0 || hour > 12 || minute < 0 || minute > 59 || (meridiem != "a" && meridiem != "p") {
+		return 0, errors.New("invalid time")
+	}
+
+	if hour == 12 {
+		hour = 0
+	}
+	if meridiem == "p" {
+		hour += 12
+	}
+
+	return 60*hour + minute, nil
+}
+
+// Abs returns absolute value of x
+func Abs(x int) uint {
+	if x < 0 {
+		return uint(-x)
+	}
+	return uint(x)
 }

@@ -6,6 +6,8 @@ import (
 	"golang.org/x/net/context"
 	//	"google.golang.org/api/iterator"
 	"github.com/praytime/praytime/go/pkg/praytime"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"io"
 	"log"
 	"os"
@@ -43,11 +45,24 @@ func main() {
 
 		v.NormalizeTimes()
 
-		log.Printf("Uploading: %+v", v)
-
 		docName := v.UUID4
 
 		evt := client.Collection("Events").Doc(docName)
+
+		currEvtSnapshot, err := evt.Get(ctx)
+		if err != nil && grpc.Code(err) != codes.NotFound {
+			log.Printf("[ERROR] error getting prev value of %s[%s]: %v", v.Name, docName, err)
+			continue
+		}
+
+		if currEvtSnapshot.Exists() {
+			// check for changes
+			var c praytime.PrayerEventSet
+			currEvtSnapshot.DataTo(&c)
+			v.CompareToPrevious(&c)
+		}
+
+		log.Printf("Uploading: %+v", v)
 
 		if _, err = evt.Set(ctx, v); err != nil {
 			log.Printf("[ERROR] Failed setting %s[%s]: %v", v.Name, docName, err)
