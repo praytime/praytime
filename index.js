@@ -6,7 +6,7 @@ const apifyClient = new ApifyClient({
 const lib = require('./lib')
 
 let masaajid = [
-  './lib/adams-center/',
+  './lib/adams-center',
   './lib/al-hira-community-center-wooddale',
   './lib/aqsa-community-center-plainfield',
   './lib/at-takaful-islamic-society-chicago',
@@ -14,6 +14,7 @@ let masaajid = [
   './lib/chicago-islamic-center',
   './lib/chicago-mosque',
   './lib/cimic',
+  './lib/dar-al-hijrah-va',
   './lib/dar-us-sunnah-evanston',
   './lib/downtown-islamic-center-chicago',
   './lib/fox-valley-muslim-community-center',
@@ -42,10 +43,12 @@ let masaajid = [
   './lib/mca-bay-area',
   './lib/mcc-chicago',
   './lib/mcc-east-bay-pleasanton',
+  './lib/mclean-islamic-center-va',
   './lib/mecca-center',
   './lib/mosque-foundation-bridgeview',
   './lib/muslim-association-of-bolingbrook',
   './lib/muslim-society-inc-bloomingdale',
+  './lib/mustafa-center-va',
   './lib/prayer-center-of-orland-park',
   './lib/san-ramon-valley-islamic-center',
   './lib/shariaboard-chicago'
