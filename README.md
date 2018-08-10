@@ -70,6 +70,8 @@ TODO
   - selector vs xpath
   - iframes
   - regexs
+- document common masjid website mistakes
+  - no address on website
 
 ## roadmap
 
