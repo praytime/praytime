@@ -31,6 +31,7 @@ let masaajid = [
   './lib/islamic-foundation-of-villa-park',
   './lib/islamic-society-of-delaware',
   './lib/isns-rolling-meadows',
+  './lib/light-of-islam-harvey',
   './lib/madani-masjid-westmont',
   './lib/makki-masjid-chicago',
   './lib/maps-redmond',
