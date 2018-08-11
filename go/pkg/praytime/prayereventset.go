@@ -1,6 +1,7 @@
 package praytime
 
 import (
+	"errors"
 	"google.golang.org/genproto/googleapis/type/latlng"
 	"html"
 	"time"
@@ -112,53 +113,77 @@ func ignoreModification(curr, prev string, minutes uint) bool {
 }
 
 // CompareToPrevious flags changed times and updates Modified timestamps
-func (p *PrayerEventSet) CompareToPrevious(prev *PrayerEventSet) *PrayerEventSet {
+func (p *PrayerEventSet) CompareToPrevious(prev *PrayerEventSet) (*PrayerEventSet, error) {
 	if p.FajrIqama != prev.FajrIqama && !ignoreModification(p.FajrIqama, prev.FajrIqama, 4) {
+		if p.FajrIqama == "" {
+			return nil, errors.New("Fajr is deleted")
+		}
 		p.FajrIqamaModified = time.Now()
 	} else {
 		p.FajrIqamaModified = prev.FajrIqamaModified
 	}
 
 	if p.ZuhrIqama != prev.ZuhrIqama && !ignoreModification(p.ZuhrIqama, prev.ZuhrIqama, 4) {
+		if p.ZuhrIqama == "" {
+			return nil, errors.New("Zuhr is deleted")
+		}
 		p.ZuhrIqamaModified = time.Now()
 	} else {
 		p.ZuhrIqamaModified = prev.ZuhrIqamaModified
 	}
 
 	if p.AsrIqama != prev.AsrIqama && !ignoreModification(p.AsrIqama, prev.AsrIqama, 4) {
+		if p.AsrIqama == "" {
+			return nil, errors.New("Asr is deleted")
+		}
 		p.AsrIqamaModified = time.Now()
 	} else {
 		p.AsrIqamaModified = prev.AsrIqamaModified
 	}
 
 	if p.MaghribIqama != prev.MaghribIqama && !ignoreModification(p.MaghribIqama, prev.MaghribIqama, 4) {
+		if p.MaghribIqama == "" {
+			return nil, errors.New("Maghrib is deleted")
+		}
 		p.MaghribIqamaModified = time.Now()
 	} else {
 		p.MaghribIqamaModified = prev.MaghribIqamaModified
 	}
 
 	if p.IshaIqama != prev.IshaIqama && !ignoreModification(p.IshaIqama, prev.IshaIqama, 4) {
+		if p.IshaIqama == "" {
+			return nil, errors.New("Isha is deleted")
+		}
 		p.IshaIqamaModified = time.Now()
 	} else {
 		p.IshaIqamaModified = prev.IshaIqamaModified
 	}
 
 	if p.Juma1 != prev.Juma1 && !ignoreModification(p.Juma1, prev.Juma1, 4) {
+		if p.Juma1 == "" {
+			return nil, errors.New("Juma1 is deleted")
+		}
 		p.Juma1Modified = time.Now()
 	} else {
 		p.Juma1Modified = prev.Juma1Modified
 	}
 
 	if p.Juma2 != prev.Juma2 && !ignoreModification(p.Juma2, prev.Juma2, 4) {
+		if p.Juma2 == "" {
+			return nil, errors.New("Juma2 is deleted")
+		}
 		p.Juma2Modified = time.Now()
 	} else {
 		p.Juma2Modified = prev.Juma2Modified
 	}
 
 	if p.Juma3 != prev.Juma3 && !ignoreModification(p.Juma3, prev.Juma3, 4) {
+		if p.Juma3 == "" {
+			return nil, errors.New("Juma3 is deleted")
+		}
 		p.Juma3Modified = time.Now()
 	} else {
 		p.Juma3Modified = prev.Juma3Modified
 	}
-	return p
+	return p, nil
 }

@@ -59,7 +59,10 @@ func main() {
 			// check for changes
 			var c praytime.PrayerEventSet
 			currEvtSnapshot.DataTo(&c)
-			v.CompareToPrevious(&c)
+			if _, err = v.CompareToPrevious(&c); err != nil {
+				log.Printf("[ERROR] error processing %s: %v", v.Name, err)
+				continue
+			}
 		}
 
 		log.Printf("Uploading: %+v", v)
