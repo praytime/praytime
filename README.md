@@ -72,6 +72,8 @@ TODO
   - regexs
 - document common masjid website mistakes
   - no address on website
+- examples
+  - [masjidal](lib/aie-huntley/index.js)
 
 ## roadmap
 

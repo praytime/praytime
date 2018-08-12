@@ -7,6 +7,7 @@ const lib = require('./lib')
 
 let masaajid = [
   './lib/adams-center',
+  './lib/aie-huntley',
   './lib/al-hira-community-center-wooddale',
   './lib/aqsa-community-center-plainfield',
   './lib/at-takaful-islamic-society-chicago',
