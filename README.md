@@ -62,7 +62,18 @@ TODO
 
 - uuid
 - https://google-developers.appspot.com/maps/documentation/utils/geocoder/
-  - address, lat/lng, placeid
+  - address:
+    ```
+    copy(document.evaluate('//*[@id="result-0"]/table/tbody/tr/td[2]/p[2]/strong/following-sibling::text()[1]', document, null, XPathResult.STRING_TYPE, null).stringValue.trim())
+    ```
+  - lat/lng:
+    ```
+    copy(document.evaluate('//*[@id="result-0"]/table/tbody/tr/td[2]/p[3]/strong/following-sibling::text()[1]', document, null, XPathResult.STRING_TYPE, null).stringValue.match(/[\-\d.]+,[\-\d.]+/)[0])
+    ```
+  - placeid
+    ```
+    copy(document.evaluate('//*[@id="details-result-0"]/p[3]/a', document, null, XPathResult.STRING_TYPE, null).stringValue.trim())
+    ```
 - timezone - https://time.is/
 - date
 - standardjs, editorconfig
