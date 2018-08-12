@@ -75,6 +75,7 @@ TODO
 - examples
   - [masjidal](lib/aie-huntley/index.js)
   - [mohid](lib/islamic-center-of-frisco/index.js)
+  - axios / cheerio, selector based: [mcc-silver-springs](lib/mcc-silver-springs/index.js)
 
 ## roadmap
 

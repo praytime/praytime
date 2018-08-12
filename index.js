@@ -49,6 +49,7 @@ let masaajid = [
   './lib/mca-bay-area',
   './lib/mcc-chicago',
   './lib/mcc-east-bay-pleasanton',
+  './lib/mcc-silver-springs',
   './lib/mclean-islamic-center-va',
   './lib/mcmc-new-jersey',
   './lib/mecca-center',
