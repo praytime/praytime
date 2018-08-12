@@ -74,6 +74,7 @@ TODO
   - no address on website
 - examples
   - [masjidal](lib/aie-huntley/index.js)
+  - [mohid](lib/islamic-center-of-frisco/index.js)
 
 ## roadmap
 
