@@ -19,6 +19,7 @@ let masaajid = [
   './lib/cimic',
   './lib/dar-al-hijrah-va',
   './lib/dar-al-taqwa-ellicot-city',
+  './lib/darul-huda-springfield',
   './lib/darul-quran-chicago',
   './lib/dar-us-salaam-college-park',
   './lib/dar-us-sunnah-evanston',
