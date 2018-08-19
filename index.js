@@ -24,6 +24,7 @@ let masaajid = [
   './lib/dar-us-salaam-college-park',
   './lib/dar-us-sunnah-evanston',
   './lib/downtown-islamic-center-chicago',
+  './lib/east-plano-islamic-center',
   './lib/fox-valley-muslim-community-center',
   './lib/iacc-plano',
   './lib/icc-des-plaines',
