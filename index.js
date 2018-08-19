@@ -10,6 +10,7 @@ let masaajid = [
   './lib/aie-huntley',
   './lib/al-hira-community-center-wooddale',
   './lib/al-minhaal-academy-new-jersey',
+  './lib/amco-lake-in-the-hills',
   './lib/aqsa-community-center-plainfield',
   './lib/at-takaful-islamic-society-chicago',
   './lib/baitul-mukarram-arlington',
