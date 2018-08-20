@@ -74,6 +74,17 @@ TODO
     ```
     copy(document.evaluate('//*[@id="details-result-0"]/p[3]/a', document, null, XPathResult.STRING_TYPE, null).stringValue.trim())
     ```
+  - all in one:
+    ```
+		copy({
+			address: document.evaluate('//*[@id="result-0"]/table/tbody/tr/td[2]/p[2]/strong/following-sibling::text()[1]', document, null, XPathResult.STRING_TYPE, null).stringValue.trim(),
+			geo: {
+				latitude: Number(document.evaluate('//*[@id="result-0"]/table/tbody/tr/td[2]/p[3]/strong/following-sibling::text()[1]', document, null, XPathResult.STRING_TYPE, null).stringValue.match(/[-\d.]+,[-\d.]+/)[0].split(',')[0]),
+				longitude: Number(document.evaluate('//*[@id="result-0"]/table/tbody/tr/td[2]/p[3]/strong/following-sibling::text()[1]', document, null, XPathResult.STRING_TYPE, null).stringValue.match(/[-\d.]+,[-\d.]+/)[0].split(',')[1])
+			},
+			placeId: document.evaluate('//*[@id="details-result-0"]/p[3]/a', document, null, XPathResult.STRING_TYPE, null).stringValue.trim()
+		})
+    ```
 - timezone - https://time.is/
 - date
 - standardjs, editorconfig
