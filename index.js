@@ -15,6 +15,7 @@ let masaajid = [
   './lib/at-takaful-islamic-society-chicago',
   './lib/baitul-mukarram-arlington',
   './lib/batavia-islamic-center',
+  './lib/bilal-islamic-center-everett',
   // './lib/chicago-islamic-center',
   './lib/chicago-mosque',
   './lib/cimic',
@@ -27,6 +28,7 @@ let masaajid = [
   './lib/dma-seattle',
   './lib/downtown-islamic-center-chicago',
   './lib/east-plano-islamic-center',
+  './lib/emas-seattle',
   './lib/farooq-masjid-mountlake-terrace',
   './lib/fox-valley-muslim-community-center',
   './lib/iacc-plano',
@@ -76,8 +78,10 @@ let masaajid = [
   './lib/new-brunswick-islamic-center-new-jersey',
   './lib/pgma-lanham',
   './lib/prayer-center-of-orland-park',
+  './lib/sammamish-mosque',
   './lib/san-ramon-valley-islamic-center',
-  './lib/shariaboard-chicago'
+  './lib/shariaboard-chicago',
+  './lib/snoqualmie-mosque'
 ]
 
 const main = async () => {
