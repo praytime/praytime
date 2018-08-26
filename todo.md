@@ -1,12 +1,16 @@
 # TODO
+- push notifications on change
+  - add auth (anon)
+  - add db rules for id validation https://firebase.google.com/docs/firestore/security/rules-conditions
+  - enable fcm in service worker
+  - prompt for messaging permission
+  - add buttons to subscribe for notifications
+  - tables joining uid - masjid interest - fcm tokens
+  - implement fcm token TTL
+  - golang send message on change
 - split nightly by timezone
-- add direct link support, query arg parsing
-- add link to create issue for new masjid
+- add direct link support
 - allow arbitrary key-value fields
-- backend
-  - golang refactor to node
-  - praytime-load
-    - flag newly empty fields
 - UI
   - host all sources
   - footer
@@ -16,7 +20,6 @@
     - scraping tips
       - dev console
       - iframe
-- add timezones
 - scrape / calculate adhan timings
 - site features
   - web form to add css selector paths for particular times
