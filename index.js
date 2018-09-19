@@ -57,9 +57,11 @@ let masaajid = [
   './lib/islamic-society-of-baltimore',
   './lib/islamic-society-of-delaware',
   './lib/isns-rolling-meadows',
+  './lib/keller-islamic-center',
   './lib/light-of-islam-harvey',
   './lib/madani-masjid-westmont',
   './lib/makki-masjid-chicago',
+  './lib/mansfield-islamic-center-arlington',
   './lib/maps-redmond',
   './lib/masjid-al-huda-schaumburg',
   './lib/masjid-al-islam-dallas',
@@ -89,7 +91,8 @@ let masaajid = [
   './lib/sammamish-mosque',
   './lib/san-ramon-valley-islamic-center',
   './lib/shariaboard-chicago',
-  './lib/snoqualmie-mosque'
+  './lib/snoqualmie-mosque',
+  './lib/zia-ul-quran-arlington'
 ]
 
 const main = async () => {
