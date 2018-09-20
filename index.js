@@ -40,6 +40,7 @@ let masaajid = [
   './lib/icops-lynnwood',
   './lib/ifn-libertyville',
   './lib/iscj-new-jersey',
+  './lib/islamic-association-of-fort-worth',
   './lib/islamic-association-of-lewisville-flower-mound',
   './lib/islamic-association-of-lewisville-flower-mound',
   './lib/islamic-center-of-contra-costa',
