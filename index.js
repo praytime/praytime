@@ -45,6 +45,7 @@ let masaajid = [
   './lib/islamic-association-of-lewisville-flower-mound',
   './lib/islamic-center-of-contra-costa',
   './lib/islamic-center-of-frisco',
+  './lib/islamic-center-of-irving',
   './lib/islamic-center-of-naperville',
   './lib/islamic-center-of-northern-virginia',
   './lib/islamic-center-of-oakbrook-terrace',
