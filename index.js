@@ -40,9 +40,13 @@ let masaajid = [
   './lib/icops-lynnwood',
   './lib/ifn-libertyville',
   './lib/iscj-new-jersey',
+  './lib/islamic-association-of-allen',
   './lib/islamic-association-of-fort-worth',
   './lib/islamic-association-of-lewisville-flower-mound',
   './lib/islamic-association-of-lewisville-flower-mound',
+  './lib/islamic-association-of-mid-cities-colleyville',
+  './lib/islamic-association-of-north-texas',
+  './lib/islamic-association-of-tarrant-county',
   './lib/islamic-center-of-contra-costa',
   './lib/islamic-center-of-frisco',
   './lib/islamic-center-of-irving',
@@ -62,6 +66,7 @@ let masaajid = [
   './lib/keller-islamic-center',
   './lib/light-of-islam-harvey',
   './lib/madani-masjid-westmont',
+  './lib/madinah-masjid-of-carrollton',
   './lib/makki-masjid-chicago',
   './lib/mansfield-islamic-center-arlington',
   './lib/maps-redmond',
@@ -94,6 +99,7 @@ let masaajid = [
   './lib/san-ramon-valley-islamic-center',
   './lib/shariaboard-chicago',
   './lib/snoqualmie-mosque',
+  './lib/valley-ranch-islamic-center',
   './lib/zia-ul-quran-arlington'
 ]
 
