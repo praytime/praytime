@@ -17,7 +17,7 @@
   },
   "homepage": "https://github.com/praytime/praytime#readme",
   "dependencies": {
-    "apify-client": "^0.2.10",
+    "apify-client": "^0.2.13",
     "axios": "^0.18.0",
     "cheerio": "^1.0.0-rc.2"
   }

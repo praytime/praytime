@@ -74,6 +74,17 @@ TODO
     ```
     copy(document.evaluate('//*[@id="details-result-0"]/p[3]/a', document, null, XPathResult.STRING_TYPE, null).stringValue.trim())
     ```
+  - all in one:
+    ```
+    copy({
+      address: document.evaluate('//*[@id="result-0"]/table/tbody/tr/td[2]/p[2]/strong/following-sibling::text()[1]', document, null, XPathResult.STRING_TYPE, null).stringValue.trim(),
+      geo: {
+        latitude: Number(document.evaluate('//*[@id="result-0"]/table/tbody/tr/td[2]/p[3]/strong/following-sibling::text()[1]', document, null, XPathResult.STRING_TYPE, null).stringValue.match(/[-\d.]+,[-\d.]+/)[0].split(',')[0]),
+        longitude: Number(document.evaluate('//*[@id="result-0"]/table/tbody/tr/td[2]/p[3]/strong/following-sibling::text()[1]', document, null, XPathResult.STRING_TYPE, null).stringValue.match(/[-\d.]+,[-\d.]+/)[0].split(',')[1])
+      },
+      placeId: document.evaluate('//*[@id="details-result-0"]/p[3]/a', document, null, XPathResult.STRING_TYPE, null).stringValue.trim()
+    })
+    ```
 - timezone - https://time.is/
 - date
 - standardjs, editorconfig
@@ -87,6 +98,20 @@ TODO
   - [masjidal](lib/aie-huntley/index.js)
   - [mohid](lib/islamic-center-of-frisco/index.js)
   - axios / cheerio, selector based: [mcc-silver-springs](lib/mcc-silver-springs/index.js)
+
+### running praytime-load
+
+1. install golang, make a symlink ~/go/src/github.com/praytime/praytime to root of this repo
+2. `go get github.com/praytime/praytime/go/cmd/praytime-load`
+3. Add following vars to .env:
+```
+GOOGLE_APPLICATION_CREDENTIALS=...
+GCLOUD_PROJECT=...
+```
+4. Should be able to run now:
+```
+./script/run.sh | ./script/save.sh
+```
 
 ## roadmap
 

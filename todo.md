@@ -1,8 +1,16 @@
 # TODO
-- add direct link support, query arg parsing
+- push notifications on change
+  - add auth (anon)
+  - add db rules for id validation https://firebase.google.com/docs/firestore/security/rules-conditions
+  - enable fcm in service worker
+  - prompt for messaging permission
+  - add buttons to subscribe for notifications
+  - tables joining uid - masjid interest - fcm tokens
+  - implement fcm token TTL
+  - golang send message on change
+- split nightly by timezone
+- add direct link support
 - allow arbitrary key-value fields
-- backend
-  - notify on change
 - UI
   - footer
 - doc
