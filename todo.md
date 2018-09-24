@@ -1,14 +1,9 @@
 # TODO
-- split nightly by timezone
 - add direct link support, query arg parsing
-- add link to create issue for new masjid
 - allow arbitrary key-value fields
 - backend
-  - golang refactor to node
-  - praytime-load
-    - flag newly empty fields
+  - notify on change
 - UI
-  - host all sources
   - footer
 - doc
   - how to add a new masjid
@@ -16,10 +11,11 @@
     - scraping tips
       - dev console
       - iframe
-- add timezones
 - scrape / calculate adhan timings
+- calendar ocr to table
 - site features
   - web form to add css selector paths for particular times
   - edit times (verify based on GPS)
   - become 'owner' of masjid
 - auto-generate google calendar
+- easyredir for praytime.us
