@@ -12,7 +12,6 @@
 - add direct link support
 - allow arbitrary key-value fields
 - UI
-  - host all sources
   - footer
 - doc
   - how to add a new masjid
@@ -21,8 +20,10 @@
       - dev console
       - iframe
 - scrape / calculate adhan timings
+- calendar ocr to table
 - site features
   - web form to add css selector paths for particular times
   - edit times (verify based on GPS)
   - become 'owner' of masjid
 - auto-generate google calendar
+- easyredir for praytime.us
