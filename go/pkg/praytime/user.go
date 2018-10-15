@@ -2,5 +2,6 @@ package praytime
 
 // User - Represents user table
 type User struct {
-	FCMToken string `json:"fcmToken" firestore:"fcmToken"`
+	ID        string          `json:"id" firestore:"id"`
+	FCMTokens map[string]bool `json:"fcmTokens" firestore:"fcmTokens"`
 }

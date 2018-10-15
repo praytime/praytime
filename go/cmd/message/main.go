@@ -52,24 +52,27 @@ func main() {
 
 	// This registration token comes from the client FCM SDKs.
 
-	log.Println("Got token " + user.FCMToken)
+	for fcmToken := range user.FCMTokens {
+		log.Println("Got token " + fcmToken)
 
-	// See documentation on defining a message payload.
-	message := &messaging.Message{
-		Data: map[string]string{
-			"score": "850",
-			"time":  "2:45",
-		},
-		Token: user.FCMToken,
+		// See documentation on defining a message payload.
+		message := &messaging.Message{
+			Data: map[string]string{
+				"score": "850",
+				"time":  "2:45",
+			},
+			Token: fcmToken,
+		}
+
+		// Send a message to the device corresponding to the provided
+		// registration token.
+
+		if response, err := messagingClient.Send(ctx, message); err != nil {
+			log.Fatalln(err)
+		} else {
+			// Response is a message ID string.
+			log.Println("Successfully sent message: " + response)
+		}
 	}
 
-	// Send a message to the device corresponding to the provided
-	// registration token.
-
-	if response, err := messagingClient.Send(ctx, message); err != nil {
-		log.Fatalln(err)
-	} else {
-		// Response is a message ID string.
-		log.Println("Successfully sent message: " + response)
-	}
 }
