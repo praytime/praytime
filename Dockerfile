@@ -9,7 +9,7 @@ RUN apk add --no-cache \
         musl-dev \
         nodejs-npm \
         python && \
-    go get cloud.google.com/go/firestore && \
+    go get firebase.google.com/go && \
     go get golang.org/x/net/context && \ 
     go get google.golang.org/genproto/googleapis/type/latlng
 

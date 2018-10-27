@@ -113,77 +113,87 @@ func ignoreModification(curr, prev string, minutes uint) bool {
 }
 
 // CompareToPrevious flags changed times and updates Modified timestamps
-func (p *PrayerEventSet) CompareToPrevious(prev *PrayerEventSet) (*PrayerEventSet, error) {
+func (p *PrayerEventSet) CompareToPrevious(prev *PrayerEventSet) (*PrayerEventSet, []string, error) {
+	diff := make([]string, 0, 10)
+
 	if p.FajrIqama != prev.FajrIqama && !ignoreModification(p.FajrIqama, prev.FajrIqama, 4) {
 		if p.FajrIqama == "" {
-			return nil, errors.New("Fajr is deleted")
+			return nil, nil, errors.New("Fajr is deleted")
 		}
 		p.FajrIqamaModified = time.Now()
+		diff = append(diff, "Fajr: "+p.FajrIqama)
 	} else {
 		p.FajrIqamaModified = prev.FajrIqamaModified
 	}
 
 	if p.ZuhrIqama != prev.ZuhrIqama && !ignoreModification(p.ZuhrIqama, prev.ZuhrIqama, 4) {
 		if p.ZuhrIqama == "" {
-			return nil, errors.New("Zuhr is deleted")
+			return nil, nil, errors.New("Zuhr is deleted")
 		}
 		p.ZuhrIqamaModified = time.Now()
+		diff = append(diff, "Zuhr: "+p.ZuhrIqama)
 	} else {
 		p.ZuhrIqamaModified = prev.ZuhrIqamaModified
 	}
 
 	if p.AsrIqama != prev.AsrIqama && !ignoreModification(p.AsrIqama, prev.AsrIqama, 4) {
 		if p.AsrIqama == "" {
-			return nil, errors.New("Asr is deleted")
+			return nil, nil, errors.New("Asr is deleted")
 		}
 		p.AsrIqamaModified = time.Now()
+		diff = append(diff, "Asr: "+p.AsrIqama)
 	} else {
 		p.AsrIqamaModified = prev.AsrIqamaModified
 	}
 
 	if p.MaghribIqama != prev.MaghribIqama && !ignoreModification(p.MaghribIqama, prev.MaghribIqama, 4) {
 		if p.MaghribIqama == "" {
-			return nil, errors.New("Maghrib is deleted")
+			return nil, nil, errors.New("Maghrib is deleted")
 		}
 		p.MaghribIqamaModified = time.Now()
+		diff = append(diff, "Maghrib: "+p.MaghribIqama)
 	} else {
 		p.MaghribIqamaModified = prev.MaghribIqamaModified
 	}
 
 	if p.IshaIqama != prev.IshaIqama && !ignoreModification(p.IshaIqama, prev.IshaIqama, 4) {
 		if p.IshaIqama == "" {
-			return nil, errors.New("Isha is deleted")
+			return nil, nil, errors.New("Isha is deleted")
 		}
 		p.IshaIqamaModified = time.Now()
+		diff = append(diff, "Isha: "+p.IshaIqama)
 	} else {
 		p.IshaIqamaModified = prev.IshaIqamaModified
 	}
 
 	if p.Juma1 != prev.Juma1 && !ignoreModification(p.Juma1, prev.Juma1, 4) {
 		if p.Juma1 == "" {
-			return nil, errors.New("Juma1 is deleted")
+			return nil, nil, errors.New("Juma1 is deleted")
 		}
 		p.Juma1Modified = time.Now()
+		diff = append(diff, "Juma: "+p.Juma1)
 	} else {
 		p.Juma1Modified = prev.Juma1Modified
 	}
 
 	if p.Juma2 != prev.Juma2 && !ignoreModification(p.Juma2, prev.Juma2, 4) {
 		if p.Juma2 == "" {
-			return nil, errors.New("Juma2 is deleted")
+			return nil, nil, errors.New("Juma2 is deleted")
 		}
 		p.Juma2Modified = time.Now()
+		diff = append(diff, "Juma: "+p.Juma2)
 	} else {
 		p.Juma2Modified = prev.Juma2Modified
 	}
 
 	if p.Juma3 != prev.Juma3 && !ignoreModification(p.Juma3, prev.Juma3, 4) {
 		if p.Juma3 == "" {
-			return nil, errors.New("Juma3 is deleted")
+			return nil, nil, errors.New("Juma3 is deleted")
 		}
 		p.Juma3Modified = time.Now()
+		diff = append(diff, "Juma: "+p.Juma3)
 	} else {
 		p.Juma3Modified = prev.Juma3Modified
 	}
-	return p, nil
+	return p, diff, nil
 }

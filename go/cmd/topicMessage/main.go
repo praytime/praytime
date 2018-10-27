@@ -3,6 +3,7 @@ package main
 import (
 	firebase "firebase.google.com/go"
 	"firebase.google.com/go/messaging"
+	"fmt"
 	"golang.org/x/net/context"
 	"log"
 	"os"
@@ -31,11 +32,12 @@ func main() {
 
 	// See documentation on defining a message payload.
 	message := &messaging.Message{
-		Data: map[string]string{
-			"score": "850",
-			"time":  "2:45",
+		Notification: &messaging.Notification{
+			Title: "Islamic Center of Naperville (75th)",
+			Body:  "Fajr: 6:15a Asr: 4:00p",
 		},
-		Topic: topic,
+		// Topic: topic,
+		Condition: fmt.Sprintf("'%s' in topics || 'all' in topics", topic),
 	}
 
 	if response, err := messagingClient.Send(ctx, message); err != nil {

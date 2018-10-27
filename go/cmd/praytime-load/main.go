@@ -1,16 +1,19 @@
 package main
 
 import (
-	"cloud.google.com/go/firestore"
 	"encoding/json"
+	firebase "firebase.google.com/go"
+	"firebase.google.com/go/messaging"
+	"github.com/praytime/praytime/go/pkg/praytime"
 	"golang.org/x/net/context"
 	//	"google.golang.org/api/iterator"
-	"github.com/praytime/praytime/go/pkg/praytime"
+	// "fmt"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"io"
 	"log"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -22,14 +25,26 @@ func main() {
 
 	log.Printf("projectID: %s\n", projectID)
 
-	// Get a Firestore client.
-	client, err := firestore.NewClient(ctx, projectID)
+	config := &firebase.Config{ProjectID: projectID}
+
+	app, err := firebase.NewApp(ctx, config)
 	if err != nil {
-		log.Fatalf("Failed to create client: %v", err)
+		log.Fatalf("error initializing app: %v\n", err)
+	}
+
+	messagingClient, err := app.Messaging(ctx)
+	if err != nil {
+		log.Fatalf("failed to create messaging client: %v\n", err)
+	}
+
+	// Get a Firestore client.
+	dbClient, err := app.Firestore(ctx)
+	if err != nil {
+		log.Fatalf("failed to create firestore client: %v\n", err)
 	}
 
 	// Close client when done.
-	defer client.Close()
+	defer dbClient.Close()
 
 	dec := json.NewDecoder(os.Stdin)
 
@@ -47,7 +62,7 @@ func main() {
 
 		docName := v.UUID4
 
-		evt := client.Collection("Events").Doc(docName)
+		evt := dbClient.Collection("Events").Doc(docName)
 
 		currEvtSnapshot, err := evt.Get(ctx)
 		if err != nil && grpc.Code(err) != codes.NotFound {
@@ -59,9 +74,28 @@ func main() {
 			// check for changes
 			var c praytime.PrayerEventSet
 			currEvtSnapshot.DataTo(&c)
-			if _, err = v.CompareToPrevious(&c); err != nil {
+			if _, diff, err := v.CompareToPrevious(&c); err != nil {
 				log.Printf("[ERROR] error processing %s: %v", v.Name, err)
 				continue
+			} else if len(diff) > 0 {
+				// there were changes
+
+				// TODO figure out why condition does not work
+				message := &messaging.Message{
+					Notification: &messaging.Notification{
+						Title: v.Name,
+						Body:  strings.Join(diff, ", "),
+					},
+					Topic: v.UUID4,
+					// Condition: fmt.Sprintf("'%s' in topics || 'all' in topics", v.UUID4),
+				}
+
+				if response, err := messagingClient.Send(ctx, message); err != nil {
+					log.Printf("[ERROR] error sending message for %s: %v", v.Name, err)
+				} else {
+					// Response is a message ID string.
+					log.Printf("Successfully sent message for %s[%s], response %s", v.Name, v.UUID4, response)
+				}
 			}
 		}
 
