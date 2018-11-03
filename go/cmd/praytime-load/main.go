@@ -80,13 +80,14 @@ func main() {
 			} else if len(diff) > 0 {
 				// there were changes
 
+				topic := "/topics/" + v.UUID4
 				// TODO figure out why condition does not work
 				message := &messaging.Message{
 					Notification: &messaging.Notification{
 						Title: v.Name,
 						Body:  strings.Join(diff, ", "),
 					},
-					Topic: v.UUID4,
+					Topic: topic,
 					// Condition: fmt.Sprintf("'%s' in topics || 'all' in topics", v.UUID4),
 				}
 
@@ -94,6 +95,21 @@ func main() {
 					log.Printf("[ERROR] error sending message for %s: %v", v.Name, err)
 				} else {
 					// Response is a message ID string.
+					log.Printf("Successfully sent message for %s[%s], response %s", v.Name, v.UUID4, response)
+				}
+
+				topic = "/topics/all"
+				message = &messaging.Message{
+					Notification: &messaging.Notification{
+						Title: v.Name,
+						Body:  strings.Join(diff, ", "),
+					},
+					Topic: topic,
+				}
+
+				if response, err := messagingClient.Send(ctx, message); err != nil {
+					log.Printf("[ERROR] error sending message for %s: %v", v.Name, err)
+				} else {
 					log.Printf("Successfully sent message for %s[%s], response %s", v.Name, v.UUID4, response)
 				}
 			}
