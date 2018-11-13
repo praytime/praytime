@@ -27,6 +27,7 @@ let masaajid = [
   './lib/dar-us-sunnah-evanston',
   './lib/dma-seattle',
   './lib/downtown-islamic-center-chicago',
+  './lib/duncanville-islamic-center',
   './lib/east-plano-islamic-center',
   './lib/emas-seattle',
   './lib/farooq-masjid-mountlake-terrace',
