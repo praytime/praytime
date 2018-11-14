@@ -92,6 +92,7 @@ let masaajid = [
   './lib/mclean-islamic-center-va',
   './lib/mcmc-new-jersey',
   './lib/mecca-center',
+  './lib/mesquite-islamic-center',
   './lib/mosque-foundation-bridgeview',
   './lib/muslim-association-of-bolingbrook',
   './lib/muslim-society-inc-bloomingdale',
