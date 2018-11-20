@@ -105,6 +105,7 @@ let masaajid = [
   './lib/shariaboard-chicago',
   './lib/snoqualmie-mosque',
   './lib/valley-ranch-islamic-center',
+  './lib/wylie-musallah',
   './lib/zia-ul-quran-arlington'
 ]
 
