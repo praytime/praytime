@@ -70,6 +70,7 @@ let masaajid = [
   './lib/light-of-islam-harvey',
   './lib/madani-masjid-westmont',
   './lib/madinah-masjid-of-carrollton',
+  './lib/makkah-masjid-garland',
   './lib/makki-masjid-chicago',
   './lib/mansfield-islamic-center-arlington',
   './lib/maps-redmond',
