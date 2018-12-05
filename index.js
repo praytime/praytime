@@ -33,6 +33,7 @@ let masaajid = [
   './lib/emas-seattle',
   './lib/farooq-masjid-mountlake-terrace',
   './lib/fox-valley-muslim-community-center',
+  './lib/grand-prairie-islamic-society',
   './lib/iacc-plano',
   './lib/icc-des-plaines',
   './lib/icci-chicago',
