@@ -85,6 +85,7 @@ let masaajid = [
   './lib/masjid-darussalam',
   './lib/masjid-haqq-lombard',
   './lib/masjid-madeena-bellevue',
+  './lib/masjid-salahadeen-plano',
   './lib/masjid-tawheed-chicago',
   './lib/masjid-ul-islam-elgin',
   './lib/masjid-uthman-lombard',
