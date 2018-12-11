@@ -37,6 +37,7 @@ let masaajid = [
   './lib/iacc-plano',
   './lib/icc-des-plaines',
   './lib/icci-chicago',
+  './lib/iccl-coppell-lewisville',
   './lib/ick-kent',
   './lib/icob-bothell',
   './lib/icoe-bellevue',
