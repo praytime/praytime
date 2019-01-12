@@ -48,7 +48,6 @@ let masaajid = [
   './lib/islamic-association-of-allen',
   './lib/islamic-association-of-fort-worth',
   './lib/islamic-association-of-lewisville-flower-mound',
-  './lib/islamic-association-of-lewisville-flower-mound',
   './lib/islamic-association-of-mid-cities-colleyville',
   './lib/islamic-association-of-north-texas',
   './lib/islamic-association-of-southwest-michigan',
