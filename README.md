@@ -98,7 +98,9 @@ TODO
   - [masjidal](lib/aie-huntley/index.js)
   - [mohid](lib/islamic-center-of-frisco/index.js)
   - [masjidapps](lib/valley-ranch-islamic-center)
-  - axios / cheerio, selector based: [mcc-silver-springs](lib/mcc-silver-springs/index.js)
+  - axios / cheerio
+    - selector based: [mcc-silver-springs](lib/mcc-silver-springs/index.js)
+    - element text matching: [mcc-east-bay-pleasanton](lib/mcc-east-bay-pleasanton/index.js)
 
 ### running praytime-load
 
