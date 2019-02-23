@@ -21,4 +21,6 @@ RUN npm install --production
 
 COPY . /root/go/src/github.com/praytime/praytime/
 
+RUN git rev-parse HEAD > SOURCE_COMMIT
+
 ENTRYPOINT [ "./entrypoint.sh" ]

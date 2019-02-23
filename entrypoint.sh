@@ -10,6 +10,10 @@ PROJECT_DIR="${SCRIPT_DIR}"
 
 trap exiterr EXIT
 
+if [[ -e "${PROJECT_DIR}/SOURCE_COMMIT" ]] ; then
+    echo -n "SOURCE_COMMIT="
+    cat SOURCE_COMMIT
+fi
 
 curl -fsSLo input.json "https://api.apify.com/v2/key-value-stores/${APIFY_DEFAULT_KEY_VALUE_STORE_ID}/records/INPUT?disableRedirect=1"
 
@@ -26,6 +30,5 @@ for k in $(jq -r ".files | keys[]" input.json) ; do
 done
 
 node index.js | "${PROJECT_DIR}/script/save.sh"
-
 
 trap - EXIT
