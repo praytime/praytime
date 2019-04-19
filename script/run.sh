@@ -10,8 +10,11 @@ PROJECT_DIR="${SCRIPT_DIR}/.."
 
 trap exiterr EXIT
 
-
-node index.js "$@"
-
+if [ -t 1 ] ; then 
+    # Writing to terminal, use jq to pretty print
+    node index.js "$@" | jq
+else 
+    node index.js "$@"
+fi
 
 trap - EXIT
