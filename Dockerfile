@@ -8,16 +8,17 @@ RUN apk add --no-cache \
         jq \
         musl-dev \
         nodejs-npm \
-        python && \
-    go get firebase.google.com/go && \
-    go get golang.org/x/net/context && \ 
-    go get google.golang.org/genproto/googleapis/type/latlng
+        python 
 
 WORKDIR /root/go/src/github.com/praytime/praytime
 
 COPY package.json package-lock.json /root/go/src/github.com/praytime/praytime/
 
 RUN npm install --production
+
+COPY go /root/go/src/github.com/praytime/praytime/go/
+
+RUN go get -d go/...
 
 COPY . /root/go/src/github.com/praytime/praytime/
 
