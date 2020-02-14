@@ -100,6 +100,7 @@ TODO
   - [masjidapps](lib/valley-ranch-islamic-center)
   - axios / cheerio
     - selector based: [mcc-silver-springs](lib/mcc-silver-springs/index.js)
+      - explanation of selector syntax: https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors#Combinators
     - element text matching: [mcc-east-bay-pleasanton](lib/mcc-east-bay-pleasanton/index.js)
 
 ### running praytime-load
