@@ -61,7 +61,7 @@ This is the minimum needed to fork this repository and test crawlers locally.
 TODO
 
 - uuid
-- https://google-developers.appspot.com/maps/documentation/utils/geocoder/
+- https://developers-dot-devsite-v2-prod.appspot.com/maps/documentation/utils/geocoder/
   - address:
     ```
     copy(document.evaluate('//*[@id="result-0"]/table/tbody/tr/td[2]/p[2]/strong/following-sibling::text()[1]', document, null, XPathResult.STRING_TYPE, null).stringValue.trim())
