@@ -78,6 +78,7 @@ let masaajid = [
   './lib/makki-masjid-chicago',
   './lib/mansfield-islamic-center-arlington',
   './lib/maps-redmond',
+  './lib/masjid-al-jameel-addison-il',
   './lib/masjid-al-huda-schaumburg',
   './lib/masjid-al-islam-dallas',
   './lib/masjid-al-mustafa-westmont',
