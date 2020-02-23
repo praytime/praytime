@@ -29,6 +29,6 @@ for k in $(jq -r ".files | keys[]" input.json) ; do
     jq -r ".files[\"$k\"]" input.json > "$k"
 done
 
-node index.js | "${PROJECT_DIR}/script/save.sh"
+node index.js | praytime-load
 
 trap - EXIT
