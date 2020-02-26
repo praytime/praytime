@@ -7,6 +7,16 @@ RUN go get -d -v ./...
 RUN go install -v ./...
 
 
+FROM node:lts-buster AS node-modules
+
+WORKDIR /praytime
+
+COPY package.json package-lock.json ./
+
+# Running puppeteer in docker not supported at the moment
+RUN PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1 npm install --production
+
+
 FROM node:lts-buster
 
 RUN apt-get update && \
@@ -15,10 +25,7 @@ RUN apt-get update && \
 
 WORKDIR /praytime
 
-COPY package.json package-lock.json ./
-
-# Running puppeteer in docker not supported at the moment
-RUN PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1 npm install --production
+COPY --from=node-modules /praytime/node_modules node_modules
 
 COPY --from=praytime-load /go/bin/praytime-load /bin/praytime-load
 
