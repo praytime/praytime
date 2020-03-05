@@ -1,5 +1,3 @@
-const lib = require('./lib')
-
 let masaajid = [
   './lib/US/VA/adams-center',
   './lib/US/IL/aie-huntley',
@@ -115,7 +113,6 @@ let masaajid = [
 ]
 
 const main = async () => {
-
   for (const masjid of masaajid) {
     try {
       console.error('starting %s', masjid)

@@ -17,10 +17,9 @@
   },
   "homepage": "https://github.com/praytime/praytime#readme",
   "dependencies": {
-    "apify-client": "^0.5.22",
     "axios": "^0.19.2",
     "cheerio": "^1.0.0-rc.3",
-    "csv-parse": "^4.8.5",
+    "csv-parse": "^4.8.8",
     "puppeteer": "^2.1.1",
     "timezone": "^1.0.23"
   }
