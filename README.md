@@ -95,13 +95,15 @@ TODO
 - document common masjid website mistakes
   - no address on website
 - examples
-  - [masjidal](lib/aie-huntley/index.js)
-  - [mohid](lib/islamic-center-of-frisco/index.js)
-  - [masjidapps](lib/valley-ranch-islamic-center/index.js)
+  - [masjidal](lib/US/IL/aie-huntley/index.js)
+  - [mohid](lib/US/TX/islamic-center-of-frisco/index.js)
+  - [masjidapps](lib/US/TX/valley-ranch-islamic-center/index.js)
   - axios / cheerio
-    - selector based: [mcc-silver-springs](lib/mcc-silver-springs/index.js)
+    - selector based: [mcc-silver-springs](lib/US/MD/mcc-silver-springs/index.js)
       - explanation of selector syntax: https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors#Combinators
-    - element text matching: [maps redmond](lib/maps-redmond/index.js)
+    - element text matching:
+      - [maps redmond](lib/US/WA/maps-redmond/index.js)
+      - [dar al hijrah](lib/US/VA/dar-al-hijrah-va/index.js)
 
 ### running praytime-load
 
