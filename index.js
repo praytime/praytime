@@ -94,7 +94,7 @@ let masaajid = [
   './lib/US/NJ/mcmc-new-jersey',
   './lib/US/IL/mecca-center',
   './lib/US/TX/mesquite-islamic-center',
-  // './lib/US/IL/mosque-foundation-bridgeview', // puppeteer
+  './lib/US/IL/mosque-foundation-bridgeview',
   './lib/US/IL/muslim-association-of-bolingbrook',
   './lib/US/IL/muslim-society-inc-bloomingdale',
   './lib/US/VA/mustafa-center-va',
@@ -103,7 +103,7 @@ let masaajid = [
   './lib/US/MD/pgma-lanham',
   './lib/US/IL/prayer-center-of-orland-park',
   './lib/US/WA/sammamish-mosque',
-  // './lib/US/CA/san-ramon-valley-islamic-center', // puppeteer
+  './lib/US/CA/san-ramon-valley-islamic-center',
   './lib/US/IL/shariaboard-chicago',
   './lib/US/WA/snoqualmie-mosque',
   './lib/US/TX/tyler-islamic-center',
@@ -112,6 +112,14 @@ let masaajid = [
   './lib/US/TX/zia-ul-quran-arlington'
 ]
 
+const argv = process.argv.slice(2)
+
+if (argv.length > 0) {
+  masaajid = argv
+}
+
+const puppeteerDisabled = ('PUPPETEER_DISABLED' in process.env)
+
 const main = async () => {
   for (const masjid of masaajid) {
     try {
@@ -119,12 +127,16 @@ const main = async () => {
 
       const masjidLib = require(masjid)
 
-      let results = {}
+      let results = []
       if (masjidLib.apifySettings) {
         console.error('skipping apify crawler: %s', masjid)
       } else if (masjidLib.run) {
-        // generic run function
-        results = await masjidLib.run()
+        if (puppeteerDisabled && masjidLib.puppeteer) {
+          console.error('skipping puppeteer crawler: %s', masjid)
+        } else {
+          // generic run function
+          results = await masjidLib.run()
+        }
       } else if (masjidLib.results) {
         // static results, nothing to execute
         results = masjidLib.results
@@ -138,12 +150,6 @@ const main = async () => {
       console.trace()
     }
   }
-}
-
-const argv = process.argv.slice(2)
-
-if (argv.length > 0) {
-  masaajid = argv
 }
 
 main()
