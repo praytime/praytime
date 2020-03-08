@@ -94,7 +94,7 @@ let masaajid = [
   './lib/US/NJ/mcmc-new-jersey',
   './lib/US/IL/mecca-center',
   './lib/US/TX/mesquite-islamic-center',
-  // './lib/US/IL/mosque-foundation-bridgeview',
+  // './lib/US/IL/mosque-foundation-bridgeview', // puppeteer
   './lib/US/IL/muslim-association-of-bolingbrook',
   './lib/US/IL/muslim-society-inc-bloomingdale',
   './lib/US/VA/mustafa-center-va',
@@ -103,7 +103,7 @@ let masaajid = [
   './lib/US/MD/pgma-lanham',
   './lib/US/IL/prayer-center-of-orland-park',
   './lib/US/WA/sammamish-mosque',
-  './lib/US/CA/san-ramon-valley-islamic-center',
+  // './lib/US/CA/san-ramon-valley-islamic-center', // puppeteer
   './lib/US/IL/shariaboard-chicago',
   './lib/US/WA/snoqualmie-mosque',
   './lib/US/TX/tyler-islamic-center',
