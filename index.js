@@ -58,7 +58,7 @@ let masaajid = [
   './lib/US/NJ/new-brunswick-islamic-center-new-jersey',
   './lib/US/TX/barakat-ul-quran-irving',
   './lib/US/TX/deic-arlington',
-  // './lib/US/TX/duncanville-islamic-center',
+  './lib/US/TX/duncanville-islamic-center',
   './lib/US/TX/east-plano-islamic-center',
   './lib/US/TX/grand-prairie-islamic-society',
   './lib/US/TX/iacc-plano',
