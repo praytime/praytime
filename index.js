@@ -10,7 +10,7 @@ let masaajid = [
   './lib/US/IL/aqsa-community-center-plainfield',
   './lib/US/IL/at-takaful-islamic-society-chicago',
   './lib/US/IL/batavia-islamic-center',
-  // './lib/US/IL/chicago-islamic-center',
+  './lib/US/IL/chicago-islamic-center',
   './lib/US/IL/chicago-mosque',
   './lib/US/IL/cimic',
   './lib/US/IL/darul-quran-chicago',
