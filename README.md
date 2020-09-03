@@ -14,7 +14,7 @@ https://abdurrahman.org/2014/09/04/riyad-us-saliheen-imaam-nawawi-chapter-191/
 
 Prayer times are scraped on a nightly basis and saved in Firestore. In addition to prayer times, every masjid has lat/lng coordinates, timezone, and other metadata stored.
 
-Web scraping is accomplished primarily with [Cheerio](https://cheerio.js.org/) if no client-side scripts are required to render the prayer times, otherwise [Apify crawlers](https://www.apify.com) are used. A Apify actor cron job periodically clones this repo and executes the [entrypoint.sh](entrypoint.sh) script which runs each crawler and saves the results.
+Web scraping is accomplished primarily with [Cheerio](https://cheerio.js.org/) if no client-side scripts are required to render the prayer times, otherwise [Puppeteer](https://pptr.dev/) is used.
 
 The UI is a static webapp which uses the client-side Firestore JavaScript library to query nearby prayer times.
 
@@ -31,7 +31,6 @@ Anybody can fork (make a copy of) this code repository, make changes, and submit
 1. A unix environment (Linux, Mac osx, cygwin, etc)
 2. [Node.js with npm](https://nodejs.org)
 3. A [GitHub](https://github.com) account for contributing changes back to the project, not necessary to run and test locally
-4. An [Apify](https://www.apify.com) account (it's free, email required)
 
 This is the minimum needed to fork this repository and test crawlers locally.
 
@@ -39,13 +38,7 @@ This is the minimum needed to fork this repository and test crawlers locally.
 
 1. Fork, clone, or [download](https://github.com/praytime/praytime/archive/master.zip) this repo.
 2. Run `npm install` from the `praytime` directory.
-3. Create an .env file with the following two lines:
-    ```
-    APIFY_USER_ID=XXX
-    APIFY_TOKEN=XXX
-    ```
-   and replace XXX with the values from your [Apify profile](https://my.apify.com/account#/integrations) page. These values should be kept secret.
-4. Try running a crawler. Run the following command from the `praytime` dir:
+3. Try running a crawler. Run the following command from the `praytime` dir:
     ```
     script/run.sh ./lib/islamic-center-of-naperville
     ```
