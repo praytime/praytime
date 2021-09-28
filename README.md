@@ -40,7 +40,7 @@ This is the minimum needed to fork this repository and test crawlers locally.
 2. Run `npm install` from the `praytime` directory.
 3. Try running a crawler. Run the following command from the `praytime` dir:
     ```
-    script/run.sh ./lib/islamic-center-of-naperville
+    script/run.sh ./lib/US/IL/islamic-center-of-naperville
     ```
     If all goes well, you should see output similar to this:
     ```
