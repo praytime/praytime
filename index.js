@@ -147,7 +147,6 @@ const main = async () => {
       })
     } catch (err) {
       console.error('caught error processing ' + masjid + ':', err)
-      console.trace()
     }
   }
 }
