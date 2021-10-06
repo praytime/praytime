@@ -143,6 +143,7 @@ const main = async () => {
       }
 
       results.forEach((r) => {
+        r.crawlTime = new Date()
         console.log('%j', r)
       })
     } catch (err) {
