@@ -127,7 +127,7 @@ const main = async () => {
 
       const masjidLib = require(masjid)
 
-      let results = []
+      let results = masjidLib.ids
       if (masjidLib.run) {
         if (puppeteerDisabled && masjidLib.puppeteer) {
           console.error('skipping puppeteer crawler: %s', masjid)
@@ -135,9 +135,6 @@ const main = async () => {
           // generic run function
           results = await masjidLib.run()
         }
-      } else if (masjidLib.ids) {
-        // static results, nothing to execute
-        results = masjidLib.ids
       }
 
       results.forEach((r) => {
@@ -145,7 +142,7 @@ const main = async () => {
         console.log('%j', r)
       })
     } catch (err) {
-      console.error('caught error processing ' + masjid + ':', err)
+      console.error('caught error processing %s:', masjid, err)
     }
   }
 }
