@@ -128,18 +128,16 @@ const main = async () => {
       const masjidLib = require(masjid)
 
       let results = []
-      if (masjidLib.apifySettings) {
-        console.error('skipping apify crawler: %s', masjid)
-      } else if (masjidLib.run) {
+      if (masjidLib.run) {
         if (puppeteerDisabled && masjidLib.puppeteer) {
           console.error('skipping puppeteer crawler: %s', masjid)
         } else {
           // generic run function
           results = await masjidLib.run()
         }
-      } else if (masjidLib.results) {
+      } else if (masjidLib.ids) {
         // static results, nothing to execute
-        results = masjidLib.results
+        results = masjidLib.ids
       }
 
       results.forEach((r) => {
