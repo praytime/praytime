@@ -1,0 +1,7 @@
+{
+    "typescript-language-server": {
+        "preferences": {
+            "disableSuggestions": true
+        }
+    }
+}
