@@ -15,6 +15,7 @@ let masaajid = [
   './lib/US/IL/chicago-mosque',
   './lib/US/IL/cimic',
   './lib/US/IL/darul-quran-chicago',
+  './lib/US/IL/dar-ut-tawheed-chicago',
   './lib/US/IL/dar-us-sunnah-evanston',
   './lib/US/IL/downtown-islamic-center-chicago',
   './lib/US/IL/fox-valley-muslim-community-center',
