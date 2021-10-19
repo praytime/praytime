@@ -50,6 +50,7 @@ let masaajid = [
   './lib/US/IL/prayer-center-of-orland-park',
   './lib/US/IL/sacred-learning-center',
   './lib/US/IL/shariaboard-chicago',
+  './lib/US/MA/islamic-society-of-boston',
   './lib/US/MD/dar-al-taqwa-ellicot-city',
   './lib/US/MD/dar-us-salaam-college-park',
   './lib/US/MD/islamic-society-of-baltimore',
