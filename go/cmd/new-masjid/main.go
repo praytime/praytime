@@ -1,0 +1,126 @@
+// Takes placeIDs, make gmaps API calls to resolve details and generate a crawler module based on a template.
+
+package main
+
+import (
+	"context"
+	"flag"
+	"log"
+	"os"
+	"path/filepath"
+	"text/template"
+
+	"github.com/google/uuid"
+	"github.com/joho/godotenv"
+	"googlemaps.github.io/maps"
+)
+
+type Masjid struct {
+	UUID    string
+	Path    string
+	TZ      *maps.TimezoneResult
+	Details *maps.PlaceDetailsResult
+}
+
+const jsTemplate = `// path: {{ .Path }}
+const util = require('../../../util')
+
+const ids = [
+  {
+    uuid4: '{{ .UUID }}',
+    name: '{{ .Details.Name }}',
+    url: '{{ .Details.Website }}',
+    timeZoneId: '{{ .TZ.TimeZoneID }}',
+    address: '{{ .Details.FormattedAddress }}',
+    placeId: '{{ .Details.PlaceID }}',
+    geo: {
+      latitude: {{ .Details.Geometry.Location.Lat }},
+      longitude: {{ .Details.Geometry.Location.Lng }}
+    }
+  }
+]
+
+exports.run = async () => {
+  const $ = await util.load(ids[0].url)
+
+  const a = util.mapToText($, 'div#prayer-times div.prayer-row > div:last-child')
+  const j = a[a.length - 1].match(/\d+\s*:\s*\d+\s*\w+/g)
+
+  util.setIqamaTimes(ids[0], a)
+  util.setJumaTimes(ids[0], j)
+
+  return ids
+}
+exports.ids = ids
+`
+
+func loadDefaultEnvVars() {
+	if home, err := os.UserHomeDir(); err == nil {
+		envFile := filepath.Join(home, ".godotenv")
+		if stat, err := os.Stat(envFile); err == nil && !stat.IsDir() {
+			if err = godotenv.Load(envFile); err != nil {
+				log.Fatal("Error loading ", envFile, ":", err)
+			}
+		}
+	}
+}
+
+func newGmapsClient() *maps.Client {
+	c, err := maps.NewClient(maps.WithAPIKey(os.Getenv("GMAPS_API_KEY")))
+	if err != nil {
+		log.Fatal("Error creating gmaps client:", err)
+	}
+	return c
+}
+
+func main() {
+
+	t := template.Must(template.New("js").Parse(jsTemplate))
+
+	flag.Parse()
+
+	loadDefaultEnvVars()
+
+	gmapsClient := newGmapsClient()
+
+	detailsRequest := &maps.PlaceDetailsRequest{
+		Fields: []maps.PlaceDetailsFieldMask{"name", "address_component", "formatted_address", "geometry/location", "website", "place_id"},
+	}
+	for _, arg := range flag.Args() {
+		detailsRequest.PlaceID = arg
+		details, err := gmapsClient.PlaceDetails(context.Background(), detailsRequest)
+		if err != nil {
+			log.Fatal("Error creating details request", err)
+		}
+		tzDetails, err := gmapsClient.Timezone(context.Background(), &maps.TimezoneRequest{
+			Location: &details.Geometry.Location,
+		})
+		if err != nil {
+			log.Fatal("Error creating timezone request", err)
+		}
+
+		var state, country, city string
+		for _, addrComp := range details.AddressComponents {
+			for _, addrCompType := range addrComp.Types {
+				switch addrCompType {
+				case "administrative_area_level_1":
+					state = addrComp.ShortName
+				case "country":
+					country = addrComp.ShortName
+				case "locality":
+					city = addrComp.ShortName
+				}
+			}
+		}
+
+		err = t.Execute(os.Stdout, Masjid{
+			uuid.New().String(),
+			filepath.Join("lib", country, state, details.Name+"-"+city, "index.js"),
+			tzDetails,
+			&details,
+		})
+		if err != nil {
+			log.Fatal("Error executing template:", err)
+		}
+	}
+}
