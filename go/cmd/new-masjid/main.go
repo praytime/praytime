@@ -11,6 +11,8 @@ import (
 	"text/template"
 
 	"github.com/google/uuid"
+	"github.com/gosimple/slug"
+	"github.com/integralist/go-findroot/find"
 	"github.com/joho/godotenv"
 	"googlemaps.github.io/maps"
 )
@@ -22,8 +24,7 @@ type Masjid struct {
 	Details *maps.PlaceDetailsResult
 }
 
-const jsTemplate = `// path: {{ .Path }}
-const util = require('../../../util')
+const jsTemplate = `const util = require('../../../util')
 
 const ids = [
   {
@@ -51,8 +52,7 @@ exports.run = async () => {
 
   return ids
 }
-exports.ids = ids
-`
+exports.ids = ids`
 
 func loadDefaultEnvVars() {
 	if home, err := os.UserHomeDir(); err == nil {
@@ -71,6 +71,14 @@ func newGmapsClient() *maps.Client {
 		log.Fatal("Error creating gmaps client:", err)
 	}
 	return c
+}
+
+func getGitRoot() string {
+	root, err := find.Repo()
+	if err != nil {
+		log.Fatal("Error looking for git root:", err)
+	}
+	return root.Path
 }
 
 func main() {
@@ -113,14 +121,31 @@ func main() {
 			}
 		}
 
-		err = t.Execute(os.Stdout, Masjid{
+		gitRoot := getGitRoot()
+		nameSlug := slug.Make(details.Name + " " + city)
+		destDir := filepath.Join(gitRoot, "lib", country, state, nameSlug)
+		destPath := filepath.Join(destDir, "index.js")
+
+		if err = os.MkdirAll(destDir, os.ModePerm); err != nil {
+			log.Fatal("Error creating destDir ", destDir, ": ", err)
+		}
+
+		f, err := os.Create(destPath)
+		if err != nil {
+			log.Fatal("Error creating destPath ", destPath, ": ", err)
+		}
+		defer f.Close()
+
+		err = t.Execute(f, Masjid{
 			uuid.New().String(),
-			filepath.Join("lib", country, state, details.Name+"-"+city, "index.js"),
+			destPath,
 			tzDetails,
 			&details,
 		})
 		if err != nil {
 			log.Fatal("Error executing template:", err)
 		}
+
+		log.Println(destPath, " written.")
 	}
 }
