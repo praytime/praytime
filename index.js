@@ -60,6 +60,7 @@ let masaajid = [
   './lib/US/MD/mcc-silver-springs',
   './lib/US/MD/pgma-lanham',
   './lib/US/MI/islamic-association-of-southwest-michigan',
+  './lib/US/MI/mcws-canton/',
   './lib/US/NJ/al-minhaal-academy-new-jersey',
   './lib/US/NJ/iscj-new-jersey',
   './lib/US/NJ/mcmc-new-jersey',
