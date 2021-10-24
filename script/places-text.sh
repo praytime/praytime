@@ -20,6 +20,6 @@ curl -fsSL -G 'https://maps.googleapis.com/maps/api/place/textsearch/json' --dat
     --data-urlencode "query=${*?}"
 
 # optionally summarize:
-# jq -r '.results[] | "\(.place_id)\t\(.name)"'
+# jq -r '.results[] | "https://www.google.com/maps/search/?api=1&query=none&query_place_id=\(.place_id)\t\(.name)"'
 
 trap - EXIT
