@@ -16,7 +16,7 @@ trap exiterr EXIT
 
 curl -fsSL -G 'https://maps.googleapis.com/maps/api/place/textsearch/json' --data-urlencode "key=${GMAPS_API_KEY}" \
     --data-urlencode "type=mosque" \
-    --data-urlencode "radius=10000" \
+    --data-urlencode "radius=50000" \
     --data-urlencode "query=${*?}"
 
 # optionally summarize:
