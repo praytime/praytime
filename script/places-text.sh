@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Google Maps Places 'nearby' search: https://developers.google.com/maps/documentation/places/web-service/search-nearby
-# usage: place-search.sh 'latitude,longitude'
+# Google Maps Places 'text' search: https://developers.google.com/maps/documentation/places/web-service/search-text
+# usage: place-search.sh 'search text'
+# sets type=mosque
 # TODO: get all pages of results
 
 set -euf -o pipefail
@@ -13,10 +14,10 @@ PROJECT_DIR="${SCRIPT_DIR}/.."
 
 trap exiterr EXIT
 
-curl -fsSL -G 'https://maps.googleapis.com/maps/api/place/nearbysearch/json' --data-urlencode "key=${GMAPS_API_KEY}" \
+curl -fsSL -G 'https://maps.googleapis.com/maps/api/place/textsearch/json' --data-urlencode "key=${GMAPS_API_KEY}" \
     --data-urlencode "type=mosque" \
     --data-urlencode "radius=10000" \
-    --data-urlencode "location=${*?}"
+    --data-urlencode "query=${*?}"
 
 # optionally summarize:
 # jq -r '.results[] | "\(.place_id)\t\(.name)"'
