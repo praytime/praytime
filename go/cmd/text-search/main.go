@@ -8,16 +8,16 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"time"
-	// "text/template"
 
-	// "github.com/google/uuid"
-	// "github.com/gosimple/slug"
 	"github.com/integralist/go-findroot/find"
 	"github.com/joho/godotenv"
 	"googlemaps.github.io/maps"
 )
+
+var libdir string
 
 func loadDefaultEnvVars() {
 	if home, err := os.UserHomeDir(); err == nil {
@@ -46,6 +46,11 @@ func getGitRoot() string {
 	return root.Path
 }
 
+func isInLib(placeID string) bool {
+	_, err := exec.Command("rg", "-l", placeID, libdir).Output()
+	return err == nil
+}
+
 func main() {
 
 	flag.Parse()
@@ -54,7 +59,8 @@ func main() {
 
 	gmapsClient := newGmapsClient()
 
-	// gitRoot := getGitRoot()
+	gitRoot := getGitRoot()
+	libdir = filepath.Join(gitRoot, "lib")
 
 	for _, arg := range flag.Args() {
 		pageToken := ""
@@ -74,6 +80,9 @@ func main() {
 			}
 			pageToken = resp.NextPageToken
 			for _, result := range resp.Results {
+				if isInLib(result.PlaceID) {
+					continue
+				}
 				fmt.Printf("https://www.google.com/maps/search/?api=1&query=none&query_place_id=%s\t%s\t%s\n", result.PlaceID, result.PlaceID, result.Name)
 			}
 			if moreResults() {
