@@ -41,6 +41,7 @@ let masaajid = [
   './lib/US/IL/masjid-al-mustafa-westmont',
   './lib/US/IL/masjid-darussalam',
   './lib/US/IL/masjid-e-noor-chicago/',
+  './lib/US/IL/masjid-furqaan-bolingbrook',
   './lib/US/IL/masjid-haqq-lombard',
   './lib/US/IL/masjid-tawheed-chicago',
   './lib/US/IL/masjid-ul-islam-elgin',
