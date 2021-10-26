@@ -11,7 +11,7 @@ Apify.main(async () => {
     waitForFinish: 0,
     version: '0.0'
   })
-  let buildId = actBuild.id
+  const buildId = actBuild.id
 
   console.log(actBuild)
 
