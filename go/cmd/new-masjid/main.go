@@ -18,14 +18,15 @@ import (
 )
 
 type Masjid struct {
-	UUID    string
-	Path    string
-	TZ      *maps.TimezoneResult
-	Details *maps.PlaceDetailsResult
+	UUID      string
+	TZ        *maps.TimezoneResult
+	Details   *maps.PlaceDetailsResult
+	IsCrawler bool
 }
 
-const jsTemplate = `const util = require('../../../util')
-
+const jsTemplate = `{{ if .IsCrawler }}
+const util = require('../../../util')
+{{ end }}
 const ids = [
   {
     uuid4: '{{ .UUID }}',
@@ -40,7 +41,7 @@ const ids = [
     }
   }
 ]
-
+{{ if .IsCrawler }}
 exports.run = async () => {
   const $ = await util.load(ids[0].url)
 
@@ -52,6 +53,7 @@ exports.run = async () => {
 
   return ids
 }
+{{ end }}
 exports.ids = ids`
 
 func loadDefaultEnvVars() {
@@ -85,9 +87,14 @@ func main() {
 
 	t := template.Must(template.New("js").Parse(jsTemplate))
 
+	stdoutFlag := flag.Bool("stdout", false, "output to stdout instead of writing to file")
+	crawlerFlag := flag.Bool("crawler", true, "use crawler template")
+
 	flag.Parse()
 
 	loadDefaultEnvVars()
+
+	gitRoot := getGitRoot()
 
 	gmapsClient := newGmapsClient()
 
@@ -121,31 +128,38 @@ func main() {
 			}
 		}
 
-		gitRoot := getGitRoot()
-		nameSlug := slug.Make(details.Name + " " + city)
-		destDir := filepath.Join(gitRoot, "lib", country, state, nameSlug)
-		destPath := filepath.Join(destDir, "index.js")
+		var f *os.File
+		var destPath string
+		if !*stdoutFlag {
+			nameSlug := slug.Make(details.Name + " " + city)
+			destDir := filepath.Join(gitRoot, "lib", country, state, nameSlug)
+			destPath = filepath.Join(destDir, "index.js")
 
-		if err = os.MkdirAll(destDir, os.ModePerm); err != nil {
-			log.Fatal("Error creating destDir ", destDir, ": ", err)
-		}
+			if err = os.MkdirAll(destDir, os.ModePerm); err != nil {
+				log.Fatal("Error creating destDir ", destDir, ": ", err)
+			}
 
-		f, err := os.Create(destPath)
-		if err != nil {
-			log.Fatal("Error creating destPath ", destPath, ": ", err)
+			f, err = os.Create(destPath)
+			if err != nil {
+				log.Fatal("Error creating destPath ", destPath, ": ", err)
+			}
+			defer f.Close()
+		} else {
+			f = os.Stdout
 		}
-		defer f.Close()
 
 		err = t.Execute(f, Masjid{
 			uuid.New().String(),
-			destPath,
 			tzDetails,
 			&details,
+			*crawlerFlag,
 		})
 		if err != nil {
 			log.Fatal("Error executing template:", err)
 		}
 
-		log.Println(destPath, " written.")
+		if !*stdoutFlag {
+			log.Println(destPath, " written.")
+		}
 	}
 }
