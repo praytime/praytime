@@ -2,7 +2,7 @@
 
 ## about
 
-Praytime aggregates masjid iqamah times primarily by scraping websites.
+Praytime tracks iqamah times published on masjid websites.
 
 ## motivation
 
@@ -97,20 +97,6 @@ TODO
     - element text matching:
       - [maps redmond](lib/US/WA/maps-redmond/index.js)
       - [dar al hijrah](lib/US/VA/dar-al-hijrah-va/index.js)
-
-### running praytime-load
-
-1. install golang, make a symlink ~/go/src/github.com/praytime/praytime to root of this repo
-2. `go get github.com/praytime/praytime/go/cmd/praytime-load`
-3. Add following vars to .env:
-```
-GOOGLE_APPLICATION_CREDENTIALS=...
-GCLOUD_PROJECT=...
-```
-4. Should be able to run now:
-```
-./script/run.sh | ./script/save.sh
-```
 
 ## roadmap
 
