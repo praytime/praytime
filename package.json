@@ -20,7 +20,7 @@
     "axios": "^0.24.0",
     "cheerio": "^1.0.0-rc.3",
     "csv-parse": "^4.16.3",
-    "puppeteer": "^10.4.0",
+    "puppeteer": "^11.0.0",
     "timezone": "^1.0.23"
   }
 }
