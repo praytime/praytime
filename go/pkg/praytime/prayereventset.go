@@ -13,6 +13,7 @@ type PrayerEventSet struct {
 	URL                  string         `json:"url,omitempty" firestore:"url,omitempty"`
 	Address              string         `json:"address,omitempty" firestore:"address,omitempty"`
 	Geo                  *latlng.LatLng `json:"geo" firestore:"geo"`
+	Geohash              string         `json:"geohash" firestore:"geohash"`
 	UUID4                string         `json:"uuid4" firestore:"uuid4"`
 	CrawlTime            time.Time      `json:"crawlTime" firestore:"crawlTime"`
 	TimeZoneID           string         `json:"timeZoneId" firestore:"timeZoneId"`

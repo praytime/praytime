@@ -1,3 +1,4 @@
+const geofire = require('geofire-common')
 const usLib = require('./lib/US')
 let masaajid = usLib.masaajid
 
@@ -28,6 +29,7 @@ const main = async () => {
 
       results.forEach((r) => {
         r.crawlTime = new Date()
+        r.geohash = geofire.geohashForLocation([r.geo.latitude, r.geo.longitude])
         console.log('%j', r)
       })
     } catch (err) {
