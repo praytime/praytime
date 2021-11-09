@@ -8,6 +8,7 @@ import (
 	"golang.org/x/net/context"
 	//	"google.golang.org/api/iterator"
 	// "fmt"
+	"flag"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"io"
@@ -17,6 +18,9 @@ import (
 )
 
 func main() {
+
+	force := flag.Bool("force", false, "ignore deletions and force save")
+	flag.Parse()
 
 	ctx := context.Background()
 
@@ -74,7 +78,7 @@ func main() {
 			// check for changes
 			var c praytime.PrayerEventSet
 			currEvtSnapshot.DataTo(&c)
-			if _, diff, err := v.CompareToPrevious(&c); err != nil {
+			if _, diff, err := v.CompareToPrevious(&c, *force); err != nil {
 				log.Printf("[ERROR] error processing %s: %v", v.Name, err)
 				continue
 			} else if len(diff) > 0 {

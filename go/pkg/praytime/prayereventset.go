@@ -114,10 +114,10 @@ func ignoreModification(curr, prev string, minutes uint) bool {
 }
 
 // CompareToPrevious flags changed times and updates Modified timestamps
-func (p *PrayerEventSet) CompareToPrevious(prev *PrayerEventSet) (*PrayerEventSet, []string, error) {
+func (p *PrayerEventSet) CompareToPrevious(prev *PrayerEventSet, force bool) (*PrayerEventSet, []string, error) {
 	diff := make([]string, 0, 10)
 
-	if p.FajrIqama != prev.FajrIqama && !ignoreModification(p.FajrIqama, prev.FajrIqama, 4) {
+	if p.FajrIqama != prev.FajrIqama && !force && !ignoreModification(p.FajrIqama, prev.FajrIqama, 4) {
 		if p.FajrIqama == "" {
 			return nil, nil, errors.New("Fajr is deleted")
 		}
@@ -127,7 +127,7 @@ func (p *PrayerEventSet) CompareToPrevious(prev *PrayerEventSet) (*PrayerEventSe
 		p.FajrIqamaModified = prev.FajrIqamaModified
 	}
 
-	if p.ZuhrIqama != prev.ZuhrIqama && !ignoreModification(p.ZuhrIqama, prev.ZuhrIqama, 4) {
+	if p.ZuhrIqama != prev.ZuhrIqama && !force && !ignoreModification(p.ZuhrIqama, prev.ZuhrIqama, 4) {
 		if p.ZuhrIqama == "" {
 			return nil, nil, errors.New("Zuhr is deleted")
 		}
@@ -137,7 +137,7 @@ func (p *PrayerEventSet) CompareToPrevious(prev *PrayerEventSet) (*PrayerEventSe
 		p.ZuhrIqamaModified = prev.ZuhrIqamaModified
 	}
 
-	if p.AsrIqama != prev.AsrIqama && !ignoreModification(p.AsrIqama, prev.AsrIqama, 4) {
+	if p.AsrIqama != prev.AsrIqama && !force && !ignoreModification(p.AsrIqama, prev.AsrIqama, 4) {
 		if p.AsrIqama == "" {
 			return nil, nil, errors.New("Asr is deleted")
 		}
@@ -147,7 +147,7 @@ func (p *PrayerEventSet) CompareToPrevious(prev *PrayerEventSet) (*PrayerEventSe
 		p.AsrIqamaModified = prev.AsrIqamaModified
 	}
 
-	if p.MaghribIqama != prev.MaghribIqama && !ignoreModification(p.MaghribIqama, prev.MaghribIqama, 4) {
+	if p.MaghribIqama != prev.MaghribIqama && !force && !ignoreModification(p.MaghribIqama, prev.MaghribIqama, 4) {
 		if p.MaghribIqama == "" {
 			return nil, nil, errors.New("Maghrib is deleted")
 		}
@@ -157,7 +157,7 @@ func (p *PrayerEventSet) CompareToPrevious(prev *PrayerEventSet) (*PrayerEventSe
 		p.MaghribIqamaModified = prev.MaghribIqamaModified
 	}
 
-	if p.IshaIqama != prev.IshaIqama && !ignoreModification(p.IshaIqama, prev.IshaIqama, 4) {
+	if p.IshaIqama != prev.IshaIqama && !force && !ignoreModification(p.IshaIqama, prev.IshaIqama, 4) {
 		if p.IshaIqama == "" {
 			return nil, nil, errors.New("Isha is deleted")
 		}
@@ -167,7 +167,7 @@ func (p *PrayerEventSet) CompareToPrevious(prev *PrayerEventSet) (*PrayerEventSe
 		p.IshaIqamaModified = prev.IshaIqamaModified
 	}
 
-	if p.Juma1 != prev.Juma1 && !ignoreModification(p.Juma1, prev.Juma1, 4) {
+	if p.Juma1 != prev.Juma1 && !force && !ignoreModification(p.Juma1, prev.Juma1, 4) {
 		if p.Juma1 == "" {
 			return nil, nil, errors.New("Juma1 is deleted")
 		}
@@ -177,7 +177,7 @@ func (p *PrayerEventSet) CompareToPrevious(prev *PrayerEventSet) (*PrayerEventSe
 		p.Juma1Modified = prev.Juma1Modified
 	}
 
-	if p.Juma2 != prev.Juma2 && !ignoreModification(p.Juma2, prev.Juma2, 4) {
+	if p.Juma2 != prev.Juma2 && !force && !ignoreModification(p.Juma2, prev.Juma2, 4) {
 		if p.Juma2 == "" {
 			return nil, nil, errors.New("Juma2 is deleted")
 		}
@@ -187,7 +187,7 @@ func (p *PrayerEventSet) CompareToPrevious(prev *PrayerEventSet) (*PrayerEventSe
 		p.Juma2Modified = prev.Juma2Modified
 	}
 
-	if p.Juma3 != prev.Juma3 && !ignoreModification(p.Juma3, prev.Juma3, 4) {
+	if p.Juma3 != prev.Juma3 && !force && !ignoreModification(p.Juma3, prev.Juma3, 4) {
 		if p.Juma3 == "" {
 			return nil, nil, errors.New("Juma3 is deleted")
 		}
