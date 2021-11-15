@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# build an index.js at root of every country under lib
+# populate new masjid crawler, rebuild index and add to git
 
 set -euf -o pipefail
 
@@ -11,6 +11,10 @@ PROJECT_DIR="$SCRIPT_DIR/.."
 
 trap exiterr EXIT
 
+# first run new-masjid
+"$SCRIPT_DIR/new-masjid" "$@"
+
+# rebuild index
 LIBDIR="$PROJECT_DIR/lib/US"
 OUTFILE="$LIBDIR/index.js"
 
