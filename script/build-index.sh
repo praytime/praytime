@@ -22,4 +22,6 @@ cd "$PROJECT_DIR"
     echo "]"
 } | standard --fix --stdin > "$OUTFILE"
 
+git add -N "$LIBDIR"
+
 trap - EXIT
