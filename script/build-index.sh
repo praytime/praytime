@@ -22,6 +22,6 @@ cd "$PROJECT_DIR"
     echo "]"
 } | standard --fix --stdin > "$OUTFILE"
 
-git add -N "$LIBDIR"
+git add --intent-to-add "$LIBDIR"
 
 trap - EXIT
