@@ -114,7 +114,7 @@ func main() {
 			log.Fatal("Error creating timezone request", err)
 		}
 
-		var state, country, city string
+		var state, country, city, locality, sublocality, neighborhood string
 		for _, addrComp := range details.AddressComponents {
 			for _, addrCompType := range addrComp.Types {
 				switch addrCompType {
@@ -123,9 +123,23 @@ func main() {
 				case "country":
 					country = addrComp.ShortName
 				case "locality":
-					city = addrComp.ShortName
+					locality = addrComp.ShortName
+				case "sublocality":
+					sublocality = addrComp.ShortName
+				case "neighborhood":
+					neighborhood = addrComp.ShortName
 				}
 			}
+		}
+
+		if locality != "" {
+			city = locality
+		} else if sublocality != "" {
+			city = sublocality
+		} else if neighborhood != "" {
+			city = neighborhood
+		} else {
+			log.Println("city not found, address components:", details.AddressComponents)
 		}
 
 		var f *os.File
