@@ -4,7 +4,9 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -173,7 +175,10 @@ func main() {
 		}
 
 		if !*stdoutFlag {
-			log.Println(destPath, " written.")
+			// osc copy path to clipboard
+			// https://www.reddit.com/r/vim/comments/k1ydpn/a_guide_on_how_to_copy_text_from_anywhere/
+			fmt.Println("\033]52;c;", base64.StdEncoding.EncodeToString([]byte(destPath)), "\a")
+			log.Println(destPath, " written and copied to clipboard")
 		}
 	}
 }
