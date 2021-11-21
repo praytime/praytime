@@ -2,15 +2,15 @@ package main
 
 import (
 	"encoding/json"
-	firebase "firebase.google.com/go"
-	"firebase.google.com/go/messaging"
+	firebase "firebase.google.com/go/v4"
+	"firebase.google.com/go/v4/messaging"
 	"github.com/praytime/praytime/go/pkg/praytime"
 	"golang.org/x/net/context"
 	//	"google.golang.org/api/iterator"
 	// "fmt"
 	"flag"
-	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"io"
 	"log"
 	"os"
@@ -69,7 +69,7 @@ func main() {
 		evt := dbClient.Collection("Events").Doc(docName)
 
 		currEvtSnapshot, err := evt.Get(ctx)
-		if err != nil && grpc.Code(err) != codes.NotFound {
+		if err != nil && status.Code(err) != codes.NotFound {
 			log.Printf("[ERROR] error getting prev value of %s[%s]: %v", v.Name, docName, err)
 			continue
 		}
