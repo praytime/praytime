@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 # Google Maps Places 'text' search: https://developers.google.com/maps/documentation/places/web-service/search-text
-# usage: place-search.sh 'search text'
-# sets type=mosque
 # TODO: get all pages of results
 
 set -euf -o pipefail

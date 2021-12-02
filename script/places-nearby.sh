@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Google Maps Places 'nearby' search: https://developers.google.com/maps/documentation/places/web-service/search-nearby
-# usage: place-search.sh 'latitude,longitude'
+# usage: places-nearby.sh 'latitude,longitude'
 # TODO: get all pages of results
 
 set -euf -o pipefail
