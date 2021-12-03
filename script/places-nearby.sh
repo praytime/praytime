@@ -14,8 +14,8 @@ PROJECT_DIR="${SCRIPT_DIR}/.."
 trap exiterr EXIT
 
 curl -fsSL -G 'https://maps.googleapis.com/maps/api/place/nearbysearch/json' --data-urlencode "key=${GMAPS_API_KEY}" \
-    --data-urlencode "type=mosque" \
-    --data-urlencode "radius=10000" \
+    --data-urlencode "keyword=mosque" \
+    --data-urlencode "radius=50000" \
     --data-urlencode "location=${*?}"
 
 # optionally summarize:
