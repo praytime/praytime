@@ -5,7 +5,18 @@ let masaajid = usLib.masaajid
 const argv = process.argv.slice(2)
 
 if (argv.length > 0) {
-  masaajid = argv
+  // resolve relative module paths
+  masaajid = argv.map(m => {
+    try {
+      return require.resolve(m)
+    } catch (e) {
+      if (e.code !== 'MODULE_NOT_FOUND' || m.startsWith('/') || m.startsWith('./')) {
+        throw e
+      }
+      // try assuming it's a relative module path
+      return require.resolve('./' + m)
+    }
+  })
 }
 
 const puppeteerDisabled = ('PUPPETEER_DISABLED' in process.env)
