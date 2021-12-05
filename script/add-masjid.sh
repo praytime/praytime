@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# populate new masjid crawler, add to git
+# populate new masjid crawler, rebuild index and add to git
 
 set -euf -o pipefail
 
@@ -14,6 +14,6 @@ trap exiterr EXIT
 # first run new-masjid
 "$SCRIPT_DIR/new-masjid" "$@"
 
-git add --intent-to-add "$LIBDIR"
+git add --intent-to-add "$PROJECT_DIR/lib"
 
 trap - EXIT
