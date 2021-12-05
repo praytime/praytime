@@ -1,6 +1,6 @@
 const geofire = require('geofire-common')
-const usLib = require('./lib/US')
-let masaajid = usLib.masaajid
+
+let masaajid = []
 
 const argv = process.argv.slice(2)
 
@@ -17,6 +17,9 @@ if (argv.length > 0) {
       return require.resolve('./' + m)
     }
   })
+} else {
+  const lib = require('./lib')
+  masaajid = lib.masaajid
 }
 
 const puppeteerDisabled = ('PUPPETEER_DISABLED' in process.env)
