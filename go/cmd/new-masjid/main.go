@@ -31,12 +31,12 @@ const util = require('../../../util')
 {{ end }}
 const ids = [
   {
-    uuid4: '{{ .UUID }}',
-    name: '{{ .Details.Name }}',
-    url: '{{ .Details.Website }}',
-    timeZoneId: '{{ .TZ.TimeZoneID }}',
-    address: '{{ .Details.FormattedAddress }}',
-    placeId: '{{ .Details.PlaceID }}',
+    uuid4: '{{ js .UUID }}',
+    name: '{{ js .Details.Name }}',
+    url: '{{ js .Details.Website }}',
+    timeZoneId: '{{ js .TZ.TimeZoneID }}',
+    address: '{{ js .Details.FormattedAddress }}',
+    placeId: '{{ js .Details.PlaceID }}',
     geo: {
       latitude: {{ .Details.Geometry.Location.Lat }},
       longitude: {{ .Details.Geometry.Location.Lng }}
