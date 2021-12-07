@@ -92,7 +92,8 @@ func main() {
 
 	stdoutFlag := flag.Bool("stdout", false, "output to stdout instead of writing to file")
 	crawlerFlag := flag.Bool("crawler", true, "use crawler template")
-	gmapsUrl := flag.Bool("gmapsUrl", false, "use link to google maps instead of place details url")
+	gmapsUrlFlag := flag.Bool("gmapsUrl", false, "use link to google maps instead of place details url")
+	urlFlag := flag.String("url", "", "Override url to use for place details")
 
 	flag.Parse()
 
@@ -174,12 +175,16 @@ func main() {
 			f = os.Stdout
 		}
 
-		if *gmapsUrl {
+		if *gmapsUrlFlag {
 			v := url.Values{}
 			v.Set("api", "1")
 			v.Set("query", details.Name)
 			v.Set("query_place_id", details.PlaceID)
 			details.Website = "https://www.google.com/maps/search/?" + v.Encode()
+		}
+
+		if *urlFlag != "" {
+			details.Website = *urlFlag
 		}
 
 		err = t.Execute(f, Masjid{
