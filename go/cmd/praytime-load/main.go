@@ -20,6 +20,7 @@ import (
 func main() {
 
 	force := flag.Bool("force", false, "ignore deletions and force save")
+	verbose := flag.Bool("verbose", false, "enable verbose logging")
 	flag.Parse()
 
 	ctx := context.Background()
@@ -119,7 +120,9 @@ func main() {
 			}
 		}
 
-		log.Printf("Uploading: %+v", v)
+		if *verbose {
+			log.Printf("Uploading: %+v", v)
+		}
 
 		if _, err = evt.Set(ctx, v); err != nil {
 			log.Printf("[ERROR] Failed setting %s[%s]: %v", v.Name, docName, err)
