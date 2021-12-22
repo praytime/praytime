@@ -55,6 +55,7 @@ func main() {
 
 	for {
 		var v praytime.PrayerEventSet
+		updated := false
 
 		if err := dec.Decode(&v); err != nil {
 			if err != io.EOF {
@@ -84,6 +85,7 @@ func main() {
 				continue
 			} else if len(diff) > 0 {
 				// there were changes
+				updated = true
 
 				topic := "/topics/" + v.UUID4
 				// TODO figure out why condition does not work
@@ -98,7 +100,7 @@ func main() {
 
 				if response, err := messagingClient.Send(ctx, message); err != nil {
 					log.Printf("[ERROR] error sending message for %s: %v", v.Name, err)
-				} else {
+				} else if *verbose {
 					// Response is a message ID string.
 					log.Printf("Successfully sent message for %s[%s], response %s", v.Name, v.UUID4, response)
 				}
@@ -114,7 +116,7 @@ func main() {
 
 				if response, err := messagingClient.Send(ctx, message); err != nil {
 					log.Printf("[ERROR] error sending message for %s: %v", v.Name, err)
-				} else {
+				} else if *verbose {
 					log.Printf("Successfully sent message for %s[%s], response %s", v.Name, v.UUID4, response)
 				}
 			}
@@ -127,7 +129,7 @@ func main() {
 		if _, err = evt.Set(ctx, v); err != nil {
 			log.Printf("[ERROR] Failed setting %s[%s]: %v", v.Name, docName, err)
 		} else {
-			log.Printf("set %s[%s]\n", v.Name, docName)
+			log.Printf("set (updated: %v) %s[%s]\n", updated, v.Name, docName)
 		}
 	}
 }
