@@ -21,13 +21,13 @@ import (
 )
 
 type Masjid struct {
-	UUID      string
-	TZ        *maps.TimezoneResult
-	Details   *maps.PlaceDetailsResult
-	IsCrawler bool
+	UUID     string
+	TZ       *maps.TimezoneResult
+	Details  *maps.PlaceDetailsResult
+	IsStatic bool
 }
 
-const jsTemplate = `{{ if .IsCrawler }}
+const jsTemplate = `{{ if not .IsStatic }}
 const util = require('../../../util')
 {{ end }}
 const ids = [
@@ -44,7 +44,7 @@ const ids = [
     }
   }
 ]
-{{ if .IsCrawler }}
+{{ if not .IsStatic }}
 exports.run = async () => {
   const $ = await util.load(ids[0].url)
 
@@ -91,7 +91,7 @@ func main() {
 	t := template.Must(template.New("js").Parse(jsTemplate))
 
 	stdoutFlag := flag.Bool("stdout", false, "output to stdout instead of writing to file")
-	crawlerFlag := flag.Bool("crawler", true, "use crawler template")
+	staticFlag := flag.Bool("static", false, "static, no crawler")
 	gmapsUrlFlag := flag.Bool("gmapsUrl", false, "use link to google maps instead of place details url")
 	urlFlag := flag.String("url", "", "Override url to use for place details")
 
@@ -191,7 +191,7 @@ func main() {
 			uuid.New().String(),
 			tzDetails,
 			&details,
-			*crawlerFlag,
+			*staticFlag,
 		})
 		if err != nil {
 			log.Fatal("Error executing template:", err)
