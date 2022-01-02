@@ -21,15 +21,22 @@ import (
 )
 
 type Masjid struct {
-	UUID     string
-	TZ       *maps.TimezoneResult
-	Details  *maps.PlaceDetailsResult
-	IsStatic bool
+	UUID        string
+	TZ          *maps.TimezoneResult
+	Details     *maps.PlaceDetailsResult
+	IsStatic    bool
+	IsPuppeteer bool
 }
 
-const jsTemplate = `{{ if not .IsStatic }}
+const jsTemplate = `
+{{- if not .IsStatic -}}
 const util = require('../../../util')
-{{ end }}
+{{- if .IsPuppeteer }}
+const puppeteer = require('puppeteer')
+exports.puppeteer = true
+{{- end }}
+{{- end }}
+
 const ids = [
   {
     uuid4: '{{ js .UUID }}',
@@ -44,8 +51,26 @@ const ids = [
     }
   }
 ]
-{{ if not .IsStatic }}
+{{- if not .IsStatic }}
+
 exports.run = async () => {
+{{- if .IsPuppeteer }}
+  const browser = await puppeteer.launch()
+  try {
+    const page = await browser.newPage()
+
+    await page.goto(ids[0].url, { waitUntil: 'networkidle0' })
+
+    const a = await util.pptMapToText(page, '.item-qty')
+    util.setIqamaTimes(ids[0], a)
+
+    let j = await util.pptMapToText(page, 'h4 > strong')
+    j = j.map(util.matchTimeAmPmG).shift()
+    util.setJumaTimes(ids[0], j)
+  } finally {
+    await browser.close()
+  }
+{{- else }}
   const $ = await util.load(ids[0].url)
 
   const a = util.mapToText($, 'div#prayer-times div.prayer-row > div:last-child')
@@ -53,10 +78,11 @@ exports.run = async () => {
 
   util.setIqamaTimes(ids[0], a)
   util.setJumaTimes(ids[0], j)
-
+{{- end }}
   return ids
 }
-{{ end }}
+{{- end }}
+
 exports.ids = ids`
 
 func loadDefaultEnvVars() {
@@ -92,10 +118,15 @@ func main() {
 
 	stdoutFlag := flag.Bool("stdout", false, "output to stdout instead of writing to file")
 	staticFlag := flag.Bool("static", false, "static, no crawler")
+	puppeteerFlag := flag.Bool("ppt", false, "Use puppeteer")
 	gmapsUrlFlag := flag.Bool("gmapsUrl", false, "use link to google maps instead of place details url")
 	urlFlag := flag.String("url", "", "Override url to use for place details")
 
 	flag.Parse()
+
+	if *puppeteerFlag && *staticFlag {
+		log.Fatal("Cannot use both static and puppeteer")
+	}
 
 	loadDefaultEnvVars()
 
@@ -192,6 +223,7 @@ func main() {
 			tzDetails,
 			&details,
 			*staticFlag,
+			*puppeteerFlag,
 		})
 		if err != nil {
 			log.Fatal("Error executing template:", err)
