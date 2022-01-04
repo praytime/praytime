@@ -73,8 +73,8 @@ exports.run = async () => {
 {{- else }}
   const $ = await util.load(ids[0].url)
 
-  const a = util.mapToText($, 'div#prayer-times div.prayer-row > div:last-child')
-  const j = a[a.length - 1].match(/\d+\s*:\s*\d+\s*\w+/g)
+  const a = util.mapToText($, '.jamah')
+  const j = a.slice(-1).map(util.matchTimeG).shift()
 
   util.setIqamaTimes(ids[0], a)
   util.setJumaTimes(ids[0], j)
