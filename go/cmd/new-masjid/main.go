@@ -26,6 +26,7 @@ type Masjid struct {
 	Details     *maps.PlaceDetailsResult
 	IsStatic    bool
 	IsPuppeteer bool
+	IsMasjidal  bool
 }
 
 const jsTemplate = `
@@ -69,6 +70,21 @@ exports.run = async () => {
     util.setJumaTimes(ids[0], j)
   } finally {
     await browser.close()
+  }
+{{- else if .IsMasjidal }}
+  const data = await util.loadJson('https://masjidal.com/api/v1/time?masjid_id=')
+
+  if (data.status === 'success') {
+    const iqama = data.data.iqama
+    util.setTimes(ids[0], [
+      iqama.fajr,
+      iqama.zuhr,
+      iqama.asr,
+      iqama.maghrib,
+      iqama.isha,
+      iqama.jummah1,
+      iqama.jummah2
+    ])
   }
 {{- else }}
   const $ = await util.load(ids[0].url)
@@ -116,16 +132,17 @@ func main() {
 
 	t := template.Must(template.New("js").Parse(jsTemplate))
 
-	stdoutFlag := flag.Bool("stdout", false, "output to stdout instead of writing to file")
-	staticFlag := flag.Bool("static", false, "static, no crawler")
+	stdoutFlag := flag.Bool("stdout", false, "Output to stdout instead of writing to file")
+	staticFlag := flag.Bool("static", false, "Static, no crawler")
 	puppeteerFlag := flag.Bool("ppt", false, "Use puppeteer")
-	gmapsUrlFlag := flag.Bool("gmapsUrl", false, "use link to google maps instead of place details url")
+	masjidalFlag := flag.Bool("masjidal", false, "Site uses masjidal")
+	gmapsUrlFlag := flag.Bool("gmapsUrl", false, "Use link to google maps instead of place details url")
 	urlFlag := flag.String("url", "", "Override url to use for place details")
 
 	flag.Parse()
 
-	if *puppeteerFlag && *staticFlag {
-		log.Fatal("Cannot use both static and puppeteer")
+	if *staticFlag && (*puppeteerFlag || *masjidalFlag) {
+		log.Fatal("Cannot use both static and puppeteer or masjidal")
 	}
 
 	loadDefaultEnvVars()
@@ -224,6 +241,7 @@ func main() {
 			&details,
 			*staticFlag,
 			*puppeteerFlag,
+			*masjidalFlag,
 		})
 		if err != nil {
 			log.Fatal("Error executing template:", err)
@@ -232,7 +250,7 @@ func main() {
 		if !*stdoutFlag {
 			// osc copy path to clipboard
 			// https://www.reddit.com/r/vim/comments/k1ydpn/a_guide_on_how_to_copy_text_from_anywhere/
-			fmt.Println("\033]52;c;", base64.StdEncoding.EncodeToString([]byte(destPath)), "\a")
+			fmt.Print("\033]52;c;", base64.StdEncoding.EncodeToString([]byte(destPath)), "\a")
 			log.Println(destPath, " written and copied to clipboard")
 		}
 	}
