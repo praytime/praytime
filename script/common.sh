@@ -7,12 +7,16 @@ if [[ -e "${PROJECT_DIR?}/.env" ]] ; then
     set +a # stop automatically exporting variables
 fi
 
-function echoerr() {
+function warn() {
     >&2 echo "$@"
 }
 
-function exiterr {
-    echoerr "An error occurred"
+function die() {
+    warn "$@"
     exit 1
 }
 
+function exiterr {
+    warn "An error occurred"
+    exit 1
+}

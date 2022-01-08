@@ -11,6 +11,11 @@ PROJECT_DIR="$SCRIPT_DIR/.."
 
 trap exiterr EXIT
 
+# check if place id already exists
+if rg --fixed-strings --files-with-matches "${@: -1}" "${PROJECT_DIR}/lib"; then
+    die "Error: " "${@: -1}" " already exists"
+fi
+
 # first run new-masjid
 "$SCRIPT_DIR/new-masjid" "$@"
 
