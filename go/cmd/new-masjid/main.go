@@ -27,6 +27,7 @@ type Masjid struct {
 	IsStatic    bool
 	IsPuppeteer bool
 	IsMasjidal  bool
+	IsAwqat     bool
 }
 
 const jsTemplate = `
@@ -86,6 +87,17 @@ exports.run = async () => {
       iqama.jummah2
     ])
   }
+{{- else if .IsAwqat }}
+  const $ = await util.load('')
+
+  $('tr:contains("Zawal")').remove()
+  $('tr:contains("Sunrise")').remove()
+
+  const a = util.mapToText($, '.prayer_entry:last-child')
+  const j = util.mapToText($, '.prayer_entry:nth-child(2)').slice(5)
+
+  util.setIqamaTimes(ids[0], a)
+  util.setJumaTimes(ids[0], j)
 {{- else }}
   const $ = await util.load(ids[0].url)
 
@@ -136,13 +148,14 @@ func main() {
 	staticFlag := flag.Bool("static", false, "Static, no crawler")
 	puppeteerFlag := flag.Bool("ppt", false, "Use puppeteer")
 	masjidalFlag := flag.Bool("masjidal", false, "Site uses masjidal")
+	awqatFlag := flag.Bool("awqat", false, "Site uses awqat")
 	gmapsUrlFlag := flag.Bool("gmapsUrl", false, "Use link to google maps instead of place details url")
 	urlFlag := flag.String("url", "", "Override url to use for place details")
 
 	flag.Parse()
 
-	if *staticFlag && (*puppeteerFlag || *masjidalFlag) {
-		log.Fatal("Cannot use both static and puppeteer or masjidal")
+	if *staticFlag && (*puppeteerFlag || *masjidalFlag || *awqatFlag) {
+		log.Fatal("Cannot use both static and dynamic crawler")
 	}
 
 	loadDefaultEnvVars()
@@ -242,6 +255,7 @@ func main() {
 			*staticFlag,
 			*puppeteerFlag,
 			*masjidalFlag,
+			*awqatFlag,
 		})
 		if err != nil {
 			log.Fatal("Error executing template:", err)
