@@ -7,6 +7,12 @@ import (
 	"time"
 )
 
+type CrawlResult struct {
+	Result PrayerEventSet `json:"result"`
+	Error  string         `json:"error"`
+	Source string         `json:"source"`
+}
+
 // PrayerEventSet - a daily set of prayer times in a single location
 type PrayerEventSet struct {
 	Name                 string         `json:"name" firestore:"name"`

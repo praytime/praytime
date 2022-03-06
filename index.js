@@ -46,14 +46,14 @@ if (argv.length > 0) {
   masaajid = lib.masaajid
 }
 
-const main = async () => {
+// async iife to run crawlers
+(async () => {
   for (const masjid of masaajid) {
     try {
-      console.error('starting %s', masjid)
-
       const masjidLib = require(masjid)
 
-      let results = masjidLib.ids
+      const crawlResults = masjidLib.ids
+      let crawlError = null
       if (masjidLib.run) {
         if ((puppeteerDisabled || skipPuppeteer) && masjidLib.puppeteer) {
           console.error('skipping puppeteer crawler: %s', masjid)
@@ -61,23 +61,29 @@ const main = async () => {
             continue
           }
         } else {
-          // generic run function
-          results = await masjidLib.run()
+          try {
+            // generic run function
+            await masjidLib.run()
+          } catch (err) {
+            crawlError = err.toString()
+          }
         }
       } else if (skipStatic) {
         console.error('skipping static crawler: %s', masjid)
         continue
       } // else static crawler
 
-      results.forEach((r) => {
+      crawlResults.forEach((r) => {
         r.crawlTime = new Date()
         r.geohash = geofire.geohashForLocation([r.geo.latitude, r.geo.longitude])
-        console.log('%j', r)
+        console.log('%j', {
+          result: r,
+          error: crawlError,
+          source: masjid
+        })
       })
     } catch (err) {
       console.error('caught error processing %s:', masjid, err)
     }
   }
-}
-
-main()
+})()

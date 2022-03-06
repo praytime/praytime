@@ -9,6 +9,7 @@ import (
 	//	"google.golang.org/api/iterator"
 	// "fmt"
 	"flag"
+	"fmt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"io"
@@ -54,16 +55,24 @@ func main() {
 	dec := json.NewDecoder(os.Stdin)
 
 	for {
-		var v praytime.PrayerEventSet
+		var crawlResult praytime.CrawlResult
 		updated := false
 
-		if err := dec.Decode(&v); err != nil {
+		if err := dec.Decode(&crawlResult); err != nil {
 			if err != io.EOF {
 				log.Printf("[ERROR] error parsing json: %v", err)
 			}
 			break
 		}
 
+		errPrefix := fmt.Sprintf("ERROR[%s]%s[%s] ", crawlResult.Source, crawlResult.Result.Name, crawlResult.Result.UUID4)
+
+		if len(crawlResult.Error) > 0 {
+			log.Print(errPrefix, "crawl error: ", crawlResult.Error)
+			continue
+		}
+
+		v := crawlResult.Result
 		v.NormalizeTimes()
 
 		docName := v.UUID4
@@ -72,7 +81,7 @@ func main() {
 
 		currEvtSnapshot, err := evt.Get(ctx)
 		if err != nil && status.Code(err) != codes.NotFound {
-			log.Printf("[ERROR] error getting prev value of %s[%s]: %v", v.Name, docName, err)
+			log.Print(errPrefix, "getting prev value: ", err)
 			continue
 		}
 
@@ -81,7 +90,7 @@ func main() {
 			var c praytime.PrayerEventSet
 			currEvtSnapshot.DataTo(&c)
 			if _, diff, err := v.CompareToPrevious(&c, *force); err != nil {
-				log.Printf("[ERROR] error processing %s: %v", v.Name, err)
+				log.Print(errPrefix, "diff: ", err)
 				continue
 			} else if len(diff) > 0 {
 				// there were changes
@@ -99,7 +108,7 @@ func main() {
 				}
 
 				if response, err := messagingClient.Send(ctx, message); err != nil {
-					log.Printf("[ERROR] error sending message for %s: %v", v.Name, err)
+					log.Print(errPrefix, "sending message: ", err)
 				} else if *verbose {
 					// Response is a message ID string.
 					log.Printf("Successfully sent message for %s[%s], response %s", v.Name, v.UUID4, response)
@@ -115,7 +124,7 @@ func main() {
 				}
 
 				if response, err := messagingClient.Send(ctx, message); err != nil {
-					log.Printf("[ERROR] error sending message for %s: %v", v.Name, err)
+					log.Print(errPrefix, "sending message (all): ", err)
 				} else if *verbose {
 					log.Printf("Successfully sent message for %s[%s], response %s", v.Name, v.UUID4, response)
 				}
@@ -127,7 +136,7 @@ func main() {
 		}
 
 		if _, err = evt.Set(ctx, v); err != nil {
-			log.Printf("[ERROR] Failed setting %s[%s]: %v", v.Name, docName, err)
+			log.Print(errPrefix, "setting new value: ", err)
 		} else {
 			log.Printf("set (updated: %v) %s[%s]\n", updated, v.Name, docName)
 		}
