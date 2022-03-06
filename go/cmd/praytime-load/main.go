@@ -54,22 +54,23 @@ func main() {
 
 	dec := json.NewDecoder(os.Stdin)
 
+	log.SetFlags(log.LstdFlags | log.Lmsgprefix)
 	for {
 		var crawlResult praytime.CrawlResult
 		updated := false
 
 		if err := dec.Decode(&crawlResult); err != nil {
 			if err != io.EOF {
-				log.Printf("[ERROR] error parsing json: %v", err)
+				log.Printf("ERROR parsing json: %v", err)
 			}
 			break
 		}
 
 		// First 8 chars of UUID4 is sufficient for identifying
-		errPrefix := fmt.Sprintf("ERROR %s %s ", crawlResult.Source, crawlResult.Result.UUID4[:8])
+		log.SetPrefix(fmt.Sprintf("%s[%s] ", crawlResult.Source, crawlResult.Result.UUID4[:8]))
 
 		if len(crawlResult.Error) > 0 {
-			log.Print(errPrefix, "crawl error: ", crawlResult.Error)
+			log.Print("ERROR crawl error: ", crawlResult.Error)
 			continue
 		}
 
@@ -82,7 +83,7 @@ func main() {
 
 		currEvtSnapshot, err := evt.Get(ctx)
 		if err != nil && status.Code(err) != codes.NotFound {
-			log.Print(errPrefix, "getting prev value: ", err)
+			log.Print("ERROR getting prev value: ", err)
 			continue
 		}
 
@@ -91,7 +92,7 @@ func main() {
 			var c praytime.PrayerEventSet
 			currEvtSnapshot.DataTo(&c)
 			if _, diff, err := v.CompareToPrevious(&c, *force); err != nil {
-				log.Print(errPrefix, "diff: ", err)
+				log.Print("ERROR diff: ", err)
 				continue
 			} else if len(diff) > 0 {
 				// there were changes
@@ -109,10 +110,10 @@ func main() {
 				}
 
 				if response, err := messagingClient.Send(ctx, message); err != nil {
-					log.Print(errPrefix, "sending message: ", err)
+					log.Print("ERROR sending message: ", err)
 				} else if *verbose {
 					// Response is a message ID string.
-					log.Printf("Successfully sent message for %s[%s], response %s", v.Name, v.UUID4[:8], response)
+					log.Print("sent message, response: ", response)
 				}
 
 				topic = "/topics/all"
@@ -125,9 +126,9 @@ func main() {
 				}
 
 				if response, err := messagingClient.Send(ctx, message); err != nil {
-					log.Print(errPrefix, "sending message (all): ", err)
+					log.Print("ERROR sending message (all): ", err)
 				} else if *verbose {
-					log.Printf("Successfully sent message for %s[%s], response %s", v.Name, v.UUID4[:8], response)
+					log.Print("sent message (all), response: ", response)
 				}
 			}
 		}
@@ -137,9 +138,9 @@ func main() {
 		}
 
 		if _, err = evt.Set(ctx, v); err != nil {
-			log.Print(errPrefix, "setting new value: ", err)
+			log.Print("ERROR setting new value: ", err)
 		} else {
-			log.Printf("set (updated: %v) %s[%s]\n", updated, v.Name, v.UUID4[:8])
+			log.Printf("set (updated: %v)", updated)
 		}
 	}
 }
