@@ -65,7 +65,8 @@ func main() {
 			break
 		}
 
-		errPrefix := fmt.Sprintf("ERROR[%s]%s[%s] ", crawlResult.Source, crawlResult.Result.Name, crawlResult.Result.UUID4)
+		// First 8 chars of UUID4 is sufficient for identifying
+		errPrefix := fmt.Sprintf("ERROR %s %s ", crawlResult.Source, crawlResult.Result.UUID4[:8])
 
 		if len(crawlResult.Error) > 0 {
 			log.Print(errPrefix, "crawl error: ", crawlResult.Error)
@@ -111,7 +112,7 @@ func main() {
 					log.Print(errPrefix, "sending message: ", err)
 				} else if *verbose {
 					// Response is a message ID string.
-					log.Printf("Successfully sent message for %s[%s], response %s", v.Name, v.UUID4, response)
+					log.Printf("Successfully sent message for %s[%s], response %s", v.Name, v.UUID4[:8], response)
 				}
 
 				topic = "/topics/all"
@@ -126,7 +127,7 @@ func main() {
 				if response, err := messagingClient.Send(ctx, message); err != nil {
 					log.Print(errPrefix, "sending message (all): ", err)
 				} else if *verbose {
-					log.Printf("Successfully sent message for %s[%s], response %s", v.Name, v.UUID4, response)
+					log.Printf("Successfully sent message for %s[%s], response %s", v.Name, v.UUID4[:8], response)
 				}
 			}
 		}
@@ -138,7 +139,7 @@ func main() {
 		if _, err = evt.Set(ctx, v); err != nil {
 			log.Print(errPrefix, "setting new value: ", err)
 		} else {
-			log.Printf("set (updated: %v) %s[%s]\n", updated, v.Name, docName)
+			log.Printf("set (updated: %v) %s[%s]\n", updated, v.Name, v.UUID4[:8])
 		}
 	}
 }

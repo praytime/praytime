@@ -1,3 +1,4 @@
+const path = require('path')
 const geofire = require('geofire-common')
 
 // If true will not run puppeteer crawlers but still may output static data
@@ -26,25 +27,25 @@ for (; argv.length; argv.shift()) {
   }
 }
 
-let masaajid = []
-
-if (argv.length > 0) {
-  // resolve relative module paths
-  masaajid = argv.map(m => {
-    try {
-      return require.resolve(m)
-    } catch (e) {
-      if (e.code !== 'MODULE_NOT_FOUND' || m.startsWith('/') || m.startsWith('./')) {
-        throw e
+const masaajid = ((argv) => {
+  if (argv.length > 0) {
+    // resolve relative module paths
+    return argv.map(m => {
+      try {
+        return require.resolve(m)
+      } catch (e) {
+        if (e.code !== 'MODULE_NOT_FOUND' || m.startsWith('/') || m.startsWith('./')) {
+          throw e
+        }
+        // try assuming it's a relative module path
+        return require.resolve('./' + m)
       }
-      // try assuming it's a relative module path
-      return require.resolve('./' + m)
-    }
-  })
-} else {
-  const lib = require('./lib')
-  masaajid = lib.masaajid
-}
+    })
+  } else {
+    return require('./lib').masaajid
+  }
+})(argv)
+  .map((absLibPath) => './' + path.relative(__dirname, absLibPath));
 
 // async iife to run crawlers
 (async () => {
@@ -53,7 +54,7 @@ if (argv.length > 0) {
       const masjidLib = require(masjid)
 
       const crawlResults = masjidLib.ids
-      let crawlError = null
+      let crawlError = ''
       if (masjidLib.run) {
         if ((puppeteerDisabled || skipPuppeteer) && masjidLib.puppeteer) {
           console.error('skipping puppeteer crawler: %s', masjid)
