@@ -21,7 +21,7 @@
     "cheerio": "^1.0.0-rc.3",
     "csv-parse": "^5.0.4",
     "geofire-common": "^5.2.0",
-    "puppeteer": "^13.5.1",
+    "puppeteer": "^13.5.2",
     "timezone": "^1.0.23"
   }
 }
