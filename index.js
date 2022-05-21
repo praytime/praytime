@@ -1,5 +1,6 @@
 const path = require('path')
 const geofire = require('geofire-common')
+const util = require('./lib/util')
 
 // If true will not run puppeteer crawlers but still may output static data
 const puppeteerDisabled = ('PUPPETEER_DISABLED' in process.env)
@@ -49,7 +50,7 @@ const masaajid = ((argv) => {
 
 // async iife to run crawlers
 (async () => {
-  for (const masjid of masaajid) {
+  for (const masjid of util.shuffle(masaajid)) {
     try {
       const masjidLib = require(masjid)
 
