@@ -8,6 +8,8 @@ const puppeteerDisabled = ('PUPPETEER_DISABLED' in process.env)
 let skipPuppeteer = false
 // If true will not output static data
 let skipStatic = false
+// If true will not dump all static data and ignore other options
+let dump = false
 
 const argv = process.argv.slice(2)
 
@@ -16,6 +18,9 @@ for (; argv.length; argv.shift()) {
     break
   }
   switch (argv[0]) {
+    case '--dump':
+      dump = true
+      break
     case '--skip-static':
       skipStatic = true
       break
@@ -46,7 +51,18 @@ const masaajid = ((argv) => {
     return require('./lib').masaajid
   }
 })(argv)
-  .map((absLibPath) => './' + path.relative(__dirname, absLibPath));
+  .map((absLibPath) => './' + path.relative(__dirname, absLibPath))
+
+if (dump) {
+  console.log('%j', masaajid.map(require)
+    .map(masjidLib => masjidLib.ids.map(id => {
+      id.geohash = geofire.geohashForLocation([id.geo.latitude, id.geo.longitude])
+      return id
+    }))
+    .reduce((a, b) => a.concat(b), [])
+  )
+  process.exit(0)
+}
 
 // async iife to run crawlers
 (async () => {
