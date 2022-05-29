@@ -55,11 +55,14 @@ const masaajid = ((argv) => {
 
 if (dump) {
   console.log('%j', masaajid.map(require)
-    .map(masjidLib => masjidLib.ids.map(id => {
-      id.geohash = geofire.geohashForLocation([id.geo.latitude, id.geo.longitude])
-      return id
-    }))
-    .reduce((a, b) => a.concat(b), [])
+    .map(masjidLib => masjidLib.ids.map(id => ({
+      name: id.name,
+      url: id.url,
+      geo: [id.geo.latitude, id.geo.longitude],
+      geohash: geofire.geohashForLocation([id.geo.latitude, id.geo.longitude])
+    })
+    ))
+    .reduce((a, b) => a.concat(b))
   )
   process.exit(0)
 }
