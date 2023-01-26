@@ -17,11 +17,11 @@
   },
   "homepage": "https://github.com/praytime/praytime#readme",
   "dependencies": {
-    "axios": "^1.2.0",
+    "axios": "^1.2.4",
     "cheerio": "^1.0.0-rc.3",
-    "csv-parse": "^5.3.2",
+    "csv-parse": "^5.3.3",
     "geofire-common": "^6.0.0",
-    "puppeteer": "^19.3.0",
+    "puppeteer": "^19.6.1",
     "timezone": "^1.0.23"
   }
 }
