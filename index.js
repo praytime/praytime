@@ -2,6 +2,22 @@ const path = require('path')
 const geofire = require('geofire-common')
 const util = require('./lib/util')
 
+const crawlerTimeoutMs = util.parsePositiveInt(process.env.CRAWLER_TIMEOUT_MS, 45000)
+
+const withTimeout = async (promise, timeoutMs, timeoutMessage) => {
+  let timeoutId
+  const timeoutPromise = new Promise((resolve, reject) => {
+    timeoutId = setTimeout(() => {
+      reject(new Error(timeoutMessage))
+    }, timeoutMs)
+  })
+  try {
+    return await Promise.race([promise, timeoutPromise])
+  } finally {
+    clearTimeout(timeoutId)
+  }
+}
+
 // If true will not run puppeteer crawlers but still may output static data
 const puppeteerDisabled = ('PUPPETEER_DISABLED' in process.env)
 // If true will not run or output puppeteer crawler data
@@ -84,7 +100,11 @@ if (dump) {
         } else {
           try {
             // generic run function
-            await masjidLib.run()
+            await withTimeout(
+              masjidLib.run(),
+              crawlerTimeoutMs,
+              `crawler timed out after ${crawlerTimeoutMs}ms`
+            )
           } catch (err) {
             crawlError = err.toString()
           }
