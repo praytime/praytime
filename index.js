@@ -1,3 +1,5 @@
+#!/usr/bin/env bun
+
 const path = require('path')
 const geofire = require('geofire-common')
 const util = require('./lib/util')
