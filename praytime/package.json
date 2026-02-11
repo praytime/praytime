@@ -15,6 +15,7 @@
   "dependencies": {
     "axios": "^1.13.5",
     "cheerio": "^1.2.0",
+    "csv-parse": "^5.6.0",
     "geofire-common": "^6.0.0",
     "puppeteer": "^24.37.2",
     "timezone": "^1.0.23"

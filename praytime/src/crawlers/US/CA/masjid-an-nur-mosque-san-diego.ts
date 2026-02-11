@@ -1,0 +1,22 @@
+// @ts-nocheck
+import type { CrawlerModule } from "../../../types";
+
+const ids = [
+  {
+    uuid4: "8bb2eb53-5550-4fd2-ae30-2063cc10f459",
+    name: "Masjid An-Nur Mosque",
+    url: "",
+    timeZoneId: "America/Los_Angeles",
+    address: "3872 50th St, San Diego, CA 92105, USA",
+    placeId: "ChIJM62vbRlU2YARiPUwUUWKFPE",
+    geo: {
+      latitude: 32.74876749999999,
+      longitude: -117.0874527,
+    },
+  },
+];
+
+export const crawler: CrawlerModule = {
+  name: "US/CA/masjid-an-nur-mosque-san-diego",
+  ids,
+};
