@@ -16,7 +16,7 @@ Default to using Bun instead of Node.js.
 
 ## Testing
 
-Use `bun test` to run tests.
+Run `bun run --parallel typecheck lint test` after any changes. Tests will be included.
 
 ```ts#index.test.ts
 import { test, expect } from "bun:test";

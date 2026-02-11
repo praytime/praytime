@@ -12,9 +12,9 @@ trap exiterr EXIT
 
 if [ -t 1 ] ; then 
     # Writing to terminal, use jq to pretty print
-    bun index.js "$@" | jq
+    bun run . "$@" | jq
 else 
-    bun index.js "$@"
+    bun run . "$@"
 fi
 
 trap - EXIT
