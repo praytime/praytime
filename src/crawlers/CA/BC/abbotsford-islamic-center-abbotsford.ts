@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "12bb8655-933d-49b5-a160-521bccb2c2e8",
     name: "Abbotsford Islamic Center",
@@ -24,7 +23,7 @@ const run = async () => {
   $('tr:contains("Sunrise")', t).remove();
 
   const a = util.mapToText($, "td:last-child", t);
-  if (a[3].length === 0) {
+  if ((a[3] ?? "").length === 0) {
     a[3] = "-";
   }
   const j = util.mapToText($, "td:nth-child(2)", t).slice(5);

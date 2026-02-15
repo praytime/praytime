@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "79d3f064-733a-40c8-886c-5b76e845ed0c",
     name: "Masjid Ahlul Qur'aan Wa Sunnah",
@@ -22,19 +21,19 @@ const run = async () => {
   util.setIqamaTimes(ids[0], [
     $('div.cl-prayer-flex h4:contains("Fajr") + h6')
       .text()
-      .match(/(\d{1,2}:\d{2}\s+\w+)/g)[1],
+      .match(/(\d{1,2}:\d{2}\s+\w+)/g)?.[0],
     $('div.cl-prayer-flex h4:contains("Dhuhr") + h6')
       .text()
-      .match(/(\d{1,2}:\d{2}\s+\w+)/g)[1],
+      .match(/(\d{1,2}:\d{2}\s+\w+)/g)?.[0],
     $('div.cl-prayer-flex h4:contains("Asr") + h6')
       .text()
-      .match(/(\d{1,2}:\d{2}\s+\w+)/g)[1],
+      .match(/(\d{1,2}:\d{2}\s+\w+)/g)?.[0],
     $('div.cl-prayer-flex h4:contains("Maghrib") + h6')
       .text()
-      .match(/(\d{1,2}:\d{2}\s+\w+)/g)[1],
+      .match(/(\d{1,2}:\d{2}\s+\w+)/g)?.[0],
     $('div.cl-prayer-flex h4:contains("Isha") + h6')
       .text()
-      .match(/(\d{1,2}:\d{2}\s+\w+)/g)[1],
+      .match(/(\d{1,2}:\d{2}\s+\w+)/g)?.[0],
   ]);
   util.setJumaTimes(
     ids[0],

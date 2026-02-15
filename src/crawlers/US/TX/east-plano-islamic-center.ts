@@ -1,11 +1,9 @@
-// @ts-nocheck
-
 import axios from "axios";
 import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "c7f52457-b461-44de-9f37-4f3b43aecaf6",
     name: "East Plano Islamic Center",
@@ -19,30 +17,39 @@ const ids = [
     },
   },
 ];
+
+const getTime = ($: cheerio.CheerioAPI, prayer: string): string => {
+  const text = $(`div.cl-prayer-flex h4:contains("${prayer}") + h6`)
+    .text()
+    .trim();
+  const match = util.matchTimeAmPm(text)?.[0];
+  if (!match) {
+    throw new Error(`Failed to parse ${prayer} iqama time`);
+  }
+  return match;
+};
+
 const run = async () => {
   const response = await axios.get("http://epicmasjid.org");
   const $ = cheerio.load(response.data);
+  const record = ids[0];
+  if (!record) {
+    throw new Error("No masjid record configured");
+  }
 
-  util.setIqamaTimes(ids[0], [
-    $('div.cl-prayer-flex h4:contains("Fajr") + h6')
-      .text()
-      .match(/(\d{1,2}:\d{2}\s+\w+)/g)[1],
-    $('div.cl-prayer-flex h4:contains("Dhuhr") + h6')
-      .text()
-      .match(/(\d{1,2}:\d{2}\s+\w+)/g)[1],
-    $('div.cl-prayer-flex h4:contains("Asr") + h6')
-      .text()
-      .match(/(\d{1,2}:\d{2}\s+\w+)/g)[1],
-    $('div.cl-prayer-flex h4:contains("Maghrib") + h6')
-      .text()
-      .match(/(\d{1,2}:\d{2}\s+\w+)/g)[1],
-    $('div.cl-prayer-flex h4:contains("Isha") + h6')
-      .text()
-      .match(/(\d{1,2}:\d{2}\s+\w+)/g)[1],
+  util.setIqamaTimes(record, [
+    getTime($, "Fajr"),
+    getTime($, "Dhuhr"),
+    getTime($, "Asr"),
+    getTime($, "Maghrib"),
+    getTime($, "Isha"),
   ]);
 
   const j = util.mapToText($, ".jumuatime table td:nth-child(2)");
-  util.setJumaTimes(ids[0], j);
+  util.setJumaTimes(
+    record,
+    j.filter(util.matchTimeAmPm).map(util.extractTimeAmPm),
+  );
 
   return ids;
 };

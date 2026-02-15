@@ -1,11 +1,9 @@
-// @ts-nocheck
-
 import axios from "axios";
 import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "e6e51fe9-61b5-4eff-973b-037ef9cf86f9",
     name: "Darul Quran",

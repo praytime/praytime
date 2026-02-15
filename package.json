@@ -30,11 +30,11 @@
     "cheerio": "^1.2.0",
     "csv-parse": "^5.6.0",
     "geofire-common": "^6.0.0",
-    "puppeteer": "^24.37.2",
+    "puppeteer": "^24.37.3",
     "timezone": "^1.0.23"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.3.14",
+    "@biomejs/biome": "^2.4.0",
     "@types/bun": "latest",
     "typescript": "^5.9.3"
   }

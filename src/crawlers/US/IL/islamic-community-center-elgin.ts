@@ -16,7 +16,7 @@ interface MasjidalResponse {
   };
 }
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "6de66ece-24de-45c7-861c-2b3227367e49",
     name: "Islamic Community Center",

@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "a4a93cfe-6906-48da-b077-1ddd5c7f1927",
     name: "Masjid Manhattan",
@@ -22,7 +21,7 @@ const run = async () => {
   const a = util
     .mapToText($, "li > i:last-child")
     .filter((t) => t.match(/\d+\s*:\s*\d+/))
-    .map((t) => t.match(/\d+\s*:\s*\d+\s*\w+/)[0]);
+    .map((t) => t.match(/\d+\s*:\s*\d+\s*\w+/)?.[0]);
 
   util.setTimes(ids[0], a);
 

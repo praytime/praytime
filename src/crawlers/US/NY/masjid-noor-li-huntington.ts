@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "b763f453-2981-4a82-b257-8b13398c0009",
     name: "Masjid Noor LI",
@@ -22,11 +21,12 @@ const run = async () => {
   const a = util.mapToText($, "td:last-child").filter(util.matchTimeAmPm);
   a.splice(1, 1); // remove sunrise
   a.splice(3, 0, "-"); // add maghrib back in
-  const j = util
-    .mapToText($, 'p:contains("First JUMA")')
-    .map((t) => t.split("|"))
-    .shift()
-    .map(util.extractTimeAmPm);
+  const j =
+    util
+      .mapToText($, 'p:contains("First JUMA")')
+      .map((t) => t.split("|"))
+      .shift()
+      ?.map(util.extractTimeAmPm) ?? [];
 
   util.setIqamaTimes(ids[0], a);
   util.setJumaTimes(ids[0], j);

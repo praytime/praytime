@@ -1,10 +1,8 @@
-// @ts-nocheck
-
 import axios from "axios";
 import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "12d8631a-8c92-408c-b8e3-141def46c2d6",
     name: "Islamic Association of Allen",

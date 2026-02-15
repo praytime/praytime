@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "95dc0e87-c5d0-4184-9cdd-bf46d7178cad",
     name: "Sarnia Muslim Association",
@@ -17,7 +16,11 @@ const ids = [
   },
 ];
 const run = async () => {
-  const $ = await util.load(ids[0].url);
+  const id = ids[0];
+  if (!id) {
+    throw new Error("Missing crawler metadata");
+  }
+  const $ = await util.load(id.url);
 
   const a = util.mapToText($, "figure tr:last-child td").filter(util.matchTime);
   if (a.length === 6) {
@@ -26,7 +29,7 @@ const run = async () => {
     a[7] = "-";
   }
 
-  util.setTimes(ids[0], a);
+  util.setTimes(id, a);
 
   return ids;
 };

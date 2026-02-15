@@ -1,10 +1,8 @@
-// @ts-nocheck
-
 import axios from "axios";
 import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "634b264a-a2df-4335-81ba-85d65310157a",
     name: "The Prayer Center of Orland Park",
@@ -30,11 +28,11 @@ const run = async () => {
   ids[0].juma1 = $("table.dptTimetable th")
     .eq(0)
     .text()
-    .match(/\d{1,2}:\d{2}/g)[0];
+    .match(/\d{1,2}:\d{2}/g)?.[0];
   ids[0].juma2 = $("table.dptTimetable th")
     .eq(0)
     .text()
-    .match(/\d{1,2}:\d{2}/g)[1];
+    .match(/\d{1,2}:\d{2}/g)?.[1];
 
   return ids;
 };

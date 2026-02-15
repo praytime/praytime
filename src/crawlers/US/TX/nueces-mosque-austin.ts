@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "28e5a488-c36b-40c5-8dfb-45343027b70e",
     name: "Nueces Mosque",
@@ -23,7 +22,7 @@ const run = async () => {
   a.splice(1, 1); // remove sunrise
   util.setIqamaTimes(ids[0], a);
 
-  const j = a[5].match(/\d+:\d+/g);
+  const j = (a[5] ?? "").match(/\d+:\d+/g);
 
   util.setJumaTimes(ids[0], j);
 

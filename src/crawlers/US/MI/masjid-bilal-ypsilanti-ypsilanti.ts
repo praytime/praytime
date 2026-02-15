@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "1d8976de-c584-4a2b-99e3-be5028be2f18",
     name: "Masjid Bilal Ypsilanti",
@@ -23,7 +22,7 @@ const run = async () => {
     .mapToText($, ".mptwidgetdiv table td:last-child")
     .filter((t) => t.match(/\d{1,2}\s*:\s*\d{1,2}/));
   a.splice(1, 1); // remove sunrise
-  const j = a[5].match(/\d+\s*:\s*\d+\s*\w+/g);
+  const j = (a[5] ?? "").match(/\d+\s*:\s*\d+\s*\w+/g);
 
   util.setIqamaTimes(ids[0], a);
   util.setJumaTimes(ids[0], j);

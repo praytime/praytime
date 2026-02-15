@@ -1,10 +1,8 @@
-// @ts-nocheck
-
 import axios from "axios";
 import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "67c64bec-d370-48ec-8c01-78f3d7cc2494",
     name: "Dar-us-Salaam",
@@ -41,7 +39,10 @@ const run = async () => {
   ids[0].ishaIqama = $(".dptTimetable tr:nth-child(8) td:last-child").text();
   ids[0].juma1 = "check website";
 
-  ids[1].juma1 = "check website";
+  const second = ids[1];
+  if (second) {
+    second.juma1 = "check website";
+  }
 
   return ids;
 };

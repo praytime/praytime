@@ -1,7 +1,6 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "6ac13287-39f6-4a8e-bfd0-f02c7a7772d3",
     name: "Islamic Society of the Seacoast area",

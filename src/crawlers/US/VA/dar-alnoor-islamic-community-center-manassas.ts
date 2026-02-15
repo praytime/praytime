@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "f4ca5523-68f0-4e04-8314-442419bcfc77",
     name: "Dar Alnoor Islamic Community Center",
@@ -22,7 +21,7 @@ const run = async () => {
   const a = util.mapToText($, "#prayertimedetails-11 li div:last-child");
   a.splice(0, 1); // remove header
   a.splice(1, 1); // remove sunrise
-  const j = a[a.length - 1].match(/\d+\s*:\s*\d+\s*\w+/g);
+  const j = (a[a.length - 1] ?? "").match(/\d+\s*:\s*\d+\s*\w+/g);
 
   util.setIqamaTimes(ids[0], a);
   util.setJumaTimes(ids[0], j);

@@ -4,13 +4,24 @@ import { parseCliArgs } from "../src/index";
 import { filterCrawlerEntries } from "../src/registry";
 import type { CrawlerRegistryEntry } from "../src/types";
 
+const sampleId = {
+  uuid4: "00000000-0000-0000-0000-000000000000",
+  name: "Sample Masjid",
+  url: "https://example.com",
+  timeZoneId: "America/New_York",
+  geo: {
+    latitude: 0,
+    longitude: 0,
+  },
+};
+
 const entries: CrawlerRegistryEntry[] = [
   {
     name: "US/GA/al-farooq-masjid-atlanta",
     sourcePath: "src/crawlers/US/GA/al-farooq-masjid-atlanta.ts",
     crawler: {
       name: "US/GA/al-farooq-masjid-atlanta",
-      ids: [],
+      ids: [sampleId],
     },
   },
   {
@@ -18,7 +29,7 @@ const entries: CrawlerRegistryEntry[] = [
     sourcePath: "src/crawlers/US/GA/hamzah-islamic-center-alpharetta.ts",
     crawler: {
       name: "US/GA/hamzah-islamic-center-alpharetta",
-      ids: [],
+      ids: [sampleId],
       puppeteer: true,
     },
   },
@@ -27,7 +38,7 @@ const entries: CrawlerRegistryEntry[] = [
     sourcePath: "src/crawlers/US/IL/batavia-islamic-center.ts",
     crawler: {
       name: "US/IL/batavia-islamic-center",
-      ids: [],
+      ids: [sampleId],
     },
   },
 ];

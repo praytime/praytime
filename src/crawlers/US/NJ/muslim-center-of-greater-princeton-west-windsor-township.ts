@@ -1,9 +1,8 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 
 // TODO: page structure difficult to scrape
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "38d2adcf-8192-4a2d-bdb8-ec02b5995842",
     name: "Muslim Center of Greater Princeton",

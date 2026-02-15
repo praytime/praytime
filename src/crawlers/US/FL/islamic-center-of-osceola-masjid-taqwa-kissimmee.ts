@@ -1,12 +1,10 @@
-// @ts-nocheck
-
 import * as https from "node:https";
 import axios from "axios";
 import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "f1a68dea-86c9-40e4-a8ab-b25c3364e511",
     name: "Islamic Center of Osceola Masjid Taqwa",

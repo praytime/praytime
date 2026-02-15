@@ -1,10 +1,8 @@
-// @ts-nocheck
-
 import axios from "axios";
 import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "a988f430-650d-4918-800d-21be23ca34a1",
     name: "Islamic Center of Romeoville",
@@ -30,7 +28,7 @@ const run = async () => {
   ids[0].ishaIqama = $("td:contains(Isha) + td").text().trim();
   ids[0].juma1 = $("th:contains(Jumu)")
     .text()
-    .match(/\d{1,2}:\d{2}/)[0];
+    .match(/\d{1,2}:\d{2}/)?.[0];
 
   return ids;
 };

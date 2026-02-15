@@ -1,10 +1,8 @@
-// @ts-nocheck
-
 import axios from "axios";
 import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "8aba0bd2-35b0-4550-bdee-c9d9feae5fd2",
     name: "Masjid Al-Mustafa",
@@ -24,12 +22,13 @@ const run = async () => {
 
   const target = $("div.paragraph:contains('Fajr:')");
   const t = target.text().match(/(\d{1,2}:\d{2})/g);
+  const maghrib = target.text().match(/Maghrib:\s+([\d\w\s]+)Isha/);
 
-  ids[0].fajrIqama = t[0];
-  ids[0].zuhrIqama = t[1];
-  ids[0].asrIqama = t[2];
-  ids[0].maghribIqama = target.text().match(/Maghrib:\s+([\d\w\s]+)Isha/)[1];
-  ids[0].ishaIqama = t[3];
+  ids[0].fajrIqama = t?.[0];
+  ids[0].zuhrIqama = t?.[1];
+  ids[0].asrIqama = t?.[2];
+  ids[0].maghribIqama = maghrib?.[1];
+  ids[0].ishaIqama = t?.[3];
   ids[0].juma1 = "check website";
 
   return ids;

@@ -1,12 +1,10 @@
-// @ts-nocheck
-
 import * as cheerio from "cheerio";
 import puppeteer from "puppeteer";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
 const crawlerPuppeteer = true;
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "40dfeb6d-3b43-4840-a898-6be7f73dd47c",
     name: "Jama Masjid",
@@ -204,7 +202,7 @@ const run = async () => {
       );
       a.splice(3, 0, "-"); // insert maghrib
       util.setIqamaTimes(ids[i], a);
-      if (a[5].length) {
+      if ((a[5] ?? "").length) {
         util.setJumaTimes(ids[i], util.matchTimeG(a[5]));
       }
     });

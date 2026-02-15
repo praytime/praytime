@@ -1,11 +1,9 @@
-// @ts-nocheck
-
 import puppeteer from "puppeteer";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
 const crawlerPuppeteer = true;
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "1cdf0dc5-559b-4521-ad46-da5cf6aa22d1",
     name: "Masjid Al-Ihsaan",

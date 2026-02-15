@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "76667470-6e6e-4d16-9cb4-80926640d023",
     name: "Attawheed Islamic Center",
@@ -23,8 +22,12 @@ const run = async () => {
     .mapToTextPreserveBreaks($, 'h2:contains("Iqamah Timings") + div')
     .map((t) => t.split("\n"))
     .shift()
-    .map((t) => t.trim())
+    ?.map((t) => t.trim())
     .filter((t) => t.length > 0);
+
+  if (!aa) {
+    throw new Error("missing iqamah timings");
+  }
 
   // console.error(aa)
   // [

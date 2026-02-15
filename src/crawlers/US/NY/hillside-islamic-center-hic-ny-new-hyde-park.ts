@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "e807ade1-5329-4d16-9759-5139b604dbeb",
     name: "Hillside Islamic Center (HIC-NY)",
@@ -21,7 +20,8 @@ const run = async () => {
 
   const a = util
     .mapToText($, ".cl-prayer-box p:last-child")
-    .map((t) => t.match(/\d+\s*:\s*\d+/g).pop());
+    .map((t) => t.match(/\d+\s*:\s*\d+/g)?.pop())
+    .filter((value): value is string => value !== null && value !== undefined);
   a.splice(1, 1); // remove sunrise
 
   const j = util.mapToText($, ".prayer_table td:nth-child(2)");

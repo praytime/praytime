@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "d5e1a5d5-381a-42d1-9f6a-2a797b6eab02",
     name: "Mountain View-Palo Alto Mosque (MVPA Musalla)",

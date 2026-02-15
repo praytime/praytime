@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "a5c8e3f5-25fe-46d6-813c-e86f8002a7a6",
     name: "Prince George's Muslim Association",
@@ -23,7 +22,7 @@ const run = async () => {
     $,
     "div#prayer-times div.prayer-row > div:last-child",
   );
-  const j = a[a.length - 1].match(/\d+\s*:\s*\d+\s*\w+/g);
+  const j = (a[a.length - 1] ?? "").match(/\d+\s*:\s*\d+\s*\w+/g);
 
   util.setIqamaTimes(ids[0], a);
   util.setJumaTimes(ids[0], j);

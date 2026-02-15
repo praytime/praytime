@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "5b1a790c-6196-4167-bbc2-c4805d36b57f",
     name: "BIS Hoover Crescent Islamic Center",
@@ -129,15 +128,28 @@ const run = async () => {
   ]);
 
   da.slice(0, 3).forEach((d, i) => {
-    util.setIqamaTimes(ids[i], [d.Fajr, d.Duhr, d.Asr, d.Maghrib, d.Isha]);
+    const record = d as {
+      Fajr: string;
+      Duhr: string;
+      Asr: string;
+      Maghrib: string;
+      Isha: string;
+    };
+    util.setIqamaTimes(ids[i], [
+      record.Fajr,
+      record.Duhr,
+      record.Asr,
+      record.Maghrib,
+      record.Isha,
+    ]);
   });
 
   ["HCIC", "HOMEWOOD", "WESTSIDE"].forEach((name, i) => {
-    util.setJumaTimes(ids[i], [
-      Object.values(da[3])
-        .shift()
-        .find(({ masjid }) => masjid === name).Time,
-    ]);
+    const currentJumas = Object.values(
+      da[3] as Record<string, { masjid: string; Time: string }>,
+    );
+    const juma = currentJumas.find(({ masjid }) => masjid === name);
+    util.setJumaTimes(ids[i], [juma?.Time]);
   });
 
   return ids;

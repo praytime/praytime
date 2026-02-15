@@ -17,7 +17,7 @@ interface MasjidalResponse {
   };
 }
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "d7c67298-6f4b-4694-a157-1ece31bc3294",
     name: "Islamic Center of Naperville (Ogden)",

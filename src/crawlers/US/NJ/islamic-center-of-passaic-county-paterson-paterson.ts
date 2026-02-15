@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "a58b85c1-fd14-4165-a063-daa9b48c129d",
     name: "Islamic Center of Passaic County (Paterson)",
@@ -60,19 +59,19 @@ const run = async () => {
     ids[0],
     j
       .filter((t) => t.match(/paterson/i))
-      .map((t) => t.match(/\d+\s*:\s*\d+/)[0]),
+      .map((t) => t.match(/\d+\s*:\s*\d+/)?.[0]),
   );
   util.setJumaTimes(
     ids[1],
     j
       .filter((t) => t.match(/clifton/i))
-      .map((t) => t.match(/\d+\s*:\s*\d+/)[0]),
+      .map((t) => t.match(/\d+\s*:\s*\d+/)?.[0]),
   );
   util.setJumaTimes(
     ids[2],
     j
       .filter((t) => t.match(/Prospect Park/i))
-      .map((t) => t.match(/\d+\s*:\s*\d+/)[0]),
+      .map((t) => t.match(/\d+\s*:\s*\d+/)?.[0]),
   );
 
   return ids;

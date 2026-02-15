@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "0745c2e6-9490-4ae1-9522-1082c63a0496",
     name: "Guildford Islamic Cultural Center (GICC)",
@@ -24,11 +23,14 @@ const run = async () => {
   $('tr:contains("Zawal")').remove();
   $('tr:contains("Sunrise")').remove();
 
+  const id = ids[0];
+  if (!id) throw new Error("No masjid IDs defined");
+
   const a = util.mapToText($, ".prayer_entry:last-child");
   const j = util.mapToText($, ".prayer_entry:nth-child(2)").slice(5);
 
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], j);
+  util.setIqamaTimes(id, a);
+  util.setJumaTimes(id, j);
   return ids;
 };
 

@@ -1,8 +1,23 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+type ApiPrayer = {
+  type: {
+    IQAMA?: {
+      time: string;
+    };
+    AZAAN?: {
+      time: string;
+    };
+  };
+};
+
+type ApiDay = {
+  prayerDay: string;
+  prayerSchedule: ApiPrayer[];
+};
+
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "2b458b1f-a75a-40a2-bd9e-9aef24305a99",
     name: "Al Iman Islamic Centre",
@@ -19,7 +34,7 @@ const ids = [
 const run = async () => {
   //        %B     The full month name according to the current locale.
   //        %Y     The full year, including the century.
-  const d = await util.loadJson(
+  const d = await util.loadJson<ApiDay[]>(
     util.strftime(
       "http://al-imancenter.com/api/prayerTimeTable?prayerMonth=%B&prayerYear=%Y",
       ids[0],
@@ -28,17 +43,16 @@ const run = async () => {
 
   //        %d     The day of the month as a decimal number (range 01 to 31).
   const day = util.strftime("%d", ids[0]);
+  const schedule = d.find(({ prayerDay }) => prayerDay === day);
+  if (!schedule) {
+    throw new Error(`missing schedule for day ${day}`);
+  }
+
   util.setTimes(
     ids[0],
-    d
-      .find(({ prayerDay: d }) => d === day)
-      .prayerSchedule.map((p) => {
-        if (p.type.IQAMA) {
-          return p.type.IQAMA.time;
-        } else {
-          return p.type.AZAAN.time;
-        }
-      }),
+    schedule.prayerSchedule.map(
+      (prayer) => prayer.type.IQAMA?.time ?? prayer.type.AZAAN?.time ?? "",
+    ),
   );
 
   return ids;

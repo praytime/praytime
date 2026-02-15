@@ -1,11 +1,9 @@
-// @ts-nocheck
-
 import puppeteer from "puppeteer";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
 const crawlerPuppeteer = true;
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "fd321b99-7fc2-47ef-b040-d8d273351c04",
     name: "Tempe Mosque (Islamic Community Center)",
@@ -28,10 +26,13 @@ const run = async () => {
     const table = await page.waitForSelector(
       "table.masjidnow-salah-timings-table",
     );
+    if (!table) {
+      throw new Error("missing prayer table");
+    }
 
     // eval() evaluates the selector ids in the browser
     const t = await table.$$eval(".masjidnow-salah-time-iqamah", (tds) =>
-      tds.map((td) => td.textContent.trim()),
+      tds.map((td) => td.textContent?.trim() ?? ""),
     );
     t.splice(1, 1); // remove sunrise
 

@@ -1,11 +1,9 @@
-// @ts-nocheck
-
 import puppeteer from "puppeteer";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
 const crawlerPuppeteer = true;
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "24e23e22-5290-48df-adf6-3aa3adc165d3",
     name: "Islamic Foundation of Greater St. Louis (Daar Ul-Islam Masjid)",
@@ -26,17 +24,20 @@ const run = async () => {
     await page.goto(ids[0].url);
 
     const table = await page.waitForSelector("#ds-tv");
+    if (!table) {
+      throw new Error("missing prayer table");
+    }
 
     // eval() evaluates the selector ids in the browser
     const t = await table.$$eval("td:last-child", (tds) =>
       tds
-        .map((td) => td.textContent.trim())
+        .map((td) => td.textContent?.trim() ?? "")
         .filter((t) => t.length)
         .filter((t) => t.match(/\d+\s*:\s*\d+/)),
     );
 
     util.setIqamaTimes(ids[0], t);
-    util.setJumaTimes(ids[0], t.pop().match(/\d+\s*:\s*\d+\s*\w+/g));
+    util.setJumaTimes(ids[0], t.pop()?.match(/\d+\s*:\s*\d+\s*\w+/g));
   } finally {
     await browser.close();
   }

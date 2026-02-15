@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "f3dcfd95-9670-44a8-bc9b-7cb763e2994c",
     name: "Islamic Society of Greater Valley Forge",
@@ -18,9 +17,51 @@ const ids = [
 ];
 const run = async () => {
   const dateStr = util.strftime("%d%b%Y", ids[0]).toUpperCase();
-  const [d] = await util.loadJson(
-    "https://app.flashgood.org/api/v1/prayertime.php?id=27",
+  const [d] = await util.loadJson<
+    Array<{
+      prayer_time: string;
+      friday_time: string;
+    }>
+  >("https://app.flashgood.org/api/v1/prayertime.php?id=27");
+
+  if (!d) {
+    throw new Error("missing prayer data");
+  }
+
+  type PrayerTime = {
+    date: string;
+    fajr: string;
+    dhuhr: string;
+    asr: string;
+    maghrib: string;
+    isha: string;
+  };
+
+  type FridayTime = {
+    time: {
+      hour: number;
+      minute: number;
+      second: number;
+    };
+  };
+
+  const parsedPrayerData = JSON.parse(d.prayer_time);
+  const prayerList = parsedPrayerData.prayerTimes as Array<
+    PrayerTime & { date: string }
+  >;
+  const p = prayerList.find(({ date }) => date === dateStr);
+  if (!p) {
+    throw new Error(`missing prayer entry for ${dateStr}`);
+  }
+
+  util.setIqamaTimes(ids[0], [p.fajr, p.dhuhr, p.asr, p.maghrib, p.isha]);
+
+  const parsedFridayTimes = JSON.parse(d.friday_time) as FridayTime[];
+  util.setJumaTimes(
+    ids[0],
+    parsedFridayTimes.map(({ time }) => `${time.hour}:${time.minute}`),
   );
+
   // d.prayer_time.prayer_time = [
   // ...
   //   {
@@ -37,45 +78,6 @@ const run = async () => {
   //   },
   //   ...
   // ]
-  const p = JSON.parse(d.prayer_time).prayerTimes.find(
-    ({ date }) => date === dateStr,
-  ).prayerTime;
-  util.setIqamaTimes(ids[0], [p.fajr, p.dhuhr, p.asr, p.maghrib, p.isha]);
-
-  // d.friday_time =
-  // [
-  //   {
-  //     "name": "JUMA 1",
-  //     "time": {
-  //       "hour": 12,
-  //       "minute": 15,
-  //       "second": 0
-  //     },
-  //     "dst": true
-  //   },
-  //   {
-  //     "name": "JUMA 2",
-  //     "time": {
-  //       "hour": 13,
-  //       "minute": 0,
-  //       "second": 0
-  //     },
-  //     "dst": true
-  //   },
-  //   {
-  //     "name": "JUMA 3",
-  //     "time": {
-  //       "hour": 13,
-  //       "minute": 45,
-  //       "second": 0
-  //     },
-  //     "dst": true
-  //   }
-  // ]
-  util.setJumaTimes(
-    ids[0],
-    JSON.parse(d.friday_time).map(({ time }) => `${time.hour}:${time.minute}`),
-  );
 
   return ids;
 };

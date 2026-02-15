@@ -1,7 +1,7 @@
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "3d831335-0908-48b8-a30e-1f21d5d3e899",
     name: "Masjid Al Farooq",

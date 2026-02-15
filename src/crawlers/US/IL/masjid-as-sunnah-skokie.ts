@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "7e648216-8f92-4400-8959-095048c1b165",
     name: "Masjid As-Sunnah",
@@ -57,13 +56,26 @@ const run = async () => {
   //   }
   // ]
 
+  type PrayerTime = {
+    name: string;
+    time: string;
+  };
+
+  const prayerTimes = d as unknown as PrayerTime[];
+  const getTime = (name: string): string => {
+    return (
+      prayerTimes.find((entry: PrayerTime) => entry.name === name)?.time ??
+      "check website"
+    );
+  };
+
   util.setTimes(ids[0], [
-    d.find(({ name }) => name === "Fajr").time,
-    d.find(({ name }) => name === "Dhuhr").time,
-    d.find(({ name }) => name === "Asr").time,
-    d.find(({ name }) => name === "Maghrib").time,
-    d.find(({ name }) => name === "Isha").time,
-    d.find(({ name }) => name === "Jumu'ah").time,
+    getTime("Fajr"),
+    getTime("Dhuhr"),
+    getTime("Asr"),
+    getTime("Maghrib"),
+    getTime("Isha"),
+    getTime("Jumu'ah"),
   ]);
 
   return ids;

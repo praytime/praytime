@@ -2,10 +2,10 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import type {
+  CrawlerIds,
   CrawlerModule,
   CrawlerRegistryEntry,
   CrawlerRun,
-  MasjidRecord,
 } from "./types";
 
 const srcDir = path.dirname(fileURLToPath(import.meta.url));
@@ -38,7 +38,7 @@ const normalizeCrawlerCandidate = (
     puppeteer?: unknown;
   };
 
-  if (!Array.isArray(raw.ids)) {
+  if (!Array.isArray(raw.ids) || raw.ids.length === 0) {
     return null;
   }
 
@@ -51,7 +51,7 @@ const normalizeCrawlerCandidate = (
 
   return {
     name,
-    ids: raw.ids as MasjidRecord[],
+    ids: raw.ids as CrawlerIds,
     run,
     puppeteer: raw.puppeteer === true,
   };

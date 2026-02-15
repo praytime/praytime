@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "afae23dc-56dc-4ed7-9393-f782c7e13d6b",
     name: "Islamic Center of Hawthorne",
@@ -20,10 +19,11 @@ const run = async () => {
   const $ = await util.load(ids[0].url);
 
   const a = util.mapToText($, ".jamah");
-  const j = util
-    .mapToText($, 'h6:contains("Khutbah")')
-    .shift()
-    .match(util.timeAmPmRxG);
+  const j =
+    util
+      .mapToText($, 'h6:contains("Khutbah")')
+      .shift()
+      ?.match(util.timeAmPmRxG) ?? [];
 
   util.setIqamaTimes(ids[0], a);
   util.setJumaTimes(ids[0], j);

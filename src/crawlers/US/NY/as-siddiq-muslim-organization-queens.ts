@@ -1,11 +1,9 @@
-// @ts-nocheck
-
 import puppeteer from "puppeteer";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
 const crawlerPuppeteer = true;
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "a8c69c48-ad8a-4a1a-8cc0-ec44aa06619f",
     name: "As-Siddiq Muslim Organization",
@@ -26,7 +24,7 @@ const run = async () => {
 
     await page.goto(ids[0].url, { waitUntil: "networkidle0" });
 
-    const searchFrame = async (frame) => {
+    const searchFrame = async (frame: util.PuppeteerFrameLike) => {
       const e = await frame.$("#salaahTimeTable");
       if (e !== null) {
         // found correct frame

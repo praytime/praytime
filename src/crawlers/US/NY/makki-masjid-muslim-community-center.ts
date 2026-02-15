@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 
 // TODO: no website, use gmaps url
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "8559f62a-fefd-494e-bab8-40c46a07a922",
     name: "Makki Masjid Muslim Community Center",

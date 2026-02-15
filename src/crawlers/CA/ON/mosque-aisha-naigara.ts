@@ -1,8 +1,12 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+interface PrayerTime {
+  start?: string;
+  jamat?: string;
+}
+
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "fd500a58-d499-4200-ad44-f27e21efb9fa",
     name: "Mosque Aisha",
@@ -57,15 +61,22 @@ const ids = [
 //     "jamat": "19:30"
 //   }
 // ]
-const run = async () => {
+const run: CrawlerModule["run"] = async () => {
   const [d, $] = await Promise.all([
-    util.loadJson(
+    util.loadJson<PrayerTime[]>(
       "https://mosqueaisha.ca/api/prayerTimes/times/regular/niagara",
     ),
     util.load("https://www.mosqueaisha.ca/home/"),
   ]);
 
+  if (!Array.isArray(d)) {
+    throw new Error("unexpected prayerTimes response: not an array");
+  }
+
   const a = d.map((x) => x.jamat);
+  if (!a[3] || !d[3] || typeof d[3].start !== "string") {
+    throw new Error("unexpected prayerTimes response: missing maghrib start");
+  }
   a[3] = d[3].start; // use sunset for maghrib
 
   util.setIqamaTimesAll(ids, a);

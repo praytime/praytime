@@ -1,11 +1,9 @@
-// @ts-nocheck
-
 import puppeteer from "puppeteer";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
 const crawlerPuppeteer = true;
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "745cea37-a6ef-47b0-b583-28f4ff5ca5e7",
     name: "Masjid Bilal Ibn Rabaah",
@@ -26,11 +24,14 @@ const run = async () => {
     await page.goto(ids[0].url);
 
     const table = await page.waitForSelector("#bilal-tv");
+    if (!table) {
+      throw new Error("missing prayer table");
+    }
 
     // eval() evaluates the selector ids in the browser
     const t = await table.$$eval("td:last-child", (tds) =>
       tds
-        .map((td) => td.textContent.trim())
+        .map((td) => td.textContent?.trim() ?? "")
         .filter((t) => t.length)
         .filter((t) => t.match(/\d+\s*:\s*\d+/)),
     );

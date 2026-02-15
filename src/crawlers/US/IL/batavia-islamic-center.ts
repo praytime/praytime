@@ -1,6 +1,6 @@
 import type { CrawlerModule } from "../../../types";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "07deeeb5-6dd6-4750-8a6b-2e915088d6c4",
     name: "Batavia Islamic Center",

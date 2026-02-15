@@ -1,10 +1,8 @@
-// @ts-nocheck
-
 import axios from "axios";
 import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "e8ba38bf-3c61-4e3f-8167-9e6c0c770dea",
     name: "Masjid Al-Islam",
@@ -61,32 +59,35 @@ const run = async () => {
     .text()
     .trim();
 
-  ids[1].fajrIqama = $('table.prayer_table td:contains("Fajr") ~ td')
-    .eq(-1)
-    .text()
-    .trim();
-  ids[1].zuhrIqama = $('table.prayer_table td:contains("Dhuhr") ~ td')
-    .eq(-1)
-    .text()
-    .trim();
-  ids[1].asrIqama = $('table.prayer_table td:contains("Asr") ~ td')
-    .eq(-1)
-    .text()
-    .trim();
-  ids[1].maghribIqama = $('table.prayer_table td:contains("Maghrib") ~ td')
-    .eq(-1)
-    .text()
-    .trim();
-  ids[1].ishaIqama = $('table.prayer_table td:contains("Isha") ~ td')
-    .eq(-1)
-    .text()
-    .trim();
-  ids[1].juma1 = $('table.prayer_table td:contains("First Jumuah") + td')
-    .text()
-    .trim();
-  ids[1].juma2 = $('table.prayer_table td:contains("Second Jumuah") + td')
-    .text()
-    .trim();
+  const second = ids[1];
+  if (second) {
+    second.fajrIqama = $('table.prayer_table td:contains("Fajr") ~ td')
+      .eq(-1)
+      .text()
+      .trim();
+    second.zuhrIqama = $('table.prayer_table td:contains("Dhuhr") ~ td')
+      .eq(-1)
+      .text()
+      .trim();
+    second.asrIqama = $('table.prayer_table td:contains("Asr") ~ td')
+      .eq(-1)
+      .text()
+      .trim();
+    second.maghribIqama = $('table.prayer_table td:contains("Maghrib") ~ td')
+      .eq(-1)
+      .text()
+      .trim();
+    second.ishaIqama = $('table.prayer_table td:contains("Isha") ~ td')
+      .eq(-1)
+      .text()
+      .trim();
+    second.juma1 = $('table.prayer_table td:contains("First Jumuah") + td')
+      .text()
+      .trim();
+    second.juma2 = $('table.prayer_table td:contains("Second Jumuah") + td')
+      .text()
+      .trim();
+  }
 
   return ids;
 };

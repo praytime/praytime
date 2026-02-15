@@ -1,11 +1,9 @@
-// @ts-nocheck
-
 import puppeteer from "puppeteer";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
 const crawlerPuppeteer = true;
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "f53572b2-8ac0-47b9-a010-f4cff10800da",
     name: "Duncanville Islamic Center",
@@ -32,10 +30,13 @@ const run = async () => {
     ]);
 
     const table = await frame.waitForSelector("table#theTable");
+    if (!table) {
+      throw new Error("missing prayer table");
+    }
 
     // eval() evaluates the selector ids in the browser
     const t = await table.$$eval("td", (tds) =>
-      tds.map((td) => td.textContent.trim()),
+      tds.map((td) => td.textContent?.trim() ?? ""),
     );
 
     util.setIqamaTimes(ids[0], [t[1], t[3], t[5], t[7], t[9]]);

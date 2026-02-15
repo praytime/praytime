@@ -1,11 +1,9 @@
-// @ts-nocheck
-
 import axios from "axios";
 import { parse } from "csv-parse/sync";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     name: "Masjid DarusSalam",
     url: "http://masjidds.org",
@@ -47,11 +45,19 @@ const run = async () => {
   //     Iqamah: 'According to ChicagoHilal.org Updated: 12/31/2021 17:42:48'
   //   }
   // ]
-  const a = csv.map(({ Iqamah }) => Iqamah).filter(Boolean);
+  type CsvRow = {
+    Salah: string;
+    Iqamah: string;
+    Starts: string;
+  };
+
+  const parsedRows = csv as unknown as CsvRow[];
+  const a = parsedRows.map(({ Iqamah }) => Iqamah).filter(Boolean);
   // a.splice(3, 0, '-') // fix maghrib
   util.setIqamaTimes(ids[0], a);
 
-  const j = csv.find(({ Salah }) => Salah.match(/^1st/)).Starts.split("\n");
+  const fridaySalah = parsedRows.find(({ Salah }) => Salah.match(/^1st/));
+  const j = fridaySalah?.Starts.split("\n") ?? [];
   util.setJumaTimes(ids[0], j);
 
   return ids;

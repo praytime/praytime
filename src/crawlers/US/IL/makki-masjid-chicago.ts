@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import axios from "axios";
 import tz from "timezone";
 import timezoneAmerica from "timezone/America";
@@ -8,7 +6,7 @@ import type { CrawlerModule } from "../../../types";
 const us = tz(timezoneAmerica);
 const today = us(Date.now(), "America/Chicago", "%B%d");
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "b2bb6aa2-dc2b-433c-a490-6c444a2dc36b",
     name: "Makki Masjid",
@@ -93,7 +91,10 @@ const run = async () => {
   ids[0].maghribIqama = timings.Maghrib;
   ids[0].ishaIqama = timings["Ishaa Iqamah"];
   ids[0].juma1 = "check website";
-  ids[1].juma1 = "check website";
+  const second = ids[1];
+  if (second) {
+    second.juma1 = "check website";
+  }
 
   return ids;
 };

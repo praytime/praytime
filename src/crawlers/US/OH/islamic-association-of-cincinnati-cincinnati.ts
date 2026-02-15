@@ -1,11 +1,9 @@
-// @ts-nocheck
-
 import puppeteer from "puppeteer";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
 const crawlerPuppeteer = true;
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "af74625a-0866-4ecb-b012-db6042b4181c",
     name: "Islamic Association of Cincinnati",
@@ -35,9 +33,9 @@ const run = async () => {
 
     const t = await frame.$$eval("div.time.mono", (divs) =>
       divs.map((div) => {
-        const p = div.textContent.trim().match(/(\d{1,2})(\d{2}\w+)/);
+        const p = div.textContent?.trim().match(/(\d{1,2})(\d{2}\w+)/);
         // convert 630AM => 6:30AM
-        return `${p[1]}:${p[2]}`;
+        return `${p?.[1] ?? ""}:${p?.[2] ?? ""}`;
       }),
     );
     t.splice(1, 1); // remove sunrise

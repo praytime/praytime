@@ -1,10 +1,8 @@
-// @ts-nocheck
-
 import axios from "axios";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "06d76993-f828-4543-a45a-c6a5acc02641",
     name: "San Ramon Valley Islamic Center",

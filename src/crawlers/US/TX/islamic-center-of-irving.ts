@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "6948d2fc-99ae-4bfa-a459-a2db0dd43802",
     name: "Islamic Center of Irving",
@@ -24,17 +23,19 @@ const run = async () => {
     '.dptTimetable .tableHeading:contains("Iqamah") ~ td',
   );
   if (util.isJumaToday(ids[0])) {
-    const j = a[1].split(" | ").flat().map(util.extractTimeAmPm);
+    const j = (a[1] ?? "").split(" | ").flat().map(util.extractTimeAmPm);
     util.setJumaTimes(ids[0], j);
     // On Juma, zuhr is replaced
     a[1] = "Juma";
     util.setIqamaTimes(ids[0], a);
   } else {
-    util.setJumaTimes(
-      ids[0],
+    const jumaText =
       util
         .mapToText($, '.dptTimetable .tableHeading:contains("Jumuah") ~ td')
-        .shift()
+        .shift() ?? "";
+    util.setJumaTimes(
+      ids[0],
+      jumaText
         .split(" | ")
         .map((t) => t.trim())
         .map(util.extractTimeAmPm),

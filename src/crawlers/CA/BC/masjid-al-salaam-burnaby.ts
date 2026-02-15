@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "91d08993-8341-4229-97f7-04a156c297aa",
     name: "Masjid Al-Salaam",
@@ -26,8 +25,15 @@ const run = async () => {
   const a = util.mapToText($, ".prayer_entry:last-child");
   const j = util.mapToText($, ".prayer_entry:nth-child(2)").slice(5);
 
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], j);
+  const masjid = ids[0];
+  if (!masjid) {
+    throw new Error(
+      "No masjid record configured for BC/masjid-al-salaam-burnaby",
+    );
+  }
+
+  util.setIqamaTimes(masjid, a);
+  util.setJumaTimes(masjid, j);
   return ids;
 };
 

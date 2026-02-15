@@ -2,7 +2,7 @@ import puppeteer from "puppeteer";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "abe79662-a72c-44f8-a440-891fe79f18bf",
     name: "Hamzah Islamic Center",

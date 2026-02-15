@@ -1,10 +1,8 @@
-// @ts-nocheck
-
 import axios from "axios";
 import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "f8363d70-cdd3-47a8-b95a-c5b0ee91f53e",
     name: "Makkah Masjid (Garland Mosque)",

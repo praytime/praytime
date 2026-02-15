@@ -8,7 +8,7 @@ export interface MasjidRecordBase {
   name: string;
   timeZoneId: string;
   geo: GeoPoint;
-  url?: string;
+  url: string;
   address?: string;
   placeId?: string;
 }
@@ -31,14 +31,16 @@ export type MasjidRecord = MasjidRecordBase &
     [key: string]: unknown;
   };
 
+export type CrawlerIds = [MasjidRecord, ...MasjidRecord[]];
+
 export type CrawlerRun = () =>
-  | Promise<MasjidRecord[] | undefined>
-  | MasjidRecord[]
+  | Promise<CrawlerIds | undefined>
+  | CrawlerIds
   | undefined;
 
 export interface CrawlerModule {
   name: string;
-  ids: MasjidRecord[];
+  ids: CrawlerIds;
   run?: CrawlerRun;
   puppeteer?: boolean;
 }

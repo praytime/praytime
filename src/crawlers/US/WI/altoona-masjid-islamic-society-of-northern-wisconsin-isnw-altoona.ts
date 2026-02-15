@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "90dc4459-9d89-4693-97de-bb7eb672df30",
     name: "Altoona Masjid (Islamic Society of Northern Wisconsin (ISNW))",

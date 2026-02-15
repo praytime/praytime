@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "faef4be0-6fa3-4c76-89dc-136e5806a34f",
     name: "Lewiston/Auburn Islamic Center",
@@ -20,28 +19,67 @@ const run = async () => {
   // xmlMode: true so that script tags don't get special treatment
   const $ = await util.load(ids[0].url, { cheerio: { xmlMode: true } });
 
+  type Prayer = {
+    prayerName: string;
+    prayerTime: string;
+  };
+
+  type Jumuah = {
+    jumuaTiming: string;
+  };
+
+  type PrayerSection = {
+    name: string;
+    data: Array<{
+      prayers: Prayer[];
+      jumuahs: Jumuah[];
+      [key: string]: unknown;
+    }>;
+  };
+
+  type PrayerApiData = {
+    props: {
+      pageProps: {
+        initialData: {
+          sections: PrayerSection[];
+        };
+      };
+    };
+  };
+
   const d = util
     .mapToText($, "script#__NEXT_DATA__")
-    .map(JSON.parse)
+    .map((text) => JSON.parse(text) as PrayerApiData)
     .map(
       (j) =>
         j.props.pageProps.initialData.sections.find(
           (s) => s.name === "Prayer Times",
-        ).data,
+        )?.data,
     )
     .shift();
 
+  if (!d || !Array.isArray(d) || d.length === 0) {
+    throw new Error("failed to parse prayer times");
+  }
+
+  const prayerDay = d[0];
+  if (!prayerDay) {
+    throw new Error("failed to parse prayer day");
+  }
+  const prayers = prayerDay.prayers as Array<Prayer>;
+  const jumuahs = prayerDay.jumuahs as Array<Jumuah>;
+
   util.setIqamaTimes(ids[0], [
-    d.prayers.find((p) => p.prayerName === "Fajr").prayerTime,
-    d.prayers.find((p) => p.prayerName === "Zuhr").prayerTime,
-    d.prayers.find((p) => p.prayerName === "Asr").prayerTime,
-    d.prayers.find((p) => p.prayerName === "Magrib").prayerTime,
-    d.prayers.find((p) => p.prayerName === "Isha").prayerTime,
+    prayers.find((p: Prayer) => p.prayerName === "Fajr")?.prayerTime,
+    prayers.find((p: Prayer) => p.prayerName === "Zuhr")?.prayerTime,
+    prayers.find((p: Prayer) => p.prayerName === "Asr")?.prayerTime,
+    prayers.find((p: Prayer) => p.prayerName === "Magrib")?.prayerTime,
+    prayers.find((p: Prayer) => p.prayerName === "Isha")?.prayerTime,
   ]);
 
   util.setJumaTimes(
     ids[0],
-    d.jumuahs.map((j) => j.jumuaTiming),
+    jumuahs.map((j: Jumuah) => j.jumuaTiming),
   );
 
   return ids;

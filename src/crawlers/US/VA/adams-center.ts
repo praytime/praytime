@@ -1,11 +1,9 @@
-// @ts-nocheck
-
 import puppeteer from "puppeteer";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
 const crawlerPuppeteer = true;
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "4b293ef0-14a0-41b7-9801-e7c6e6ff7e09",
     name: "ADAMS Ashburn",
@@ -182,9 +180,13 @@ const run = async () => {
 
     const t = await frame.$$eval("div.iqamah div.time", (divs) =>
       divs.map((div) => {
-        const p = div.textContent.trim().match(/(\d{1,2})(\d{2}\w+)/);
+        const text = div.textContent ?? "";
+        const p = text.match(/(\d{1,2})(\d{2}\w+)/);
         // convert 630AM => 6:30AM
-        return `${p[1]}:${p[2]}`;
+        if (p) {
+          return `${p[1]}:${p[2]}`;
+        }
+        return "check website";
       }),
     );
     ids.forEach((r) => {

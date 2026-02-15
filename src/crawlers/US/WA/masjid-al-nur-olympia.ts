@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import tz from "timezone";
 import timezoneAmerica from "timezone/America";
 import type { CrawlerModule } from "../../../types";
@@ -7,7 +5,7 @@ import * as util from "../../../util";
 
 const us = tz(timezoneAmerica);
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "21000984-0003-4c25-abd2-00c4e9b883d6",
     name: "Masjid Al-Nur",
@@ -29,12 +27,12 @@ const run = async () => {
   const a = util.mapToText($, "table.dptTimetable td.jamah");
   util.setIqamaTimes(ids[0], a);
 
-  let j = [];
+  let j: RegExpMatchArray | string[] = [];
   // on juma, dhuhr is replaced
   if (day === "5") {
-    j = a[1].match(/\d+\s*:\s*\d+/g);
+    j = (a[1] ?? "").match(/\d+\s*:\s*\d+/g) ?? [];
   } else {
-    j = a[5].match(/\d+\s*:\s*\d+/g);
+    j = (a[5] ?? "").match(/\d+\s*:\s*\d+/g) ?? [];
   }
 
   util.setJumaTimes(ids[0], j);

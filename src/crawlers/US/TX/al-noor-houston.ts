@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "2690ffd9-9571-4ed9-8689-0ee441f4dda2",
     name: "Al-Noor",
@@ -27,7 +26,7 @@ const run = async () => {
   util.setIqamaTimes(ids[0], a);
   util.setJumaTimes(
     ids[0],
-    a.slice(5).map((t) => t.match(/\d+\s*:\s*\d+/).shift()),
+    a.slice(5).map((t) => t.match(/\d+\s*:\s*\d+/)?.[0]),
   ); // sanitize juma times
 
   return ids;

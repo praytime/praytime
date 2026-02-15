@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "c6c12d0c-210a-4661-92b3-ba5386c0565f",
     name: "Jama Masjid of Orlando",
@@ -41,7 +40,9 @@ const run = async () => {
 
   const j = a
     .slice(-1)
-    .flatMap((t) => t.match(/khutbah\s*\d{1,2}\s*:\s*\d{1,2}\s*[ap]\.?m\.?/gi))
+    .flatMap(
+      (t) => t.match(/khutbah\s*\d{1,2}\s*:\s*\d{1,2}\s*[ap]\.?m\.?/gi) ?? [],
+    )
     .map((t) => t.replace(/khutbah\s*/i, ""));
 
   util.setJumaTimes(ids[0], j);

@@ -1,10 +1,8 @@
-// @ts-nocheck
-
 import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "7c6a201a-c4e5-4203-b6af-4f495eede526",
     name: "Islamic Center of New Mexico (ICNM)",
@@ -22,7 +20,11 @@ const run = async () => {
   const $ = await util.load(ids[0].url);
 
   // timetable embedded in iframe
-  const $srcdoc = cheerio.load($("#iframe-47608").attr("srcdoc"));
+  const srcdoc = $("#iframe-47608").attr("srcdoc");
+  if (!srcdoc) {
+    throw new Error("missing srcdoc");
+  }
+  const $srcdoc = cheerio.load(srcdoc);
 
   util.setTimes(ids[0], util.mapToText($srcdoc, "td:last-child"));
 

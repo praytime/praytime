@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "abe7fef6-84f6-41fb-8606-4179e59de7c5",
     name: "The Peace Mosque",
@@ -17,13 +16,17 @@ const ids = [
   },
 ];
 const run = async () => {
-  const $ = await util.load(ids[0].url);
+  const masjid = ids[0];
+  if (!masjid) {
+    throw new Error("Missing mosque record");
+  }
+  const $ = await util.load(masjid.url);
 
   const a = util
     .mapToText($, "td:last-child", $('td:contains("Iqama")').closest("tbody"))
     .slice(1);
 
-  util.setTimes(ids[0], a);
+  util.setTimes(masjid, a);
 
   return ids;
 };

@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import axios from "axios";
 import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
@@ -33,7 +31,7 @@ import * as util from "../../../util";
 //     "message": null
 // }
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "7d5464b4-d759-4306-a865-f7dbe6744146",
     name: "Islamic Foundation of Southwest Suburbs",

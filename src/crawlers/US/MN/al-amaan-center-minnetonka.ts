@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "d6abef87-f2f3-4f90-8daa-74e2c7ba6172",
     name: "Al-Amaan Center",
@@ -64,17 +63,33 @@ const run = async () => {
   const d = await util.loadJson(
     "https://rvljd7wah8.execute-api.us-east-2.amazonaws.com/Prod/prayers",
   );
+  type Prayer = {
+    name: string;
+    iqamah: string;
+    azaan: string;
+  };
+
+  type DayPrayerData = {
+    date: string;
+    prayers: Prayer[];
+  };
+
+  const prayerData = d as unknown as DayPrayerData[];
   const targetDate = util.strftime("%d/%m/%Y", ids[0]);
-  const { prayers: p } = d.find(({ date }) => date.trim() === targetDate);
+  const day = prayerData.find(({ date }) => date.trim() === targetDate);
+  if (!day) {
+    throw new Error(`no prayers found for ${targetDate}`);
+  }
+  const p = day.prayers;
 
   util.setTimes(ids[0], [
-    p.find(({ name }) => name === "Fajr").iqamah,
-    p.find(({ name }) => name === "Zuhr").iqamah,
-    p.find(({ name }) => name === "Asr").iqamah,
-    p.find(({ name }) => name === "Maghrib").iqamah,
-    p.find(({ name }) => name === "Isha").iqamah,
-    p.find(({ name }) => name === "Arabic Jumua").azaan,
-    p.find(({ name }) => name === "English Jumua").azaan,
+    p.find(({ name }) => name === "Fajr")?.iqamah,
+    p.find(({ name }) => name === "Zuhr")?.iqamah,
+    p.find(({ name }) => name === "Asr")?.iqamah,
+    p.find(({ name }) => name === "Maghrib")?.iqamah,
+    p.find(({ name }) => name === "Isha")?.iqamah,
+    p.find(({ name }) => name === "Arabic Jumua")?.azaan,
+    p.find(({ name }) => name === "English Jumua")?.azaan,
   ]);
 
   return ids;

@@ -1,11 +1,9 @@
-// @ts-nocheck
-
 import puppeteer from "puppeteer";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
 const crawlerPuppeteer = true;
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "65e107c8-b056-457a-a6f1-06280d6410f0",
     name: "At-Takaful Islamic Society",
@@ -31,7 +29,11 @@ const run = async () => {
     util.setIqamaTimes(ids[0], a);
 
     let j = await util.pptMapToText(page, "h4 > strong");
-    j = j.map(util.matchTimeAmPmG).shift();
+    j = j
+      .map((time) => time.match(util.timeAmPmRxG)?.[0])
+      .filter(
+        (value): value is string => value !== undefined && value.length > 0,
+      );
     util.setJumaTimes(ids[0], j);
   } finally {
     await browser.close();

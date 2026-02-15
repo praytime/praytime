@@ -65,7 +65,7 @@ const getWithRetry = async (
   throw new Error(`request attempts exhausted for ${url}`);
 };
 
-export const loadJson = async <T = unknown>(
+export const loadJson = async <T = AxiosResponse["data"]>(
   url: string,
   opts?: { axios?: AxiosRequestConfig },
 ): Promise<T> => {
@@ -82,44 +82,62 @@ export const load = async (
 };
 
 type MaybeTime = string | null | undefined;
+type MaybeTimeList = MaybeTime[] | RegExpMatchArray | undefined | null;
+
+const normalizeTimes = (times: MaybeTimeList): readonly MaybeTime[] =>
+  times ?? [];
 
 export const setIqamaTimes = (
-  record: MasjidRecord,
-  times: readonly MaybeTime[],
+  record: MasjidRecord | undefined,
+  times: MaybeTimeList,
 ): void => {
-  record.fajrIqama = times[0] ?? undefined;
-  record.zuhrIqama = times[1] ?? undefined;
-  record.asrIqama = times[2] ?? undefined;
-  record.maghribIqama = times[3] ?? undefined;
-  record.ishaIqama = times[4] ?? undefined;
+  if (!record) {
+    return;
+  }
+
+  const values = normalizeTimes(times);
+  record.fajrIqama = values[0] ?? undefined;
+  record.zuhrIqama = values[1] ?? undefined;
+  record.asrIqama = values[2] ?? undefined;
+  record.maghribIqama = values[3] ?? undefined;
+  record.ishaIqama = values[4] ?? undefined;
 };
 
 export const setJumaTimes = (
-  record: MasjidRecord,
-  times: readonly MaybeTime[],
+  record: MasjidRecord | undefined,
+  times: MaybeTimeList,
 ): void => {
-  if (times.length >= 1 && times[0]) {
-    record.juma1 = times[0];
+  if (!record) {
+    return;
   }
-  if (times.length >= 2 && times[1]) {
-    record.juma2 = times[1];
+
+  const values = normalizeTimes(times);
+  if (values.length >= 1 && values[0]) {
+    record.juma1 = values[0];
   }
-  if (times.length >= 3 && times[2]) {
-    record.juma3 = times[2];
+  if (values.length >= 2 && values[1]) {
+    record.juma2 = values[1];
+  }
+  if (values.length >= 3 && values[2]) {
+    record.juma3 = values[2];
   }
 };
 
 export const setTimes = (
-  record: MasjidRecord,
-  times: readonly MaybeTime[],
+  record: MasjidRecord | undefined,
+  times: MaybeTimeList,
 ): void => {
+  if (!record) {
+    return;
+  }
+
   setIqamaTimes(record, times);
-  setJumaTimes(record, times.slice(5));
+  setJumaTimes(record, normalizeTimes(times).slice(5));
 };
 
 export const setIqamaTimesAll = (
   records: MasjidRecord[],
-  times: readonly MaybeTime[],
+  times: MaybeTimeList,
 ): void => {
   records.forEach((record) => {
     setIqamaTimes(record, times);
@@ -128,7 +146,7 @@ export const setIqamaTimesAll = (
 
 export const setJumaTimesAll = (
   records: MasjidRecord[],
-  times: readonly MaybeTime[],
+  times: MaybeTimeList,
 ): void => {
   records.forEach((record) => {
     setJumaTimes(record, times);
@@ -137,7 +155,7 @@ export const setJumaTimesAll = (
 
 export const setTimesAll = (
   records: MasjidRecord[],
-  times: readonly MaybeTime[],
+  times: MaybeTimeList,
 ): void => {
   records.forEach((record) => {
     setTimes(record, times);
@@ -147,38 +165,40 @@ export const setTimesAll = (
 export const timeRx = /\d{1,2}\s*:\s*\d{1,2}/;
 export const timeRxG = /\d{1,2}\s*:\s*\d{1,2}/g;
 
-export const matchTime = (text: string): RegExpMatchArray | null =>
-  text.match(timeRx);
+export const matchTime = (text: string | undefined): RegExpMatchArray | null =>
+  text?.match(timeRx) ?? null;
 
-export const extractTime = (text: string): string => {
-  const match = text.match(timeRx);
+export const extractTime = (text: string | undefined): string => {
+  const match = text?.match(timeRx);
   if (match?.length) {
     return match[0];
   }
   return "";
 };
 
-export const matchTimeG = (text: string): RegExpMatchArray | null =>
-  text.match(timeRxG);
+export const matchTimeG = (text: string | undefined): RegExpMatchArray | null =>
+  text?.match(timeRxG) ?? null;
 
 export const timeAmPmRx = /\d{1,2}\s*:\s*\d{1,2}\s*[ap]\.?m\.?/i;
 export const timeAmPmRxG = /\d{1,2}\s*:\s*\d{1,2}\s*[ap]\.?m\.?/gi;
 
-export const matchTimeAmPm = (text: string): RegExpMatchArray | null =>
-  text.match(timeAmPmRx);
+export const matchTimeAmPm = (
+  text: string | undefined,
+): RegExpMatchArray | null => text?.match(timeAmPmRx) ?? null;
 
-export const extractTimeAmPm = (text: string): string => {
-  const match = text.match(timeAmPmRx);
+export const extractTimeAmPm = (text: string | undefined): string => {
+  const match = text?.match(timeAmPmRx);
   if (match?.length) {
     return match[0];
   }
   return "";
 };
 
-export const matchTimeAmPmG = (text: string): RegExpMatchArray | null =>
-  text.match(timeAmPmRxG);
+export const matchTimeAmPmG = (
+  text: string | undefined,
+): RegExpMatchArray | null => text?.match(timeAmPmRxG) ?? null;
 
-export const hourMinuteAmPmToMinutes = (hm: string): number => {
+export const hourMinuteAmPmToMinutes = (hm: string | undefined): number => {
   const match = hm?.match(/(\d{1,2})\s*:\s*(\d{1,2})\s*([ap]\.?m\.?)/i);
   if (!match) {
     throw new Error(`invalid time format: ${hm}`);
@@ -227,7 +247,7 @@ export const minutesTohourMinute = (minuteValue: number | string): string => {
   return `${hour}:${minute}`;
 };
 
-export const minuteOffsetFromText = (text: string): number => {
+export const minuteOffsetFromText = (text: string | undefined): number => {
   const match = text?.match(/([+-])\s*(\d+)/);
   if (!match) {
     throw new Error(`invalid minute offset: ${text}`);
@@ -273,26 +293,40 @@ export const toText = (
     .text()
     .trim();
 
-interface PuppeteerFrameLike {
-  url(): string;
-  name(): string;
-  childFrames(): PuppeteerFrameLike[];
-}
-
-interface PuppeteerPageLike {
+export interface PuppeteerEvalLike {
   $$eval<T>(
     selector: string,
     pageFunction: (elements: Array<{ textContent: string | null }>) => T,
   ): Promise<T>;
-  on(
-    eventName: "framenavigated",
-    listener: (frame: PuppeteerFrameLike) => void,
-  ): void;
+}
+
+export interface PuppeteerElementHandleLike extends PuppeteerEvalLike {}
+
+export interface PuppeteerFrameLike {
+  $(selector: string): Promise<PuppeteerElementHandleLike | null>;
+  $$eval<T>(
+    selector: string,
+    pageFunction: (elements: Array<{ textContent: string | null }>) => T,
+  ): Promise<T>;
+  url(): string;
+  name(): string;
+  childFrames(): PuppeteerFrameLike[];
+  waitForSelector(selector: string): Promise<PuppeteerElementHandleLike | null>;
+}
+
+export interface PuppeteerPageLike {
+  $$eval<T>(
+    selector: string,
+    pageFunction: (elements: Array<{ textContent: string | null }>) => T,
+  ): Promise<T>;
+  $(selector: string): Promise<PuppeteerElementHandleLike | null>;
+  waitForSelector(selector: string): Promise<PuppeteerElementHandleLike | null>;
+  on(eventName: "framenavigated", listener: (frame: unknown) => void): void;
   mainFrame(): PuppeteerFrameLike;
 }
 
 export const pptMapToText = async (
-  page: PuppeteerPageLike,
+  page: PuppeteerEvalLike,
   selector: string,
 ): Promise<string[]> =>
   page.$$eval(selector, (elements) =>
@@ -317,11 +351,17 @@ export const waitForFrame = async (
 
   const framePromise = new Promise<PuppeteerFrameLike>((resolve) => {
     page.on("framenavigated", (frame) => {
-      if (frame.url().includes(urlFragment)) {
+      if (
+        typeof frame === "object" &&
+        frame !== null &&
+        "url" in frame &&
+        typeof frame.url === "function" &&
+        frame.url().includes(urlFragment)
+      ) {
         if (timeoutId) {
           clearTimeout(timeoutId);
         }
-        resolve(frame);
+        resolve(frame as PuppeteerFrameLike);
       }
     });
   });
@@ -340,17 +380,11 @@ export const dumpFrameTree = (page: PuppeteerPageLike): void => {
   walk(page.mainFrame(), "");
 };
 
-export const strftime = (
-  fmt: string,
-  { timeZoneId }: { timeZoneId: string },
-): string => us(Date.now(), timeZoneId, fmt);
+export const strftime = (fmt: string, input?: { timeZoneId: string }): string =>
+  us(Date.now(), input?.timeZoneId ?? "UTC", fmt);
 
-export const isJumaToday = ({
-  timeZoneId,
-}: {
-  timeZoneId: string;
-}): boolean => {
-  const day = us(Date.now(), timeZoneId, "%u");
+export const isJumaToday = (input?: { timeZoneId: string }): boolean => {
+  const day = us(Date.now(), input?.timeZoneId ?? "UTC", "%u");
   return day === "5";
 };
 

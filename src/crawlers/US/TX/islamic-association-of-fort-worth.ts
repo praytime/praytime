@@ -1,10 +1,9 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 
 // const axios = require('axios')
 // const cheerio = require('cheerio')
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "1b621892-d674-44f9-b9ce-6bf939e67323",
     name: "Islamic Association of Fort Worth Dar Un-Noor Center",

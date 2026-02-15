@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "95b4e60b-b115-492a-93ca-34cd821cbac6",
     name: "Islamic Center of San Diego (ICSD)",
@@ -23,7 +22,7 @@ const run = async () => {
     .mapToText($, ".row > .col-12 > p")
     .filter((t) => t.match(/\d{1,2}\s*:\s*\d{2}\s*(a|p)m/i));
   a.splice(3, 0, "-"); // maghrib entry
-  const j = a[a.length - 1].match(/\d+\s*:\s*\d+\s*\w+/g);
+  const j = (a[a.length - 1] ?? "").match(/\d+\s*:\s*\d+\s*\w+/g);
 
   util.setIqamaTimes(ids[0], a);
   util.setJumaTimes(ids[0], j);

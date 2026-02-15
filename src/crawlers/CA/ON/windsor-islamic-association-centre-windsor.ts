@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "8397d58c-9346-4872-b34c-f6e2c414fb04",
     name: "Windsor Islamic Association Centre",
@@ -17,18 +16,24 @@ const ids = [
   },
 ];
 const run = async () => {
-  const $ = await util.load(ids[0].url);
+  const id = ids[0];
+  if (!id) {
+    throw new Error("missing masjid record");
+  }
+  const $ = await util.load(id.url);
 
-  const a = util.mapToText($, ".jamah");
+  const a = util
+    .mapToText($, ".jamah")
+    .map((value) => util.extractTimeAmPm(value))
+    .filter((time): time is string => Boolean(time));
   const j = util
     .mapToText($, ".textwidget p > strong")
-    .filter(util.matchTimeAmPm)
-    .slice(0, 1)
-    .map(util.matchTimeAmPmG)
-    .shift();
+    .map((value) => util.extractTimeAmPm(value))
+    .filter((time): time is string => Boolean(time))
+    .slice(0, 1);
 
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], j);
+  util.setIqamaTimes(id, a);
+  util.setJumaTimes(id, j);
 
   return ids;
 };

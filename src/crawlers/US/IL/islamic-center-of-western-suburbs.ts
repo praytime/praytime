@@ -1,10 +1,8 @@
-// @ts-nocheck
-
 import axios from "axios";
 import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "aad361ea-8f99-4cac-aec4-399249439cce",
     name: "Islamic Center of Western Suburbs",
@@ -37,32 +35,35 @@ const run = async () => {
   ids[0].fajrIqama = $("thead:contains('FAJR') + thead")
     .text()
     .trim()
-    .match(/\d{1,2}:\d{1,2}/)[0];
+    .match(/\d{1,2}:\d{1,2}/)?.[0];
   ids[0].zuhrIqama = $("thead:contains('DHUR') + thead")
     .text()
     .trim()
-    .match(/\d{1,2}:\d{1,2}/)[0];
+    .match(/\d{1,2}:\d{1,2}/)?.[0];
   ids[0].asrIqama = $("thead:contains('ASR') + thead")
     .text()
     .trim()
-    .match(/\d{1,2}:\d{1,2}/)[0];
+    .match(/\d{1,2}:\d{1,2}/)?.[0];
   ids[0].maghribIqama = $("thead:contains('MAGHRIB') + thead")
     .text()
     .trim()
-    .match(/\d{1,2}:\d{1,2}/)[0];
+    .match(/\d{1,2}:\d{1,2}/)?.[0];
   ids[0].ishaIqama = $("thead:contains('ISHA') + thead")
     .text()
     .trim()
-    .match(/\d{1,2}:\d{1,2}/)[0];
+    .match(/\d{1,2}:\d{1,2}/)?.[0];
 
-  ids[1].juma1 = $("h3:contains('Khutbah 1') + div")
-    .text()
-    .trim()
-    .match(/\d{1,2}:\d{1,2}/)[0];
-  ids[1].juma2 = $("h3:contains('Khutbah 2') + div")
-    .text()
-    .trim()
-    .match(/\d{1,2}:\d{1,2}/)[0];
+  const second = ids[1];
+  if (second) {
+    second.juma1 = $("h3:contains('Khutbah 1') + div")
+      .text()
+      .trim()
+      .match(/\d{1,2}:\d{1,2}/)?.[0];
+    second.juma2 = $("h3:contains('Khutbah 2') + div")
+      .text()
+      .trim()
+      .match(/\d{1,2}:\d{1,2}/)?.[0];
+  }
 
   return ids;
 };

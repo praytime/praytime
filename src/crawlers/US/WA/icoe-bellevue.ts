@@ -1,10 +1,8 @@
-// @ts-nocheck
-
 import axios from "axios";
 import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "78ffa969-e54f-4a4d-92cb-c049a9088d7f",
     name: "Islamic Center of Eastside",
@@ -52,20 +50,22 @@ const run = async () => {
     .first()
     .text()
     .trim();
-  ids[0].juma1 = $(
-    "div.azan-time-body > table:nth-child(2) > tbody > tr:nth-child(1) > td.lower-text",
-  )
-    .first()
-    .text()
-    .replace(/\s/g, "")
-    .match(/\d{1,2}:\d{2}/)[0];
-  ids[0].juma2 = $(
-    "div.azan-time-body > table:nth-child(2) > tbody > tr:nth-child(2) > td.lower-text",
-  )
-    .first()
-    .text()
-    .replace(/\s/g, "")
-    .match(/\d{1,2}:\d{2}/)[0];
+  ids[0].juma1 =
+    $(
+      "div.azan-time-body > table:nth-child(2) > tbody > tr:nth-child(1) > td.lower-text",
+    )
+      .first()
+      .text()
+      .replace(/\s/g, "")
+      .match(/\d{1,2}:\d{2}/)?.[0] ?? "";
+  ids[0].juma2 =
+    $(
+      "div.azan-time-body > table:nth-child(2) > tbody > tr:nth-child(2) > td.lower-text",
+    )
+      .first()
+      .text()
+      .replace(/\s/g, "")
+      .match(/\d{1,2}:\d{2}/)?.[0] ?? "";
 
   return ids;
 };

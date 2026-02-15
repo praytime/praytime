@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "37cc8d40-db35-4c51-afe9-fb673ddf4b2a",
     name: "Masjid ElFarouq",
@@ -22,7 +21,7 @@ const run = async () => {
   const a = util
     .mapToText($, ".sc_table th")
     .filter((t) => t.match(/\d+\s*:\s*\d+/))
-    .map((t) => t.match(/\d+\s*:\s*\d+/g)[0]);
+    .map((t) => t.match(/\d+\s*:\s*\d+/g)?.[0] ?? "");
 
   a.splice(3, 0, "-");
 

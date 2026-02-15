@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "12274a9a-4d61-4239-ba86-1c46bd12dc19",
     name: "MECCA Center",
@@ -23,7 +22,7 @@ const run = async () => {
 
   const j = util
     .mapToText($, 'div.wpb_wrapper > p:contains("Jumuah")')
-    .map((t) => t.match(/\d+\s*:\s*\d+\s*\w+/g)[0]);
+    .map((t) => t.match(/\d+\s*:\s*\d+\s*\w+/g)?.[0]);
   util.setJumaTimes(ids[0], j);
 
   return ids;

@@ -1,8 +1,7 @@
-// @ts-nocheck
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const ids = [
+const ids: CrawlerModule["ids"] = [
   {
     uuid4: "0fe7e822-0da1-4496-b7a5-c7d2688449de",
     name: "Jami Masjid/Buffalo Nomads",
@@ -22,7 +21,7 @@ const run = async () => {
   const a = util.mapToText($, ".image-subtitle-wrapper p");
 
   // juma comes after dhuhr
-  const j = a[2].match(/\d+\s*:\s*\d+\s*\w+/g);
+  const j = (a[2] ?? "").match(/\d+\s*:\s*\d+\s*\w+/g);
   util.setJumaTimes(ids[0], j);
 
   a.splice(2, 1); // remove juma
