@@ -1,19 +1,5 @@
-
-Create a plan in TS-MIGRATION.md to re-implement the javascript as typescript. I have started a new bun-typescript project under the praytime subdir. This will eventually move up and replace the current dir javascript files. Consider how the project should be organized such that:
-
-- each crawler is in it's own file
-- The project entrypont (index.ts) can run one, some, or all crawlers
-  - if it makes it easier, i could work with running crawlers by name / glob pattern instead of directory path as it is currently
-- index.ts can list all crawlers
-
-Do the tsconfig 'module' and 'target' fields need to be adjusted?
-
-The goal is to modernize the js with strong type checks and eventual use of linters / static analyzers
-
-
 # TODO
 
-- Migrate to typescript
 - strict typechecks
 - biome lint + format
 - knip
