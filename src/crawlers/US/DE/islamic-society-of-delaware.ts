@@ -1,11 +1,36 @@
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
+interface DailyPrayerTimes {
+  AsrIqama?: unknown;
+  DhuhrIqama?: unknown;
+  FajrIqama?: unknown;
+  IshaIqama?: unknown;
+  Maghrib?: unknown;
+  MaghribIqama?: unknown;
+  ZuharIqama?: unknown;
+}
+
+const normalizeClock = (value: unknown): string => {
+  if (typeof value !== "string") {
+    return "";
+  }
+  return value.trim();
+};
+
+const getDatePart = (format: string, record: { timeZoneId: string }): number =>
+  Number.parseInt(util.strftime(format, record), 10);
+
+const isDstSeason = (month: number, day: number): boolean =>
+  (month > 3 && month < 10) ||
+  (month === 3 && day >= 13) ||
+  (month === 10 && day <= 30);
+
 const ids: CrawlerModule["ids"] = [
   {
     uuid4: "a5d9ddbe-664f-4064-80c3-3cb07f7335b7",
     name: "Masjid Ibrahim",
-    url: "http://www.isdonline.org/",
+    url: "https://myisd.org/",
     timeZoneId: "America/New_York",
     address: "28 Salem Church Rd #2934, Newark, DE 19713, USA",
     placeId: "ChIJ_T8wFroAx4kRrT4wHeUO1rk",
@@ -16,51 +41,36 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const [d] = await util.loadJson(
-    util.strftime(
-      "https://isdonline.org/home/get_Payer_Time?month=%m&date=%d",
-      ids[0],
-    ),
+  const month = getDatePart("%m", ids[0]);
+  const day = getDatePart("%d", ids[0]);
+  const key = `${month}-${day}`;
+
+  const data = await util.loadJson<Record<string, DailyPrayerTimes>>(
+    "https://myisd.org/assets/prayer-times-2026.json",
   );
-  // [
-  //   {
-  //     "FajarBegin": "5:44 AM",
-  //     "FajarAdhan": "05:45 AM",
-  //     "Fajar": "6:00 AM",
-  //     "ZuharBegin": "11:52 AM",
-  //     "ZuharAdhan": "12:00 PM",
-  //     "Zuhar": "12:15 PM",
-  //     "AsrBegin": "2:21 PM",
-  //     "AsrAdhan": "02:30 PM",
-  //     "Asr": "2:45 PM",
-  //     "MaghribBegin": "4:40 PM",
-  //     "MaghribAdhan": "04:40 PM",
-  //     "Maghrib": "4:40 PM",
-  //     "IshaBegin": "5:59 PM",
-  //     "IshaAdhan": "06:45 PM",
-  //     "Isha": "7:00 PM",
-  //     "Jumma1Begin": "",
-  //     "Jumma1Adhan": "12:00 PM",
-  //     "Jumma1": "12:30 PM",
-  //     "Jumma2Begin": "",
-  //     "Jumma2Adhan": "01:10 PM",
-  //     "Jumma2": "1:40 PM",
-  //     "Jumma3Begin": "undefined",
-  //     "Jumma3Adhan": "12:00 AM",
-  //     "Jumma3": "undefined",
-  //     "HijriOffset": "-1"
-  //   }
-  // ]
-  util.setTimes(ids[0], [
-    d.Fajar,
-    d.Zuhar,
-    d.Asr,
-    d.Maghrib,
-    d.Isha,
-    d.Jumma1 === "undefined" ? null : d.Jumma1Adhan,
-    d.Jumma2 === "undefined" ? null : d.Jumma2Adhan,
-    d.Jumma3 === "undefined" ? null : d.Jumma3Adhan,
-  ]);
+  const d = data?.[key];
+  if (!d || typeof d !== "object") {
+    throw new Error(`missing prayer-times entry for ${key}`);
+  }
+
+  const iqamaTimes = [
+    normalizeClock(d.FajrIqama),
+    normalizeClock(d.DhuhrIqama ?? d.ZuharIqama),
+    normalizeClock(d.AsrIqama),
+    normalizeClock(d.MaghribIqama ?? d.Maghrib),
+    normalizeClock(d.IshaIqama),
+  ];
+  if (iqamaTimes.some((time) => !time)) {
+    throw new Error(`incomplete iqama times for ${key}`);
+  }
+
+  util.setIqamaTimes(ids[0], iqamaTimes);
+
+  // Site script uses this fixed DST window to shift Jumuah schedule.
+  const jumaTimes = isDstSeason(month, day)
+    ? ["1:40 PM", "2:40 PM"]
+    : ["12:30 PM", "1:40 PM"];
+  util.setJumaTimes(ids[0], jumaTimes);
 
   return ids;
 };

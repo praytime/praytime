@@ -5,7 +5,7 @@ const ids: CrawlerModule["ids"] = [
   {
     uuid4: "bd62178a-93e1-4dc7-959a-d6c73bf90260",
     name: "Pullman Islamic Center",
-    url: "http://www.pullmanislamiccenter.org/",
+    url: "https://www.pullmanislamicassociation.org/",
     timeZoneId: "America/Los_Angeles",
     address: "1155 NE Stadium Way, Pullman, WA 99163, USA",
     placeId: "ChIJZfQNpOKGn1QRoMsP5HpvJWY",
@@ -16,24 +16,18 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const $ = await util.load(
-    "http://www.pullmanislamiccenter.org/api/getNamazTableVertical",
-  );
+  const iqama = await util.loadMasjidalIqama("PAPwXrLJ");
 
-  const a = $("tr")
-    .toArray()
-    .map((tr) => $("td", tr).toArray())
-    .filter((tds) => tds.length === 2)
-    .map((tds) => tds.map((td) => $(td).text().trim()))
-    .map((tds) => {
-      if (util.matchTimeAmPm(tds[1])) {
-        return util.extractTimeAmPm(tds[1]);
-      } else {
-        return `${tds[0]} + ${tds[1]}`;
-      }
-    });
-
-  util.setTimes(ids[0], a);
+  util.setTimes(ids[0], [
+    iqama.fajr,
+    iqama.zuhr,
+    iqama.asr,
+    iqama.maghrib,
+    iqama.isha,
+    iqama.jummah1,
+    iqama.jummah2,
+    iqama.jummah3,
+  ]);
 
   return ids;
 };
