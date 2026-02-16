@@ -1,5 +1,5 @@
-import axios from "axios";
 import type { CrawlerModule } from "../../../types";
+import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -48,7 +48,7 @@ const ids: CrawlerModule["ids"] = [
 // }
 //
 const run = async () => {
-  const response = await axios.get(
+  const response = await util.get(
     "https://api.masjidapps.com/masjid/publicPrayerTimes/MQ2/NzY1ZjcxZmQtZjE0NS00OGFjLTljYTgtMjBiYmRlYjdkZGRj0",
   );
   const prayerTimes = response.data;

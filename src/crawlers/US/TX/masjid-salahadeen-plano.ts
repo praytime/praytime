@@ -1,6 +1,6 @@
-import axios from "axios";
 import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
+import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -17,7 +17,7 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const response = await axios.get("http://masjidsalahadeen.org/");
+  const response = await util.get("http://masjidsalahadeen.org/");
   const $ = cheerio.load(response.data);
 
   ids[0].fajrIqama = $("td:contains(Fajr) + td").text().trim();

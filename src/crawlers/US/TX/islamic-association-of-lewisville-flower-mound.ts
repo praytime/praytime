@@ -1,6 +1,6 @@
-import axios from "axios";
 import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
+import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -17,7 +17,7 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const response = await axios.get(
+  const response = await util.get(
     "https://us.mohid.co/tx/dallas/ialfm/masjid/widget/api/index/?m=prayertimings",
   );
   const $ = cheerio.load(response.data);

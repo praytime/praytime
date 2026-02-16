@@ -1,4 +1,3 @@
-import axios from "axios";
 import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
@@ -30,7 +29,7 @@ const getTime = ($: cheerio.CheerioAPI, prayer: string): string => {
 };
 
 const run = async () => {
-  const response = await axios.get("http://epicmasjid.org");
+  const response = await util.get("http://epicmasjid.org");
   const $ = cheerio.load(response.data);
   const record = ids[0];
   if (!record) {

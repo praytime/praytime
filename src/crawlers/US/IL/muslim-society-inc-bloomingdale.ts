@@ -1,6 +1,6 @@
-import axios from "axios";
 import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
+import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -19,7 +19,7 @@ const ids: CrawlerModule["ids"] = [
 
 // ChIJLXNcEpisD4gRdq5lUx4FvkE - dup
 const run = async () => {
-  const response = await axios.get("https://us.mohid.co/il/nwcs/msi");
+  const response = await util.get("https://us.mohid.co/il/nwcs/msi");
   const $ = cheerio.load(response.data);
 
   ids[0].fajrIqama = $(

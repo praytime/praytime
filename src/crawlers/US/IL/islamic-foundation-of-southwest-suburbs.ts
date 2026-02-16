@@ -1,4 +1,3 @@
-import axios from "axios";
 import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
@@ -46,7 +45,7 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  let response = await axios.get(
+  let response = await util.get(
     "https://masjidal.com/api/v1/time?masjid_id=3wdqjKbN",
   );
   const data = response.data;
@@ -61,7 +60,7 @@ const run = async () => {
   }
 
   // Juma time not in API, comes from template
-  response = await axios.get("http://masjidal.com/ifsws/");
+  response = await util.get("http://masjidal.com/ifsws/");
   const $ = cheerio.load(response.data);
   ids[0].juma1 = $("#jummah1 > td.salah").text().trim();
 

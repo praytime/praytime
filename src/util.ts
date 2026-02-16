@@ -1,8 +1,3 @@
-import axios, {
-  type AxiosError,
-  type AxiosRequestConfig,
-  type AxiosResponse,
-} from "axios";
 import * as cheerio from "cheerio";
 import timezone from "timezone";
 import timezoneAmerica from "timezone/America";
@@ -33,52 +28,158 @@ const sleep = async (ms: number): Promise<void> => {
   await new Promise((resolve) => setTimeout(resolve, ms));
 };
 
+type HttpRequestOptions = {
+  fetch?: BunFetchRequestInit;
+  timeoutMs?: number;
+};
+
+// biome-ignore lint/suspicious/noExplicitAny: Crawler responses are intentionally dynamic per source.
+type HttpResponse<T = any> = {
+  data: T;
+  headers: Headers;
+  status: number;
+};
+
+const createTimedSignal = (
+  timeoutMs: number,
+  externalSignal?: AbortSignal | null,
+): { cleanup: () => void; signal: AbortSignal } => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  const onAbort = () => controller.abort();
+
+  if (externalSignal) {
+    if (externalSignal.aborted) {
+      controller.abort();
+    } else {
+      externalSignal.addEventListener("abort", onAbort, { once: true });
+    }
+  }
+
+  return {
+    cleanup: () => {
+      clearTimeout(timeoutId);
+      externalSignal?.removeEventListener("abort", onAbort);
+    },
+    signal: controller.signal,
+  };
+};
+
+const toFetchInit = (opts?: HttpRequestOptions): BunFetchRequestInit => {
+  return { ...(opts?.fetch ?? {}) } as BunFetchRequestInit;
+};
+
+const isRetryableFetchError = (error: unknown): boolean => {
+  if (error instanceof TypeError) {
+    return true;
+  }
+  if (error instanceof DOMException && error.name === "AbortError") {
+    return true;
+  }
+
+  const code =
+    typeof error === "object" && error !== null && "code" in error
+      ? (error as { code?: unknown }).code
+      : undefined;
+
+  return typeof code === "string" && RETRYABLE_ERROR_CODES.has(code);
+};
+
+// biome-ignore lint/suspicious/noExplicitAny: Crawler responses are intentionally dynamic per source.
+const parseResponseData = async <T = any>(response: Response): Promise<T> => {
+  const contentType = (
+    response.headers.get("content-type") ?? ""
+  ).toLowerCase();
+  const text = await response.text();
+  const trimmed = text.trim();
+  const looksLikeJson =
+    contentType.includes("json") ||
+    (trimmed.startsWith("{") && trimmed.endsWith("}")) ||
+    (trimmed.startsWith("[") && trimmed.endsWith("]"));
+
+  if (looksLikeJson) {
+    try {
+      return JSON.parse(text) as T;
+    } catch {
+      // Fall through for non-JSON bodies that happen to look JSON-ish.
+    }
+  }
+
+  return text as T;
+};
+
 const getWithRetry = async (
   url: string,
-  axiosOpts?: AxiosRequestConfig,
-): Promise<AxiosResponse> => {
+  opts?: HttpRequestOptions,
+): Promise<Response> => {
   const attempts = DEFAULT_HTTP_RETRIES + 1;
+  const timeoutMs = parsePositiveInt(opts?.timeoutMs, DEFAULT_HTTP_TIMEOUT_MS);
+  const fetchInit = toFetchInit(opts);
 
   for (let attempt = 0; attempt < attempts; attempt += 1) {
-    try {
-      return await axios.get(url, {
-        timeout: DEFAULT_HTTP_TIMEOUT_MS,
-        ...axiosOpts,
-      });
-    } catch (error: unknown) {
-      const err = error as AxiosError;
-      const status = err.response?.status;
-      const code = err.code;
-      const retryable =
-        !err.response ||
-        (typeof status === "number" && RETRYABLE_STATUS_CODES.has(status)) ||
-        (typeof code === "string" && RETRYABLE_ERROR_CODES.has(code));
+    const { cleanup, signal } = createTimedSignal(timeoutMs, fetchInit.signal);
 
-      if (!retryable || attempt === attempts - 1) {
-        throw err;
+    try {
+      const response = await Bun.fetch(url, {
+        ...fetchInit,
+        method: fetchInit.method ?? "GET",
+        signal,
+      });
+
+      if (response.ok) {
+        return response;
       }
 
-      await sleep(Math.min(3_000, 500 * 2 ** attempt));
+      const retryable = RETRYABLE_STATUS_CODES.has(response.status);
+      if (!retryable || attempt === attempts - 1) {
+        throw new Error(`request failed: ${response.status} ${url}`);
+      }
+    } catch (error: unknown) {
+      const retryable = isRetryableFetchError(error);
+
+      if (!retryable || attempt === attempts - 1) {
+        throw error;
+      }
+    } finally {
+      cleanup();
     }
+
+    await sleep(Math.min(3_000, 500 * 2 ** attempt));
   }
 
   throw new Error(`request attempts exhausted for ${url}`);
 };
 
-export const loadJson = async <T = AxiosResponse["data"]>(
+// biome-ignore lint/suspicious/noExplicitAny: Crawler responses are intentionally dynamic per source.
+export const get = async <T = any>(
   url: string,
-  opts?: { axios?: AxiosRequestConfig },
+  opts?: HttpRequestOptions,
+): Promise<HttpResponse<T>> => {
+  const response = await getWithRetry(url, opts);
+  const data = await parseResponseData<T>(response);
+  return {
+    data,
+    headers: response.headers,
+    status: response.status,
+  } as HttpResponse<T>;
+};
+
+// biome-ignore lint/suspicious/noExplicitAny: Crawler responses are intentionally dynamic per source.
+export const loadJson = async <T = any>(
+  url: string,
+  opts?: HttpRequestOptions,
 ): Promise<T> => {
-  const response = await getWithRetry(url, opts?.axios);
-  return response.data as T;
+  const response = await getWithRetry(url, opts);
+  return parseResponseData<T>(response);
 };
 
 export const load = async (
   url: string,
-  opts?: { axios?: AxiosRequestConfig; cheerio?: cheerio.CheerioOptions },
+  opts?: HttpRequestOptions & { cheerio?: cheerio.CheerioOptions },
 ): Promise<cheerio.CheerioAPI> => {
-  const response = await getWithRetry(url, opts?.axios);
-  return cheerio.load(String(response.data), opts?.cheerio);
+  const response = await getWithRetry(url, opts);
+  const html = await response.text();
+  return cheerio.load(html, opts?.cheerio);
 };
 
 type MaybeTime = string | null | undefined;

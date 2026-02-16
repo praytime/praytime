@@ -1,6 +1,6 @@
-import axios from "axios";
 import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
+import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -18,8 +18,8 @@ const ids: CrawlerModule["ids"] = [
 ];
 const run = async () => {
   const [salahResp, jumuaResp] = await Promise.all([
-    axios.get("https://masjidal.com/api/v1/time?masjid_id=0kAkaKqD"),
-    axios.get("http://masjidal.com/aie/"),
+    util.get("https://masjidal.com/api/v1/time?masjid_id=0kAkaKqD"),
+    util.get("http://masjidal.com/aie/"),
   ]);
 
   const data = salahResp.data;

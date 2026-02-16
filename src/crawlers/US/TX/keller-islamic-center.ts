@@ -1,5 +1,5 @@
-import axios from "axios";
 import type { CrawlerModule } from "../../../types";
+import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -16,7 +16,7 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  await axios.get("http://www.kellerislamiccenter.org/");
+  await util.get("http://www.kellerislamiccenter.org/");
 
   // ids[0].fajrIqama = $("td:contains('FAJR') + td").text().trim()
   // ids[0].zuhrIqama = $("td:contains('DHUHAR') + td").text().trim()

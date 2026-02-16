@@ -1,7 +1,7 @@
-import axios from "axios";
 import tz from "timezone";
 import timezoneAmerica from "timezone/America";
 import type { CrawlerModule } from "../../../types";
+import * as util from "../../../util";
 
 const us = tz(timezoneAmerica);
 const today = us(Date.now(), "America/Chicago", "%B%d");
@@ -77,7 +77,7 @@ const ids: CrawlerModule["ids"] = [
 //   }
 // }
 const run = async () => {
-  const response = await axios.get(
+  const response = await util.get(
     "https://script.googleusercontent.com/macros/echo?user_content_key=_P4mc7bZcAtdUmXh6ji4VsoPmVUHPuO45WZCnyh6ekVd5R-zyct46V0o1XMXdxJLqOcVQzt2fIFrqegkJsQPH3QRT27IW6rIm5_BxDlH2jW0nuo2oDemN9CCS2h10ox_1xSncGQajx_ryfhECjZEnGktHVXuA-iL5UIitRyLqR2ATYPkodvISZPjLO5148TxIPa4ASuRHszTrYLgAtrb9VnVCMzgzCmP&lib=MAZ0i1i3HNPmaQNbU5js4zf9jz5b0QBE4",
   );
 

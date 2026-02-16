@@ -91,7 +91,7 @@ TODO
   - [masjidal](lib/US/IL/aie-huntley/index.js)
   - [mohid](lib/US/TX/islamic-center-of-frisco/index.js)
   - [masjidapps](lib/US/TX/valley-ranch-islamic-center/index.js)
-  - axios / cheerio
+  - Bun.fetch / cheerio
     - selector based: [mcc-silver-springs](lib/US/MD/mcc-silver-springs/index.js)
       - explanation of selector syntax: https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Selectors#Combinators
     - element text matching:

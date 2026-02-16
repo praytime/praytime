@@ -1,6 +1,6 @@
-import axios from "axios";
 import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
+import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -19,7 +19,7 @@ const ids: CrawlerModule["ids"] = [
 
 // dup: https://www.google.com/maps/search/?api=1&query=none&query_place_id=ChIJKQCczbeTD4gRot0ZuNceH-o
 const run = async () => {
-  const response = await axios.get("http://www.ifnonline.com/");
+  const response = await util.get("http://www.ifnonline.com/");
   const $ = cheerio.load(response.data);
 
   ids[0].fajrIqama = $("div.salah-times > div:nth-child(2) > p:nth-child(1)")

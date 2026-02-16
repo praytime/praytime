@@ -1,6 +1,6 @@
-import axios from "axios";
 import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
+import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -17,7 +17,7 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const response = await axios.get("http://www.makkahmasjid.net");
+  const response = await util.get("http://www.makkahmasjid.net");
   const $ = cheerio.load(response.data);
 
   // having multiple elements w/same id is invalid. So instead of

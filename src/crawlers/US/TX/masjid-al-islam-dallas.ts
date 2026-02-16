@@ -1,5 +1,5 @@
-import axios from "axios";
 import type { CrawlerModule } from "../../../types";
+import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -57,7 +57,7 @@ const ids: CrawlerModule["ids"] = [
 //   "status_description": "Success."
 // }
 const run = async () => {
-  const response = await axios.get(
+  const response = await util.get(
     "https://muslimsalat.com/Dallas%2C+TX/daily.json?key=1b2297a8451063cfc67ad03aade14c4b",
   );
 

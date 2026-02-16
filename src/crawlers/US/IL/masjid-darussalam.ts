@@ -1,4 +1,3 @@
-import axios from "axios";
 import { parse } from "csv-parse/sync";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
@@ -18,7 +17,7 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const csvResponse = await axios.get(
+  const csvResponse = await util.get(
     "https://docs.google.com/spreadsheets/u/0/d/1bQ282enkhtsCIf_wyu_65ldtEOP-CHvhuZXIdQ5f8d0/pub?range=E10:G21&output=csv",
   );
 

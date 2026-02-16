@@ -1,5 +1,3 @@
-import * as https from "node:https";
-import axios from "axios";
 import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
@@ -19,10 +17,12 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const response = await axios.get(ids[0].url, {
-    httpsAgent: new https.Agent({
-      rejectUnauthorized: false,
-    }),
+  const response = await util.get(ids[0].url, {
+    fetch: {
+      tls: {
+        rejectUnauthorized: false,
+      },
+    },
   });
   const $ = cheerio.load(response.data);
 
