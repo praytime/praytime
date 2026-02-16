@@ -1,11 +1,35 @@
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
+const PRAYER_LABELS: Record<
+  string,
+  "fajr" | "zuhr" | "asr" | "maghrib" | "isha" | "juma"
+> = {
+  aljumua: "juma",
+  asr: "asr",
+  fajr: "fajr",
+  dhuhr: "zuhr",
+  isha: "isha",
+  isya: "isha",
+  juma: "juma",
+  jumah: "juma",
+  jumuah: "juma",
+  jumua: "juma",
+  maghrib: "maghrib",
+  zuhr: "zuhr",
+};
+
+const normalizeLabel = (text: string): string =>
+  text.toLowerCase().replace(/[^a-z]/g, "");
+
+const extractClock = (text: string): string =>
+  util.extractTimeAmPm(text) || util.extractTime(text);
+
 const ids: CrawlerModule["ids"] = [
   {
     uuid4: "faef4be0-6fa3-4c76-89dc-136e5806a34f",
     name: "Lewiston/Auburn Islamic Center",
-    url: "http://laislamiccenter.com/",
+    url: "https://lewistonauburnislamiccenter.com/prayers/",
     timeZoneId: "America/New_York",
     address: "21 Lisbon St, Lewiston, ME 04240, USA",
     placeId: "ChIJa4bob8RrskwRtrEWjjryv_4",
@@ -16,71 +40,51 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  // xmlMode: true so that script tags don't get special treatment
-  const $ = await util.load(ids[0].url, { cheerio: { xmlMode: true } });
+  const $ = await util.load(ids[0].url);
+  const headingTexts = util.mapToText($, "h5.elementor-heading-title");
 
-  type Prayer = {
-    prayerName: string;
-    prayerTime: string;
-  };
+  const parsedTimes = new Map<
+    "fajr" | "zuhr" | "asr" | "maghrib" | "isha" | "juma",
+    string
+  >();
 
-  type Jumuah = {
-    jumuaTiming: string;
-  };
+  for (let i = 0; i < headingTexts.length - 1; i += 1) {
+    const labelText = headingTexts[i];
+    const valueText = headingTexts[i + 1];
+    if (!labelText || !valueText) {
+      continue;
+    }
 
-  type PrayerSection = {
-    name: string;
-    data: Array<{
-      prayers: Prayer[];
-      jumuahs: Jumuah[];
-      [key: string]: unknown;
-    }>;
-  };
+    const label = PRAYER_LABELS[normalizeLabel(labelText)];
+    if (!label) {
+      continue;
+    }
 
-  type PrayerApiData = {
-    props: {
-      pageProps: {
-        initialData: {
-          sections: PrayerSection[];
-        };
-      };
-    };
-  };
+    const time = extractClock(valueText);
+    if (!time || parsedTimes.has(label)) {
+      continue;
+    }
 
-  const d = util
-    .mapToText($, "script#__NEXT_DATA__")
-    .map((text) => JSON.parse(text) as PrayerApiData)
-    .map(
-      (j) =>
-        j.props.pageProps.initialData.sections.find(
-          (s) => s.name === "Prayer Times",
-        )?.data,
-    )
-    .shift();
+    parsedTimes.set(label, time);
+  }
 
-  if (!d || !Array.isArray(d) || d.length === 0) {
+  const iqamaTimes = [
+    parsedTimes.get("fajr") ?? "",
+    parsedTimes.get("zuhr") ?? "",
+    parsedTimes.get("asr") ?? "",
+    parsedTimes.get("maghrib") ?? "",
+    parsedTimes.get("isha") ?? "",
+  ];
+  if (iqamaTimes.some((time) => !time)) {
     throw new Error("failed to parse prayer times");
   }
+  util.setIqamaTimes(ids[0], iqamaTimes);
 
-  const prayerDay = d[0];
-  if (!prayerDay) {
-    throw new Error("failed to parse prayer day");
+  const jumaTime = parsedTimes.get("juma");
+  if (!jumaTime) {
+    throw new Error("failed to parse juma time");
   }
-  const prayers = prayerDay.prayers as Array<Prayer>;
-  const jumuahs = prayerDay.jumuahs as Array<Jumuah>;
-
-  util.setIqamaTimes(ids[0], [
-    prayers.find((p: Prayer) => p.prayerName === "Fajr")?.prayerTime,
-    prayers.find((p: Prayer) => p.prayerName === "Zuhr")?.prayerTime,
-    prayers.find((p: Prayer) => p.prayerName === "Asr")?.prayerTime,
-    prayers.find((p: Prayer) => p.prayerName === "Magrib")?.prayerTime,
-    prayers.find((p: Prayer) => p.prayerName === "Isha")?.prayerTime,
-  ]);
-
-  util.setJumaTimes(
-    ids[0],
-    jumuahs.map((j: Jumuah) => j.jumuaTiming),
-  );
+  util.setJumaTimes(ids[0], [jumaTime]);
 
   return ids;
 };
