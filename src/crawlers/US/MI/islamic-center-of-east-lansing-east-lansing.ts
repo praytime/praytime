@@ -1,13 +1,19 @@
-import puppeteer from "puppeteer";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const crawlerPuppeteer = true;
+const ATHANPLUS_FALLBACK_URL =
+  "https://timing.athanplus.com/masjid/widgets/embed?theme=1&masjid_id=0aAeyzAj";
+
+const normalizeClock = (value: string): string => {
+  const extracted = util.extractTimeAmPm(value) || util.extractTime(value);
+  return extracted.replace(/\s+/g, " ").trim();
+};
+
 const ids: CrawlerModule["ids"] = [
   {
     uuid4: "fad49146-9293-498e-861e-aeca0b836abd",
     name: "Islamic Center of East Lansing",
-    url: "http://lansingislam.com/",
+    url: "https://www.lansingislam.com/",
     timeZoneId: "America/Detroit",
     address: "920 S Harrison Rd, East Lansing, MI 48823, USA",
     placeId: "ChIJnXBspnHCIogR1lRplpAjMPk",
@@ -20,26 +26,28 @@ const ids: CrawlerModule["ids"] = [
 
 // alt: ChIJqWjTK9XDIogRfx_4Ob4JHOY
 const run = async () => {
-  const browser = await puppeteer.launch();
-  try {
-    const page = await browser.newPage();
+  const $ = await util.load(ids[0].url);
+  const widgetUrl =
+    $("iframe[src*='timing.athanplus.com/masjid/widgets/embed']")
+      .first()
+      .attr("src") ?? ATHANPLUS_FALLBACK_URL;
 
-    await page.goto(ids[0].url);
-
-    await page.waitForSelector(".tableizer-table");
-
-    const t = await util.pptMapToText(page, ".tableizer-table td:last-child");
-
-    t.splice(1, 1); // remove sunrise
-
-    util.setIqamaTimes(ids[0], t);
-
-    const j = await util.pptMapToText(page, ".aSS");
-
-    util.setJumaTimes(ids[0], j.map(util.matchTimeAmPmG).shift());
-  } finally {
-    await browser.close();
+  const $$ = await util.load(widgetUrl);
+  const iqamaTimes = util
+    .mapToText($$, "#table_div_0 table.full-table-sec tr td:nth-child(3) b")
+    .map(normalizeClock);
+  if (iqamaTimes.length < 5) {
+    throw new Error("failed to parse iqamah times");
   }
+  util.setIqamaTimes(ids[0], iqamaTimes.slice(0, 5));
+
+  const jumaTimes = util
+    .mapToText($$, "#table_div_0 ul.testing-sec > li > b")
+    .map(normalizeClock);
+  if (jumaTimes.length === 0) {
+    throw new Error("failed to parse juma times");
+  }
+  util.setJumaTimes(ids[0], jumaTimes.slice(0, 3));
 
   return ids;
 };
@@ -48,5 +56,4 @@ export const crawler: CrawlerModule = {
   name: "US/MI/islamic-center-of-east-lansing-east-lansing",
   ids,
   run,
-  puppeteer: crawlerPuppeteer,
 };

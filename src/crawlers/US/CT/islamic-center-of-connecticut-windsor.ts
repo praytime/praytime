@@ -1,8 +1,12 @@
-import puppeteer from "puppeteer";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const crawlerPuppeteer = true;
+const MONTHLY_CSV_FALLBACK_URL =
+  "https://docs.google.com/spreadsheets/d/1BmoygJSbCiYXu-ZzR_CgyWAm-rlO5fGVsnyRucSFBwU/export?format=csv";
+
+const normalizeClock = (value: string | undefined): string =>
+  util.extractTimeAmPm(value) || util.extractTime(value);
+
 const ids: CrawlerModule["ids"] = [
   {
     uuid4: "d7aba698-1629-47f0-81e3-43eb4793950e",
@@ -18,20 +22,51 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const browser = await puppeteer.launch();
-  try {
-    const page = await browser.newPage();
+  const $ = await util.load(ids[0].url);
+  const pageScript = util
+    .mapToText($, "script")
+    .find((text) => text.includes("spreadsheets/d/"));
+  const csvUrl =
+    pageScript?.match(
+      /https:\/\/docs\.google\.com\/spreadsheets\/d\/[^"'\\\s]+\/export\?format=csv/,
+    )?.[0] ?? MONTHLY_CSV_FALLBACK_URL;
 
-    // await page.goto(ids[0].url, { waitUntil: 'networkidle0' })
-    await page.goto(ids[0].url);
-
-    const a = await util.pptMapToText(page, "#IqamaTable td:last-child");
-
-    util.setIqamaTimes(ids[0], a.filter(util.matchTime));
-    util.setJumaTimes(ids[0], ["check website"]);
-  } finally {
-    await browser.close();
+  const response = await util.get<string>(csvUrl);
+  if (typeof response.data !== "string") {
+    throw new Error("unexpected prayer csv response type");
   }
+
+  const day = Number.parseInt(util.strftime("%d", ids[0]), 10);
+  if (!Number.isFinite(day) || day < 1) {
+    throw new Error("failed to derive local day");
+  }
+
+  const rows = response.data
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+  const currentRow = rows[day - 1];
+  if (!currentRow) {
+    throw new Error(`missing csv row for day ${day}`);
+  }
+
+  const columns = currentRow.split(",");
+  if (columns.length < 11) {
+    throw new Error("unexpected prayer csv row format");
+  }
+  const iqamaTimes = [
+    normalizeClock(columns[2]),
+    normalizeClock(columns[5]),
+    normalizeClock(columns[7]),
+    normalizeClock(columns[8]),
+    normalizeClock(columns[10]),
+  ];
+  if (iqamaTimes.some((time) => !time)) {
+    throw new Error("failed to parse iqamah times");
+  }
+
+  util.setIqamaTimes(ids[0], iqamaTimes);
+  util.setJumaTimes(ids[0], ["check website"]);
 
   return ids;
 };
@@ -40,5 +75,4 @@ export const crawler: CrawlerModule = {
   name: "US/CT/islamic-center-of-connecticut-windsor",
   ids,
   run,
-  puppeteer: crawlerPuppeteer,
 };
