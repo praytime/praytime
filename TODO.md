@@ -6,9 +6,6 @@
 - jscpd
 - replace go w/typescript
 - eliminate scripts
-- use Bun.fetch instead of axios
-  - web cache?
-- use playwright instead of puppeteer
 - persist sqlite
   - scrape logs: timestamp, inputs, outputs
 

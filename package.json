@@ -28,6 +28,7 @@
   "dependencies": {
     "cheerio": "^1.2.0",
     "csv-parse": "^6.1.0",
+    "firebase-admin": "^13.6.1",
     "geofire-common": "^6.0.0",
     "puppeteer": "^24.37.3",
     "timezone": "^1.0.23"

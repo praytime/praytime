@@ -56,12 +56,6 @@ Each crawler module should export:
 2. Optional ingest to Firestore:
    - `script/run.sh ... | script/praytime-load`
 
-## Useful Commands
-- Run one crawler: `script/run.sh ./lib/US/IL/islamic-center-of-naperville`
-- Dump static index data: `bun index.js --dump`
-- Bun tests: `bun test`
-- Go tests: `cd go/pkg/praytime && go test ./...`
-
 ## Environment Variables
 - `PUPPETEER_DISABLED`: skip browser crawlers.
 - `CRAWLER_TIMEOUT_MS`: per-crawler execution timeout in `index.js`.

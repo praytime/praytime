@@ -71,6 +71,8 @@ export const runCrawlers = async (
   const puppeteerDisabled = "PUPPETEER_DISABLED" in process.env;
   const skipPuppeteer = options.skipPuppeteer === true;
   const skipStatic = options.skipStatic === true;
+  const emitJson = options.emitJson !== false;
+  const onOutput = options.onOutput;
 
   for (const crawler of util.shuffle([...crawlers])) {
     try {
@@ -113,7 +115,18 @@ export const runCrawlers = async (
           error: crawlError,
           source: crawler.name,
         };
-        console.log("%j", output);
+
+        if (onOutput) {
+          try {
+            await onOutput(output);
+          } catch (error: unknown) {
+            console.error("output handler failed for %s:", crawler.name, error);
+          }
+        }
+
+        if (emitJson) {
+          console.log("%j", output);
+        }
       }
     } catch (error: unknown) {
       console.error("caught error processing %s:", crawler.name, error);

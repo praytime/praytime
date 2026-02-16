@@ -57,10 +57,16 @@ export interface CrawlOutputLine {
   source: string;
 }
 
+export type CrawlOutputHandler = (
+  line: CrawlOutputLine,
+) => void | Promise<void>;
+
 export interface RunnerOptions {
   skipStatic?: boolean;
   skipPuppeteer?: boolean;
   crawlerTimeoutMs?: number;
+  emitJson?: boolean;
+  onOutput?: CrawlOutputHandler;
 }
 
 export interface DumpRecord {
@@ -70,9 +76,14 @@ export interface DumpRecord {
   geohash: string;
 }
 
-export interface CliOptions extends RunnerOptions {
+export interface CliOptions {
   dump: boolean;
   list: boolean;
   help: boolean;
+  save: boolean;
+  force: boolean;
+  verbose: boolean;
+  skipStatic: boolean;
+  skipPuppeteer: boolean;
   patterns: string[];
 }

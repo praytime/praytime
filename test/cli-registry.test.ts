@@ -53,6 +53,31 @@ test("parseCliArgs accepts repeated --crawler and positional patterns", () => {
 
   expect(parsed.skipPuppeteer).toBeTrue();
   expect(parsed.patterns).toEqual(["US/GA/*", "US/IL/batavia-islamic-center"]);
+  expect(parsed.save).toBeFalse();
+  expect(parsed.force).toBeFalse();
+  expect(parsed.verbose).toBeFalse();
+});
+
+test("parseCliArgs accepts save mode flags", () => {
+  const parsed = parseCliArgs(["--save", "--force", "--verbose", "US/GA/*"]);
+
+  expect(parsed.save).toBeTrue();
+  expect(parsed.force).toBeTrue();
+  expect(parsed.verbose).toBeTrue();
+  expect(parsed.patterns).toEqual(["US/GA/*"]);
+});
+
+test("parseCliArgs validates save-only flags and incompatible modes", () => {
+  expect(() => parseCliArgs(["--force"])).toThrow(/--force requires --save/);
+  expect(() => parseCliArgs(["--verbose"])).toThrow(
+    /--verbose requires --save/,
+  );
+  expect(() => parseCliArgs(["--save", "--dump"])).toThrow(
+    /--save cannot be used with --dump/,
+  );
+  expect(() => parseCliArgs(["--save", "--list"])).toThrow(
+    /--save cannot be used with --list/,
+  );
 });
 
 test("filterCrawlerEntries matches glob patterns", () => {
