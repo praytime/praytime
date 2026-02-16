@@ -16,22 +16,17 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const data = await util.loadJson(
-    "https://www.masjidnow.com/api/v2/salah_timings/daily.json?masjid_id=10116",
-  );
-
-  if (data.masjid.salah_timing.date === util.strftime("%Y-%m-%d", ids[0])) {
-    util.setIqamaTimes(ids[0], [
-      data.masjid.salah_timing.fajr,
-      data.masjid.salah_timing.dhuhr,
-      data.masjid.salah_timing.asr,
-      data.masjid.salah_timing.maghrib,
-      data.masjid.salah_timing.isha,
-    ]);
-  } else {
-    util.setIqamaTimes(ids[0], Array(5).fill("--"));
-  }
-  util.setJumaTimes(ids[0], ["check website"]);
+  const iqama = await util.loadMasjidalIqama("3AO2BxLe");
+  util.setTimes(ids[0], [
+    iqama.fajr,
+    iqama.zuhr,
+    iqama.asr,
+    iqama.maghrib,
+    iqama.isha,
+    iqama.jummah1,
+    iqama.jummah2,
+    iqama.jummah3,
+  ]);
 
   return ids;
 };

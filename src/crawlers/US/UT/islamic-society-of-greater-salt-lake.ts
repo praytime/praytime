@@ -1,3 +1,4 @@
+import { parse } from "csv-parse/sync";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
@@ -28,56 +29,69 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 
-// {
-//   "masjid": {
-//     "id": 10067,
-//     "name": "Khadeeja Islamic Center",
-//     "latitude": 40.717011,
-//     "longitude": -111.92272300000002,
-//     "ads_disabled": false,
-//     "donations_enabled": false,
-//     "salah_timing": {
-//       "month": 12,
-//       "day": 20,
-//       "fajr": "6:45am",
-//       "dhuhr": "2:00pm",
-//       "asr": "4:00pm",
-//       "maghrib": "5:11pm",
-//       "isha": "7:00pm",
-//       "year": 2021,
-//       "date": "2021-12-20",
-//       "fajr_adhan": "6:09am",
-//       "sunrise_adhan": "7:48am",
-//       "dhuhr_adhan": "12:26pm",
-//       "asr_adhan": "3:22pm",
-//       "maghrib_adhan": "5:03pm",
-//       "isha_adhan": "6:37pm"
-//     },
-//     "donation_url": "https://www.masjidnow.com/masjids/10067-khadeeja-islamic-center/donations",
-//     "push_messages_enabled": false,
-//     "monthly_info": "",
-//     "url": "/masjids/10067-khadeeja-islamic-center",
-//     "cover_photo_url": null
-//   }
-// }
 const run = async () => {
-  const dd = await Promise.all([
-    util.loadJson(
-      "https://www.masjidnow.com/api/v2/salah_timings/daily.json?masjid_id=10067",
-    ),
-    util.loadJson(
-      "https://www.masjidnow.com/api/v2/salah_timings/daily.json?masjid_id=10069",
-    ),
-  ]);
+  const csvResponse = await util.get(
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTFca2lbPuRp4XteUyuiMlBUupPh5AL5O5raB2s_QNbq4QN4qX0RHfhPOh21IVMXryJtX67k55djrNe/pub?gid=0&single=true&output=csv",
+  );
+  const rows = parse(csvResponse.data, {
+    relaxColumnCount: true,
+    skipEmptyLines: false,
+  }) as unknown as string[][];
+  const header = rows[0];
+  if (!header) {
+    throw new Error("missing sheet header");
+  }
 
-  dd.forEach(({ masjid: { salah_timing: t } }, i) => {
-    if (t.date === util.strftime("%Y-%m-%d", ids[i])) {
-      util.setIqamaTimes(ids[i], [t.fajr, t.dhuhr, t.asr, t.maghrib, t.isha]);
-    } else {
-      util.setIqamaTimes(ids[i], Array(5).fill("--"));
+  const khadeejaIndex = header.findIndex((value) => /khadeeja/i.test(value));
+  const noorIndex = header.findIndex((value) => /al-noor/i.test(value));
+  if (khadeejaIndex < 0 || noorIndex < 0) {
+    throw new Error("missing masjid columns in sheet");
+  }
+
+  const getColumnValue = (label: RegExp, columnIndex: number): string => {
+    const row = rows.find((candidate) => {
+      const firstCell = candidate[0];
+      return typeof firstCell === "string" && label.test(firstCell.trim());
+    });
+    const value = row?.[columnIndex]?.trim();
+    if (!value) {
+      throw new Error(`missing ${label.source} value in sheet`);
     }
-    util.setJumaTimes(ids[i], ["check website"]);
-  });
+    return value;
+  };
+
+  const getJumaTimes = (columnIndex: number): string[] => {
+    const jumaText = getColumnValue(/Juma'h/i, columnIndex);
+    const jumaTimes = util.matchTimeG(jumaText) ?? [];
+    if (jumaTimes.length > 0) {
+      return jumaTimes;
+    }
+    throw new Error("missing juma times in sheet");
+  };
+
+  const timesByColumn = (columnIndex: number): string[] => [
+    getColumnValue(/^Fajr$/i, columnIndex),
+    getColumnValue(/^Zuhr$/i, columnIndex),
+    getColumnValue(/^Asar$/i, columnIndex),
+    getColumnValue(/^Maghrib$/i, columnIndex),
+    getColumnValue(/^Isha$/i, columnIndex),
+  ];
+
+  const first = ids[0];
+  if (first) {
+    util.setIqamaTimes(first, timesByColumn(khadeejaIndex));
+    util.setJumaTimes(first, getJumaTimes(khadeejaIndex));
+  }
+
+  const second = ids[1];
+  if (second) {
+    util.setIqamaTimes(second, timesByColumn(noorIndex));
+    util.setJumaTimes(second, getJumaTimes(noorIndex));
+  }
+
+  if (!first || !second) {
+    throw new Error("missing crawler ids");
+  }
 
   return ids;
 };

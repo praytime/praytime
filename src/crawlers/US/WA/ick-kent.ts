@@ -1,8 +1,6 @@
-import puppeteer from "puppeteer";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const crawlerPuppeteer = true;
 const ids: CrawlerModule["ids"] = [
   {
     uuid4: "3c9ad4a0-1eec-43ec-ad55-c92531c5acf5",
@@ -18,28 +16,17 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const browser = await puppeteer.launch();
-  try {
-    const page = await browser.newPage();
-
-    await page.goto("https://mysalah.herokuapp.com/salah/widget/ick", {
-      waitUntil: "networkidle0",
-    });
-
-    const t = await page.$$eval(".glow:last-child", (es) =>
-      es.map((e) => e.textContent.trim()),
-    );
-    // t = ['Iqama', '6:40 am', '1:30 pm', '5:00 pm', '6:35 pm', '8:15 pm']
-    util.setIqamaTimes(ids[0], t.slice(1));
-
-    const j = await page.$$eval(".salah-head", (es) =>
-      es.map((e) => e.textContent.trim()),
-    );
-    // j = ['ICK Friday Prayers at 1:30 & 2:30 PM']
-    util.setJumaTimes(ids[0], j[0].match(/\d{1,2}\s*:\s*\d{1,2}/g));
-  } finally {
-    await browser.close();
-  }
+  const iqama = await util.loadMasjidalIqama("QL0MGBAZ");
+  util.setTimes(ids[0], [
+    iqama.fajr,
+    iqama.zuhr,
+    iqama.asr,
+    iqama.maghrib,
+    iqama.isha,
+    iqama.jummah1,
+    iqama.jummah2,
+    iqama.jummah3,
+  ]);
 
   return ids;
 };
@@ -48,5 +35,4 @@ export const crawler: CrawlerModule = {
   name: "US/WA/ick-kent",
   ids,
   run,
-  puppeteer: crawlerPuppeteer,
 };

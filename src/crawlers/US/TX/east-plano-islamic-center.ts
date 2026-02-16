@@ -1,4 +1,3 @@
-import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
@@ -17,38 +16,59 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 
-const getTime = ($: cheerio.CheerioAPI, prayer: string): string => {
-  const text = $(`div.cl-prayer-flex h4:contains("${prayer}") + h6`)
-    .text()
-    .trim();
-  const match = util.matchTimeAmPm(text)?.[0];
-  if (!match) {
-    throw new Error(`Failed to parse ${prayer} iqama time`);
-  }
-  return match;
-};
-
 const run = async () => {
-  const response = await util.get("http://epicmasjid.org");
-  const $ = cheerio.load(response.data);
+  const $ = await util.load("https://epicmasjid.org");
   const record = ids[0];
   if (!record) {
     throw new Error("No masjid record configured");
   }
 
+  const iqamaRows = $("#first_namaz tbody tr")
+    .toArray()
+    .map((row) => {
+      const prayer = $("td:nth-child(1)", row).text().trim().toLowerCase();
+      const iqama = $("td:nth-child(3)", row).text().trim();
+      return { prayer, iqama };
+    });
+  const getIqama = (prayerName: string): string => {
+    const value = iqamaRows.find(({ prayer }) => prayer === prayerName)?.iqama;
+    const parsed = util.extractTimeAmPm(value);
+    if (!parsed) {
+      throw new Error(`Failed to parse ${prayerName} iqama time`);
+    }
+    return parsed;
+  };
+
   util.setIqamaTimes(record, [
-    getTime($, "Fajr"),
-    getTime($, "Dhuhr"),
-    getTime($, "Asr"),
-    getTime($, "Maghrib"),
-    getTime($, "Isha"),
+    getIqama("fajr"),
+    getIqama("dhuhr"),
+    getIqama("asr"),
+    getIqama("maghrib"),
+    getIqama("isha"),
   ]);
 
-  const j = util.mapToText($, ".jumuatime table td:nth-child(2)");
-  util.setJumaTimes(
-    record,
-    j.filter(util.matchTimeAmPm).map(util.extractTimeAmPm),
-  );
+  const jumaTimes = $("#first_namaz + table tbody tr td:nth-child(2)")
+    .toArray()
+    .map((cell) => util.extractTimeAmPm($(cell).text()))
+    .filter(Boolean);
+  const uniqueJumaTimes = Array.from(new Set(jumaTimes)).slice(0, 3);
+  util.setJumaTimes(record, uniqueJumaTimes);
+
+  if (uniqueJumaTimes.length === 0) {
+    throw new Error("Failed to parse Jumuah times");
+  }
+
+  if (iqamaRows.length < 5) {
+    throw new Error("Failed to parse iqama timings");
+  }
+
+  if (!record.fajrIqama || !record.zuhrIqama || !record.asrIqama) {
+    throw new Error("Missing required iqama timings");
+  }
+
+  if (!record.maghribIqama || !record.ishaIqama) {
+    throw new Error("Missing required evening iqama timings");
+  }
 
   return ids;
 };

@@ -182,6 +182,82 @@ export const load = async (
   return cheerio.load(html, opts?.cheerio);
 };
 
+type MasjidalIqama = {
+  fajr?: unknown;
+  zuhr?: unknown;
+  dhuhr?: unknown;
+  asr?: unknown;
+  maghrib?: unknown;
+  isha?: unknown;
+  jummah1?: unknown;
+  jummah2?: unknown;
+  jummah3?: unknown;
+};
+
+type MasjidalTimeResponse = {
+  status?: unknown;
+  data?: {
+    iqama?: MasjidalIqama;
+  };
+};
+
+const normalizeMasjidalTime = (value: unknown): string => {
+  if (typeof value !== "string") {
+    return "";
+  }
+  return value.trim();
+};
+
+export const loadMasjidalIqama = async (
+  masjidId: string,
+): Promise<{
+  asr: string;
+  fajr: string;
+  isha: string;
+  jummah1?: string;
+  jummah2?: string;
+  jummah3?: string;
+  maghrib: string;
+  zuhr: string;
+}> => {
+  const response = await loadJson<MasjidalTimeResponse>(
+    `https://masjidal.com/api/v1/time?masjid_id=${encodeURIComponent(masjidId)}`,
+  );
+
+  if (response.status !== "success") {
+    throw new Error(`unexpected masjidal status for ${masjidId}`);
+  }
+
+  const iqama = response.data?.iqama;
+  if (!iqama || typeof iqama !== "object") {
+    throw new Error(`missing masjidal iqama for ${masjidId}`);
+  }
+
+  const fajr = normalizeMasjidalTime(iqama.fajr);
+  const zuhr = normalizeMasjidalTime(iqama.zuhr ?? iqama.dhuhr);
+  const asr = normalizeMasjidalTime(iqama.asr);
+  const maghrib = normalizeMasjidalTime(iqama.maghrib);
+  const isha = normalizeMasjidalTime(iqama.isha);
+  const jummah1 = normalizeMasjidalTime(iqama.jummah1);
+  const jummah2 = normalizeMasjidalTime(iqama.jummah2);
+  const jummah3 = normalizeMasjidalTime(iqama.jummah3);
+
+  if (!fajr || !zuhr || !asr || !maghrib || !isha) {
+    throw new Error(`incomplete masjidal iqama for ${masjidId}`);
+  }
+
+  return {
+    asr,
+    fajr,
+    isha,
+    ...(jummah1 ? { jummah1 } : {}),
+    ...(jummah2 ? { jummah2 } : {}),
+    ...(jummah3 ? { jummah3 } : {}),
+    maghrib,
+    zuhr,
+  };
+};
+
 type MaybeTime = string | null | undefined;
 type MaybeTimeList = MaybeTime[] | RegExpMatchArray | undefined | null;
 

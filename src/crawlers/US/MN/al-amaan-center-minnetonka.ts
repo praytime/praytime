@@ -15,81 +15,99 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  // sample:
-  // [
-  //   ...
-  //   {
-  //     "prayers": [
-  //       {
-  //         "name": "Fajr",
-  //         "iqamah": "5:15",
-  //         "azaan": "5:08"
-  //       },
-  //       {
-  //         "name": "Arabic Jumua",
-  //         "iqamah": "12:45",
-  //         "azaan": "12:00"
-  //       },
-  //       {
-  //         "name": "English Jumua",
-  //         "iqamah": "13:50",
-  //         "azaan": "13:15"
-  //       },
-  //       {
-  //         "name": "Zuhr",
-  //         "iqamah": "13:30",
-  //         "azaan": "13:15"
-  //       },
-  //       {
-  //         "name": "Asr",
-  //         "iqamah": "17:15",
-  //         "azaan": "16:59"
-  //       },
-  //       {
-  //         "name": "Maghrib",
-  //         "iqamah": "20:01",
-  //         "azaan": "19:56"
-  //       },
-  //       {
-  //         "name": "Isha",
-  //         "iqamah": "21:22",
-  //         "azaan": "21:22"
-  //       }
-  //     ],
-  //     "date": "29/08/2021"
-  //   }
-  // ]
-  const d = await util.loadJson(
-    "https://rvljd7wah8.execute-api.us-east-2.amazonaws.com/Prod/prayers",
+
+const PRAYER_TIMES_PDF_URL =
+  "https://www.alamaan.org/_files/ugd/db7ef5_a51cb27a3e184cf385c4fdecc2230422.pdf";
+
+const extractLayoutTextFromPdf = async (url: string): Promise<string> => {
+  const response = await Bun.fetch(url);
+  if (!response.ok) {
+    throw new Error(`failed to download prayer times pdf: ${response.status}`);
+  }
+
+  const tempPath = `/tmp/alamaan-prayer-times-${Date.now()}.pdf`;
+  const pdfBuffer = await response.arrayBuffer();
+  await Bun.write(tempPath, new Uint8Array(pdfBuffer));
+
+  try {
+    return await Bun.$`pdftotext -layout ${tempPath} -`.text();
+  } catch (error) {
+    throw new Error(
+      `failed to extract prayer times pdf text: ${String(error)}`,
+    );
+  } finally {
+    await Bun.$`rm -f ${tempPath}`.quiet();
+  }
+};
+
+const findTodayRow = (
+  pdfText: string,
+  record: CrawlerModule["ids"][number],
+) => {
+  const dateKey = `${Number.parseInt(util.strftime("%d", record), 10)}-${util.strftime("%b", record)}`;
+  const rowPattern = new RegExp(
+    `^\\s*${dateKey}\\s+\\w{3}\\s+\\d+\\s+` +
+      `(\\d{1,2}:\\d{2})\\s+` +
+      `(\\d{1,2}:\\d{2})\\s+` +
+      `(\\d{1,2}:\\d{2})\\s+` +
+      `(\\d{1,2}:\\d{2})\\s+` +
+      `(\\d{1,2}:\\d{2})\\s+` +
+      `(\\d{1,2}:\\d{2})\\s+` +
+      `(\\d{1,2}:\\d{2})\\s+` +
+      `(\\d{1,2}:\\d{2})\\s+` +
+      `(\\d{1,2}:\\d{2})\\s*$`,
+    "m",
   );
-  type Prayer = {
-    name: string;
-    iqamah: string;
-    azaan: string;
-  };
+  return pdfText.match(rowPattern);
+};
 
-  type DayPrayerData = {
-    date: string;
-    prayers: Prayer[];
-  };
+const extractJumaTimes = (pdfText: string): string[] => {
+  const match = pdfText.match(
+    /Friday Khutbas:\s*1st at\s*([0-9: ]+[ap]m).*?2nd at\s*([0-9: ]+[ap]m)/i,
+  );
+  if (!match) {
+    throw new Error("missing juma timings in prayer pdf");
+  }
 
-  const prayerData = d as unknown as DayPrayerData[];
-  const targetDate = util.strftime("%d/%m/%Y", ids[0]);
-  const day = prayerData.find(({ date }) => date.trim() === targetDate);
-  if (!day) {
+  const juma1 = util.extractTimeAmPm(match[1]);
+  const juma2 = util.extractTimeAmPm(match[2]);
+  if (!juma1 || !juma2) {
+    throw new Error("failed to parse juma timings in prayer pdf");
+  }
+
+  return [juma1, juma2];
+};
+
+const run = async () => {
+  const record = ids[0];
+  if (!record) {
+    throw new Error("missing masjid record");
+  }
+
+  const pdfText = await extractLayoutTextFromPdf(PRAYER_TIMES_PDF_URL);
+  const rowMatch = findTodayRow(pdfText, record);
+  if (!rowMatch) {
+    const targetDate = `${Number.parseInt(util.strftime("%d", record), 10)}-${util.strftime("%b", record)}`;
     throw new Error(`no prayers found for ${targetDate}`);
   }
-  const p = day.prayers;
 
-  util.setTimes(ids[0], [
-    p.find(({ name }) => name === "Fajr")?.iqamah,
-    p.find(({ name }) => name === "Zuhr")?.iqamah,
-    p.find(({ name }) => name === "Asr")?.iqamah,
-    p.find(({ name }) => name === "Maghrib")?.iqamah,
-    p.find(({ name }) => name === "Isha")?.iqamah,
-    p.find(({ name }) => name === "Arabic Jumua")?.azaan,
-    p.find(({ name }) => name === "English Jumua")?.azaan,
+  const fajrIqama = rowMatch[2];
+  const zuhrIqama = rowMatch[5];
+  const asrIqama = rowMatch[7];
+  const maghrib = rowMatch[8];
+  const isha = rowMatch[9];
+  if (!fajrIqama || !zuhrIqama || !asrIqama || !maghrib || !isha) {
+    throw new Error("failed to parse required iqama fields from prayer pdf");
+  }
+
+  const jumaTimes = extractJumaTimes(pdfText);
+  util.setTimes(record, [
+    fajrIqama,
+    zuhrIqama,
+    asrIqama,
+    maghrib,
+    isha,
+    ...jumaTimes,
   ]);
 
   return ids;

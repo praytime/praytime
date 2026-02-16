@@ -16,22 +16,28 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const data = await util.loadJson(
-    "https://www.masjidnow.com/api/v2/salah_timings/daily.json?masjid_id=2884",
+  const $ = await util.load(
+    "https://us.mohid.co/mi/detroit/gbic/masjid/widget/api/index/?m=prayertimings",
   );
 
-  if (data.masjid.salah_timing.date === util.strftime("%Y-%m-%d", ids[0])) {
-    util.setIqamaTimes(ids[0], [
-      data.masjid.salah_timing.fajr,
-      data.masjid.salah_timing.dhuhr,
-      data.masjid.salah_timing.asr,
-      data.masjid.salah_timing.maghrib,
-      data.masjid.salah_timing.isha,
-    ]);
-  } else {
-    util.setIqamaTimes(ids[0], ["-", "-", "-", "-", "-"]);
+  const iqamaTimes = util
+    .mapToText($, "#daily .prayer_iqama_div")
+    .map((value) => value.trim())
+    .slice(1, 6);
+  if (iqamaTimes.length !== 5 || iqamaTimes.some((value) => !value)) {
+    throw new Error("failed to parse mohid iqama timings");
   }
-  util.setJumaTimes(ids[0], ["check website"]);
+  util.setIqamaTimes(ids[0], iqamaTimes);
+
+  const jumaTimes = util
+    .mapToText($, "#jummah .prayer_iqama_div")
+    .map(util.extractTimeAmPm)
+    .filter(Boolean);
+  if (jumaTimes.length > 0) {
+    util.setJumaTimes(ids[0], jumaTimes);
+  } else {
+    util.setJumaTimes(ids[0], ["check website"]);
+  }
 
   return ids;
 };
