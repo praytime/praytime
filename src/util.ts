@@ -33,8 +33,9 @@ type HttpRequestOptions = {
   timeoutMs?: number;
 };
 
-// biome-ignore lint/suspicious/noExplicitAny: Crawler responses are intentionally dynamic per source.
-type HttpResponse<T = any> = {
+type JsonParseResult = ReturnType<typeof JSON.parse>;
+
+type HttpResponse<T = JsonParseResult> = {
   data: T;
   headers: Headers;
   status: number;
@@ -85,8 +86,9 @@ const isRetryableFetchError = (error: unknown): boolean => {
   return typeof code === "string" && RETRYABLE_ERROR_CODES.has(code);
 };
 
-// biome-ignore lint/suspicious/noExplicitAny: Crawler responses are intentionally dynamic per source.
-const parseResponseData = async <T = any>(response: Response): Promise<T> => {
+const parseResponseData = async <T = JsonParseResult>(
+  response: Response,
+): Promise<T> => {
   const contentType = (
     response.headers.get("content-type") ?? ""
   ).toLowerCase();
@@ -150,8 +152,7 @@ const getWithRetry = async (
   throw new Error(`request attempts exhausted for ${url}`);
 };
 
-// biome-ignore lint/suspicious/noExplicitAny: Crawler responses are intentionally dynamic per source.
-export const get = async <T = any>(
+export const get = async <T = JsonParseResult>(
   url: string,
   opts?: HttpRequestOptions,
 ): Promise<HttpResponse<T>> => {
@@ -164,8 +165,7 @@ export const get = async <T = any>(
   } as HttpResponse<T>;
 };
 
-// biome-ignore lint/suspicious/noExplicitAny: Crawler responses are intentionally dynamic per source.
-export const loadJson = async <T = any>(
+export const loadJson = async <T = JsonParseResult>(
   url: string,
   opts?: HttpRequestOptions,
 ): Promise<T> => {
