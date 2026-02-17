@@ -37,14 +37,13 @@ This is the minimum needed to fork this repository and test crawlers locally.
 ### how to run a crawler
 
 1. Fork, clone, or [download](https://github.com/praytime/praytime/archive/master.zip) this repo.
-2. Run `npm install` from the `praytime` directory.
+2. Run `bun install` from the `praytime` directory.
 3. Try running a crawler. Run the following command from the `praytime` dir:
     ```
-    script/run.sh ./lib/US/IL/islamic-center-of-naperville
+    bun run . US/IL/islamic-center-of-naperville
     ```
     If all goes well, you should see output similar to this:
     ```
-    starting ./lib/islamic-center-of-naperville
     {"uuid4":"d7c67298-6f4b-4694-a157-1ece31bc3294","crawlTime":"2018-07-26T02:31:21.696Z","name":"Islamic Center of Naperville","url":"https://islamiccenterofnaperville.org","address":"2844 West Ogden Ave, Naperville IL, 60540, USA","timeZoneId":"America/Chicago","placeId":"ChIJnw5viS74DogRlFBTHUQ89Dk","geo":{"latitude":41.753933,"longitude":-88.201616},"fajrIqama":"5:00 AM","zuhrIqama":"1:30 PM","asrIqama":"6:15 PM","maghribIqama":"8:23 PM","ishaIqama":"10:15 PM","juma1":"1:10 PM","juma2":"2:10 PM"}
     {"uuid4":"fefae38d-2e93-48fc-8bc2-6cb6f93a964e","crawlTime":"2018-07-26T02:31:21.696Z","name":"ICN Al-Hidayah","url":"https://islamiccenterofnaperville.org","address":"450 Olesen Dr, Naperville, IL 60540, USA","placeId":"ChIJiYkXUXJXDogRpL27TOZv-ao","timeZoneId":"America/Chicago","geo":{"latitude":41.768289,"longitude":-88.120149},"fajrIqama":"4:34 AM","zuhrIqama":"1:30 PM","asrIqama":"6:15 PM","maghribIqama":"8:23 PM","ishaIqama":"10:15 PM","juma1":"1:10 PM","juma2":"2:10 PM"}
     ```

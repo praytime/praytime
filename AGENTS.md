@@ -32,10 +32,7 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
 Praytime scrapes masjid iqamah/jumuah times, emits JSON crawl records, and loads them into Firestore with change notifications.
 
 ## Repo Layout
-- `index.js`: Bun crawl runner. Loads crawler modules, executes them, and prints JSON lines.
-- `lib/index.js`: Discovers all crawler module directories under `lib/<country>/<state>/<crawler>/`.
-- `lib/util.js`: Shared scrape utilities (HTTP fetch, regex/time parsing, cheerio/puppeteer helpers).
-- `lib/<COUNTRY>/<STATE>/<crawler>/index.js`: One crawler per directory.
+- `src`: crawlers
 - `go/pkg/praytime/`: Shared Go models and time normalization/comparison logic.
 - `go/cmd/praytime-load/`: Reads crawl JSON from stdin and writes to Firestore, sends FCM notifications on change.
 - `go/cmd/new-masjid/`: Scaffolds crawler modules from Google Maps place details.
@@ -52,9 +49,10 @@ Each crawler module should export:
 
 ## Runtime Flow
 1. Run crawlers with Bun:
-   - `script/run.sh [crawler-path ...]`
+   - `bun run . [crawler module path]`
+      e.g.: `bun run . US/IL/islamic-center-of-naperville`
 2. Optional ingest to Firestore:
-   - `script/run.sh ... | script/praytime-load`
+   - `bun run . --save [...]`
 
 ## Environment Variables
 - `PUPPETEER_DISABLED`: skip browser crawlers.
@@ -76,7 +74,6 @@ When a crawler fails with `TypeError`, selector errors, or schema mismatch:
 - Re-run only failing crawlers first (not the whole tree).
 - Save output and group errors by exact `error` and `source`.
 - Distinguish parser/data-shape errors from network/HTTP/TLS/DNS issues.
-- Classify every failure as one of: `parse_schema`, `network_transient`, `http_blocked`, `timeout`.
 
 2. Inspect current source content
 - Fetch the live page/API payload used by that crawler.
@@ -113,20 +110,8 @@ When a crawler fails with `TypeError`, selector errors, or schema mismatch:
 - If many crawlers fail similarly, first improve shared utilities or runner-level recovery.
 - Keep crawler-specific logic for known site structures, but centralize generic fallback behavior in `lib/util.js` or `index.js`.
 
-8. Detect source-structure drift automatically
-- Emit structured per-source health every run: `status`, `error_type`, `filled_field_count`, `malformed_field_count`.
-- Flag crawler for scraping re-evaluation when any trigger occurs:
-- new `parse_schema` failure,
-- completeness drop greater than 30% vs recent baseline,
-- malformed field count greater than 0,
-- repeated fallback usage across consecutive runs.
-- Quarantine flagged crawlers from downstream publish/load until fixed.
-- Add fixture-based parser tests (saved HTML/API samples) so selector/schema breaks fail CI quickly.
-
 ## Parser-Safe Coding Checklist
 - Guard every `.match(...)[0]` / `.split(...)[n]` / `arr[n]`.
 - Guard every destructuring of remote payloads.
 - Trim and normalize extracted text before parsing.
-- Filter empty values before `util.setIqamaTimes` / `util.setJumaTimes`.
-- Use `slice(0, N)` when passing arrays to setters.
 - Add short comments only where parser resilience is non-obvious.
