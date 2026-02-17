@@ -16,21 +16,14 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const $ = await util.load(
-    "http://www.awqat.net/Masjids/BCGuildford/guildford.html",
-  );
+  const masjid = ids[0];
+  if (!masjid) {
+    throw new Error(
+      "No masjid record configured for Guildford Islamic Cultural Center (GICC)",
+    );
+  }
 
-  $('tr:contains("Zawal")').remove();
-  $('tr:contains("Sunrise")').remove();
-
-  const id = ids[0];
-  if (!id) throw new Error("No masjid IDs defined");
-
-  const a = util.mapToText($, ".prayer_entry:last-child");
-  const j = util.mapToText($, ".prayer_entry:nth-child(2)").slice(5);
-
-  util.setIqamaTimes(id, a);
-  util.setJumaTimes(id, j);
+  await util.setAwqatIqamaTimes(masjid, "96ac3382-aef7-4710-a187-7002ba7f4323");
   return ids;
 };
 

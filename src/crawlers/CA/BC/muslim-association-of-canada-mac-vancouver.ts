@@ -16,18 +16,14 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const $ = await util.load(
-    "http://www.awqat.net/Masjids/BCMAC/macvancouver.html",
-  );
+  const masjid = ids[0];
+  if (!masjid) {
+    throw new Error(
+      "No masjid record configured for Muslim Association of Canada- MAC",
+    );
+  }
 
-  $('tr:contains("Zawal")').remove();
-  $('tr:contains("Sunrise")').remove();
-
-  const a = util.mapToText($, ".prayer_entry:last-child");
-  const j = util.mapToText($, ".prayer_entry:nth-child(2)").slice(5);
-
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], j);
+  await util.setAwqatIqamaTimes(masjid, "b425ec51-10cd-4c63-8047-c85358f16d71");
   return ids;
 };
 

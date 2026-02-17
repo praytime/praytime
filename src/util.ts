@@ -258,6 +258,160 @@ export const loadMasjidalIqama = async (
   };
 };
 
+const AWQAT_SUPABASE_URL =
+  process.env.AWQAT_SUPABASE_URL ?? "https://kjbutgbpddsadvnbgblg.supabase.co";
+const AWQAT_SUPABASE_ANON_KEY =
+  process.env.AWQAT_SUPABASE_ANON_KEY ??
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqYnV0Z2JwZGRzYWR2bmJnYmxnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc3NjQ1NjMsImV4cCI6MjA1MzM0MDU2M30.giaKfNM-hUj2UCrC_ZBUjamv9vFkhP7TORF5xkzyL4Y";
+const AWQAT_TIME_RX = /^(\d{1,2})\s*:\s*(\d{2})(?::\d{2})?$/;
+const AWQAT_TIME_SELECT =
+  "prayer_date,fajr_iqamah,dhuhr_iqamah,asr_iqamah,maghrib_iqamah,isha_iqamah,jumah_time_1,jumah_time_2,jumah_time_3";
+
+type AwqatDailyPrayerTimes = {
+  asr_iqamah?: unknown;
+  dhuhr_iqamah?: unknown;
+  fajr_iqamah?: unknown;
+  isha_iqamah?: unknown;
+  jumah_time_1?: unknown;
+  jumah_time_2?: unknown;
+  jumah_time_3?: unknown;
+  maghrib_iqamah?: unknown;
+  prayer_date?: unknown;
+  zuhr_iqamah?: unknown;
+};
+
+const normalizeAwqatTime = (value: unknown): string => {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  const trimmed = value.trim();
+  const match = trimmed.match(AWQAT_TIME_RX);
+  if (!match) {
+    return "";
+  }
+
+  const [, hourText, minuteText] = match;
+  if (!hourText || !minuteText) {
+    return "";
+  }
+
+  const hour = Number.parseInt(hourText, 10);
+  if (!Number.isFinite(hour) || hour < 0 || hour > 23) {
+    return "";
+  }
+
+  return `${hour}:${minuteText}`;
+};
+
+const loadAwqatDailyPrayerTimes = async (
+  organizationId: string,
+  timeZoneId: string,
+): Promise<AwqatDailyPrayerTimes> => {
+  if (!organizationId.trim()) {
+    throw new Error("missing awqat organization id");
+  }
+
+  const headers = {
+    Accept: "application/json",
+    apikey: AWQAT_SUPABASE_ANON_KEY,
+    Authorization: `Bearer ${AWQAT_SUPABASE_ANON_KEY}`,
+  };
+  const base = `${AWQAT_SUPABASE_URL}/rest/v1/daily_prayer_times`;
+  const prayerDate = us(Date.now(), timeZoneId, "%F");
+  const todayQuery = new URLSearchParams({
+    limit: "1",
+    organization_id: `eq.${organizationId}`,
+    prayer_date: `eq.${prayerDate}`,
+    select: AWQAT_TIME_SELECT,
+  });
+  const latestQuery = new URLSearchParams({
+    limit: "1",
+    order: "prayer_date.desc",
+    organization_id: `eq.${organizationId}`,
+    select: AWQAT_TIME_SELECT,
+  });
+
+  const { data: forToday } = await get<AwqatDailyPrayerTimes[]>(
+    `${base}?${todayQuery.toString()}`,
+    { fetch: { headers } },
+  );
+  if (Array.isArray(forToday) && forToday.length > 0 && forToday[0]) {
+    return forToday[0];
+  }
+
+  const { data: latest } = await get<AwqatDailyPrayerTimes[]>(
+    `${base}?${latestQuery.toString()}`,
+    { fetch: { headers } },
+  );
+  if (!Array.isArray(latest) || latest.length < 1 || !latest[0]) {
+    throw new Error(`missing awqat daily prayer times for ${organizationId}`);
+  }
+
+  return latest[0];
+};
+
+export const loadAwqatIqama = async (
+  organizationId: string,
+  timeZoneId: string,
+): Promise<{
+  asr: string;
+  fajr: string;
+  isha: string;
+  jumah: string[];
+  maghrib: string;
+  zuhr: string;
+}> => {
+  const prayerTimes = await loadAwqatDailyPrayerTimes(
+    organizationId,
+    timeZoneId,
+  );
+  const fajr = normalizeAwqatTime(prayerTimes.fajr_iqamah);
+  const zuhr = normalizeAwqatTime(
+    prayerTimes.zuhr_iqamah ?? prayerTimes.dhuhr_iqamah,
+  );
+  const asr = normalizeAwqatTime(prayerTimes.asr_iqamah);
+  const maghrib = normalizeAwqatTime(prayerTimes.maghrib_iqamah);
+  const isha = normalizeAwqatTime(prayerTimes.isha_iqamah);
+  const jumah = [
+    normalizeAwqatTime(prayerTimes.jumah_time_1),
+    normalizeAwqatTime(prayerTimes.jumah_time_2),
+    normalizeAwqatTime(prayerTimes.jumah_time_3),
+  ].filter((value): value is string => value.length > 0);
+
+  if (!fajr || !zuhr || !asr || !maghrib || !isha) {
+    throw new Error(`incomplete awqat iqama for ${organizationId}`);
+  }
+
+  return {
+    asr,
+    fajr,
+    isha,
+    jumah,
+    maghrib,
+    zuhr,
+  };
+};
+
+export const setAwqatIqamaTimes = async (
+  record: MasjidRecord | undefined,
+  organizationId: string,
+): Promise<void> => {
+  if (!record) {
+    return;
+  }
+
+  const prayerTimes = await loadAwqatIqama(organizationId, record.timeZoneId);
+  setIqamaTimes(record, [
+    prayerTimes.fajr,
+    prayerTimes.zuhr,
+    prayerTimes.asr,
+    prayerTimes.maghrib,
+    prayerTimes.isha,
+  ]);
+  setJumaTimes(record, prayerTimes.jumah);
+};
+
 type MaybeTime = string | null | undefined;
 type MaybeTimeList = MaybeTime[] | RegExpMatchArray | undefined | null;
 

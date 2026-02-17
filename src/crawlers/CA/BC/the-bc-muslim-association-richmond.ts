@@ -16,18 +16,14 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const $ = await util.load(
-    "http://www.awqat.net/Masjids/BCBCMARichmond/bcmarichmond.html",
-  );
+  const masjid = ids[0];
+  if (!masjid) {
+    throw new Error(
+      "No masjid record configured for The BC Muslim Association",
+    );
+  }
 
-  $('tr:contains("Zawal")').remove();
-  $('tr:contains("Sunrise")').remove();
-
-  const a = util.mapToText($, ".prayer_entry:last-child");
-  const j = util.mapToText($, ".prayer_entry:nth-child(2)").slice(5);
-
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], j);
+  await util.setAwqatIqamaTimes(masjid, "0712ba08-ad7c-45f3-8fe3-caaae76dbf4d");
   return ids;
 };
 

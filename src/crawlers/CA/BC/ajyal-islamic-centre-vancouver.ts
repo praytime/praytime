@@ -16,16 +16,12 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const $ = await util.load("http://www.awqat.net/Masjids/BCAjyal/ajyal.html");
+  const masjid = ids[0];
+  if (!masjid) {
+    throw new Error("No masjid record configured for Ajyal Islamic Centre");
+  }
 
-  $('tr:contains("Zawal")').remove();
-  $('tr:contains("Sunrise")').remove();
-
-  const a = util.mapToText($, ".prayer_entry:last-child");
-  const j = util.mapToText($, ".prayer_entry:nth-child(2)").slice(5);
-
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], j);
+  await util.setAwqatIqamaTimes(masjid, "840ffdd4-a1d2-4025-8b79-46bb4b18f457");
   return ids;
 };
 

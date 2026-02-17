@@ -16,24 +16,12 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const $ = await util.load("http://www.awqat.net/Masjids/BCSalam/salam.html");
-
-  $('tr:contains("Suhor")').remove();
-  $('tr:contains("Zawal")').remove();
-  $('tr:contains("Sunrise")').remove();
-
-  const a = util.mapToText($, ".prayer_entry:last-child");
-  const j = util.mapToText($, ".prayer_entry:nth-child(2)").slice(5);
-
   const masjid = ids[0];
   if (!masjid) {
-    throw new Error(
-      "No masjid record configured for BC/masjid-al-salaam-burnaby",
-    );
+    throw new Error("No masjid record configured for Masjid Al-Salaam");
   }
 
-  util.setIqamaTimes(masjid, a);
-  util.setJumaTimes(masjid, j);
+  await util.setAwqatIqamaTimes(masjid, "f267c0e2-edf6-4c01-86cf-2cffdea6c6df");
   return ids;
 };
 

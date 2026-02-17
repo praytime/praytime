@@ -16,16 +16,12 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const $ = await util.load("http://www.awqat.net/Masjids/BCTiba/tiba.html");
+  const masjid = ids[0];
+  if (!masjid) {
+    throw new Error("No masjid record configured for Taiba Musallah");
+  }
 
-  $('tr:contains("Zawal")').remove();
-  $('tr:contains("Sunrise")').remove();
-
-  const a = util.mapToText($, ".prayer_entry:last-child");
-  const j = util.mapToText($, ".prayer_entry:nth-child(2)").slice(5);
-
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], j);
+  await util.setAwqatIqamaTimes(masjid, "20f192db-eedf-4440-9a9d-dafd70ccafb3");
   return ids;
 };
 

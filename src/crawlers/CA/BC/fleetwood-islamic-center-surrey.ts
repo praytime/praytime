@@ -16,22 +16,12 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const $ = await util.load(
-    "http://www.awqat.net/Masjids/BCFleetwood/fleetwood.html",
-  );
-
-  $('tr:contains("Zawal")').remove();
-  $('tr:contains("Sunrise")').remove();
-
-  const a = util.mapToText($, ".prayer_entry:last-child");
-  const j = util.mapToText($, ".prayer_entry:nth-child(2)").slice(5);
-  const record = ids[0];
-  if (!record) {
-    throw new Error("Missing Fleetwood masjid record");
+  const masjid = ids[0];
+  if (!masjid) {
+    throw new Error("No masjid record configured for Fleetwood Islamic Center");
   }
 
-  util.setIqamaTimes(record, a);
-  util.setJumaTimes(record, j);
+  await util.setAwqatIqamaTimes(masjid, "3fc905d5-5fc3-4d74-975c-f167c425e315");
   return ids;
 };
 

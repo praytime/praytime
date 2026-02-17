@@ -16,16 +16,12 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const $ = await util.load("http://www.awqat.net/Masjids/BCHaqq/haqq.html");
+  const masjid = ids[0];
+  if (!masjid) {
+    throw new Error("No masjid record configured for Masjid Ul-Haqq");
+  }
 
-  $('tr:contains("Zawal")').remove();
-  $('tr:contains("Sunrise")').remove();
-
-  const a = util.mapToText($, ".prayer_entry:last-child");
-  const j = util.mapToText($, ".prayer_entry:nth-child(2)").slice(5);
-
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], j);
+  await util.setAwqatIqamaTimes(masjid, "8fe9f823-98ff-4304-a312-337d34e3620a");
   return ids;
 };
 

@@ -16,17 +16,14 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const $ = await util.load(ids[0].url);
+  const masjid = ids[0];
+  if (!masjid) {
+    throw new Error(
+      "No masjid record configured for Masjid Al-Noor (Surrey Mosque)",
+    );
+  }
 
-  $('tr:contains("Zawal")').remove();
-  $('tr:contains("Sunrise")').remove();
-
-  const a = util.mapToText($, ".prayer_entry2:last-child");
-  const j = util.mapToText($, ".prayer_entry2:nth-child(2)").slice(5);
-
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], j);
-
+  await util.setAwqatIqamaTimes(masjid, "09f21b0e-64a6-493f-8e45-e713b05a917b");
   return ids;
 };
 

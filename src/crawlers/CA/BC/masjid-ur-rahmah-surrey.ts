@@ -16,21 +16,12 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const $ = await util.load(
-    "http://www.awqat.net/Masjids/BCRahmah/rahmah.html",
-  );
+  const masjid = ids[0];
+  if (!masjid) {
+    throw new Error("No masjid record configured for Masjid-Ur-Rahmah");
+  }
 
-  $('tr:contains("Zawal")').remove();
-  $('tr:contains("Sunrise")').remove();
-
-  const record = ids[0];
-  if (!record) throw new Error("No masjid record configured");
-
-  const a = util.mapToText($, ".prayer_entry:last-child");
-  const j = util.mapToText($, ".prayer_entry:nth-child(2)").slice(5);
-
-  util.setIqamaTimes(record, a);
-  util.setJumaTimes(record, j);
+  await util.setAwqatIqamaTimes(masjid, "30095751-d33a-4daa-963b-a56d38cdb261");
   return ids;
 };
 
