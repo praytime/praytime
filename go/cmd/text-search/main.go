@@ -1,9 +1,11 @@
-// does a google maps places text search with type=mosque and prints results that aren't found in lib
+// does a google maps places text search with type=mosque and prints results
+// that aren't found in src/crawlers
 
 package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -17,7 +19,7 @@ import (
 	"googlemaps.github.io/maps"
 )
 
-var libdir string
+var crawlersDir string
 
 func loadDefaultEnvVars() {
 	if home, err := os.UserHomeDir(); err == nil {
@@ -46,12 +48,23 @@ func getGitRoot() string {
 	return root.Path
 }
 
-func isInLib(placeID string) bool {
-	_, err := exec.Command("rg", "-l", placeID, libdir).Output()
-	return err == nil
+func isInCrawlers(placeID string) bool {
+	err := exec.Command("rg", "-l", "--fixed-strings", placeID, crawlersDir).Run()
+	if err == nil {
+		return true
+	}
+
+	var exitErr *exec.ExitError
+	if errors.As(err, &exitErr) && exitErr.ExitCode() == 1 {
+		return false
+	}
+
+	log.Fatal("Error searching crawler files:", err)
+	return false
 }
 
 func main() {
+	allFlag := flag.Bool("all", false, "Include places that already exist in src/crawlers")
 
 	flag.Parse()
 
@@ -60,7 +73,7 @@ func main() {
 	gmapsClient := newGmapsClient()
 
 	gitRoot := getGitRoot()
-	libdir = filepath.Join(gitRoot, "lib")
+	crawlersDir = filepath.Join(gitRoot, "src", "crawlers")
 
 	for _, arg := range flag.Args() {
 		pageToken := ""
@@ -80,7 +93,7 @@ func main() {
 			}
 			pageToken = resp.NextPageToken
 			for _, result := range resp.Results {
-				if isInLib(result.PlaceID) {
+				if !*allFlag && isInCrawlers(result.PlaceID) {
 					continue
 				}
 				fmt.Printf("https://www.google.com/maps/search/?api=1&query=none&query_place_id=%s\t%s\t%s\n", result.PlaceID, result.PlaceID, result.Name)
