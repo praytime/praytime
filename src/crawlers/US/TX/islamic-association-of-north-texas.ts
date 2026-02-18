@@ -1,9 +1,13 @@
-import tz from "timezone";
-import timezoneAmerica from "timezone/America";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const us = tz(timezoneAmerica);
+const ATHANPLUS_FALLBACK_URL =
+  "https://timing.athanplus.com/masjid/widgets/embed?theme=1&masjid_id=xdy03lAX";
+
+const normalizeClock = (value: string): string => {
+  const extracted = util.extractTimeAmPm(value) || util.extractTime(value);
+  return extracted.replace(/\s+/g, " ").trim();
+};
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -21,21 +25,29 @@ const ids: CrawlerModule["ids"] = [
 ];
 const run = async () => {
   const $ = await util.load(ids[0].url);
-  // %u: the weekday, Monday as the first day of the week (1-7)
-  const day = us(Date.now(), ids[0].timeZoneId, "%u");
+  const widgetUrl =
+    $("iframe[src*='timing.athanplus.com/masjid/widgets/embed']")
+      .first()
+      .attr("src") ?? ATHANPLUS_FALLBACK_URL;
 
-  const a = util.mapToText($, "table.dptTimetable td.jamah");
-  util.setIqamaTimes(ids[0], a);
-
-  let j: RegExpMatchArray | string[] = [];
-  // on juma, dhuhr is replaced
-  if (day === "5") {
-    j = (a[1] ?? "").match(/\d+\s*:\s*\d+/g) ?? [];
-  } else {
-    j = (a[5] ?? "").match(/\d+\s*:\s*\d+/g) ?? [];
+  const $$ = await util.load(widgetUrl);
+  const iqamaTimes = util
+    .mapToText($$, "#table_div_0 table.full-table-sec tr td:nth-child(3) b")
+    .map(normalizeClock)
+    .filter((time) => time.length > 0);
+  if (iqamaTimes.length < 5) {
+    throw new Error("failed to parse iqamah times");
   }
+  util.setIqamaTimes(ids[0], iqamaTimes.slice(0, 5));
 
-  util.setJumaTimes(ids[0], j);
+  const jumaTimes = util
+    .mapToText($$, "#table_div_0 ul.testing-sec > li > b")
+    .map(normalizeClock)
+    .filter((time) => time.length > 0);
+  if (jumaTimes.length === 0) {
+    throw new Error("failed to parse juma times");
+  }
+  util.setJumaTimes(ids[0], jumaTimes.slice(0, 3));
 
   return ids;
 };

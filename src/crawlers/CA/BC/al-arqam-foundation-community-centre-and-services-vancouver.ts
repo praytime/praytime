@@ -15,6 +15,22 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
+
+const setUnavailableTimes = (index: number) => {
+  const record = ids[index];
+  if (!record) {
+    return;
+  }
+  util.setIqamaTimes(record, [
+    "check website",
+    "check website",
+    "check website",
+    "check website",
+    "check website",
+  ]);
+  util.setJumaTimes(record, ["check website"]);
+};
+
 const run = async () => {
   const $ = await util.load(
     "http://www.awqat.net/Masjids/BCAlArqam/bcalarqam.html",
@@ -26,8 +42,14 @@ const run = async () => {
   const a = util.mapToText($, ".prayer_entry:last-child");
   const j = util.mapToText($, ".prayer_entry:nth-child(2)").slice(5);
 
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], j);
+  if (a.length >= 5) {
+    util.setIqamaTimes(ids[0], a);
+  } else {
+    setUnavailableTimes(0);
+  }
+  if (j.length > 0) {
+    util.setJumaTimes(ids[0], j);
+  }
 
   return ids;
 };

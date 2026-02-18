@@ -17,12 +17,61 @@ const ids: CrawlerModule["ids"] = [
 ];
 const run = async () => {
   const $ = await util.load(ids[0].url);
+  const prayers = {
+    asr: "",
+    fajr: "",
+    isha: "",
+    maghrib: "",
+    zuhr: "",
+  };
+  const juma = new Set<string>();
 
-  const a = util.mapToText($, "div.prayer-schedule td:last-child");
+  $("div.prayer-times table tr").each((_, row) => {
+    const cells = $(row).find("td");
+    if (cells.length < 2) {
+      return;
+    }
 
-  a.splice(1, 1); // remove sunrise
+    const label = cells.first().text().trim().toLowerCase();
+    const value = cells.last().text().trim();
+    const iqama = util.extractTimeAmPm(value);
 
-  util.setTimes(ids[0], a);
+    if (label.includes("fajr")) {
+      prayers.fajr = iqama;
+    } else if (label.includes("dhuhr") || label.includes("zuhr")) {
+      prayers.zuhr = iqama;
+    } else if (label.includes("asr")) {
+      prayers.asr = iqama;
+    } else if (label.includes("maghrib")) {
+      prayers.maghrib = iqama;
+    } else if (label.includes("isha")) {
+      prayers.isha = iqama;
+    } else if (label.includes("jummah")) {
+      const matches = util.matchTimeAmPmG(value) ?? [];
+      matches.forEach((time) => {
+        juma.add(time);
+      });
+    }
+  });
+
+  if (
+    !prayers.fajr ||
+    !prayers.zuhr ||
+    !prayers.asr ||
+    !prayers.maghrib ||
+    !prayers.isha
+  ) {
+    throw new Error("incomplete prayer times table");
+  }
+
+  util.setIqamaTimes(ids[0], [
+    prayers.fajr,
+    prayers.zuhr,
+    prayers.asr,
+    prayers.maghrib,
+    prayers.isha,
+  ]);
+  util.setJumaTimes(ids[0], Array.from(juma).slice(0, 3));
 
   return ids;
 };

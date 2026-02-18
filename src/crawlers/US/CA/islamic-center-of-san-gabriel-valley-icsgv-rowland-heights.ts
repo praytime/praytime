@@ -15,17 +15,73 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
+
+const PRAYER_IFRAME_URL = "https://themasjidapp.org/296/prayers";
+
 const run = async () => {
-  const $ = await util.load(ids[0].url);
+  const $ = await util.load(PRAYER_IFRAME_URL);
+  const prayers = {
+    asr: "",
+    fajr: "",
+    isha: "",
+    maghrib: "",
+    zuhr: "",
+  };
+  const juma = new Set<string>();
 
-  const a = util.mapToText($, ".jamah");
+  $("tbody tr").each((_, row) => {
+    const cells = $(row).find("td");
+    if (cells.length < 2) {
+      return;
+    }
 
-  util.setIqamaTimes(ids[0], a);
+    const label = cells.first().text().trim().toLowerCase();
+    if (label.includes("jumuah") || label.includes("jumuah")) {
+      const times = util.matchTimeAmPmG(cells.last().text().trim()) ?? [];
+      times.forEach((time) => {
+        juma.add(time);
+      });
+      return;
+    }
 
-  if (util.isJumaToday(ids[0])) {
-    util.setJumaTimes(ids[0], [a[1]]);
-  } else {
-    // TODO: check on non-juma day
+    if (cells.length < 3) {
+      return;
+    }
+    const iqama = util.extractTimeAmPm(cells.eq(2).text().trim());
+
+    if (label.includes("fajr")) {
+      prayers.fajr = iqama;
+    } else if (label.includes("dhuhr") || label.includes("zuhr")) {
+      prayers.zuhr = iqama;
+    } else if (label.includes("asr")) {
+      prayers.asr = iqama;
+    } else if (label.includes("maghrib")) {
+      prayers.maghrib = iqama;
+    } else if (label.includes("isha")) {
+      prayers.isha = iqama;
+    }
+  });
+
+  if (
+    !prayers.fajr ||
+    !prayers.zuhr ||
+    !prayers.asr ||
+    !prayers.maghrib ||
+    !prayers.isha
+  ) {
+    throw new Error("incomplete masjid app prayer table");
+  }
+
+  util.setIqamaTimes(ids[0], [
+    prayers.fajr,
+    prayers.zuhr,
+    prayers.asr,
+    prayers.maghrib,
+    prayers.isha,
+  ]);
+  util.setJumaTimes(ids[0], Array.from(juma).slice(0, 3));
+
+  if (!ids[0].juma1) {
     util.setJumaTimes(ids[0], ["check website"]);
   }
 

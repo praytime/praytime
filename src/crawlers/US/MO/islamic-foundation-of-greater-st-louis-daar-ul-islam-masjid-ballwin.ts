@@ -1,8 +1,6 @@
-import puppeteer from "puppeteer";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const crawlerPuppeteer = true;
 const ids: CrawlerModule["ids"] = [
   {
     uuid4: "24e23e22-5290-48df-adf6-3aa3adc165d3",
@@ -18,29 +16,62 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const browser = await puppeteer.launch();
-  try {
-    const page = await browser.newPage();
-    await page.goto(ids[0].url);
+  const $ = await util.load(ids[0].url);
+  const prayers = {
+    asr: "",
+    fajr: "",
+    isha: "",
+    maghrib: "",
+    zuhr: "",
+  };
 
-    const table = await page.waitForSelector("#ds-tv");
-    if (!table) {
-      throw new Error("missing prayer table");
+  $(".et_pb_text_2 .cl-prayer-flex").each((_, row) => {
+    const label = $(row).find("h4").first().text().trim().toLowerCase();
+    const times = util.matchTimeAmPmG($(row).find("h6").first().text().trim());
+    const iqamah = times?.at(-1) ?? "";
+
+    if (!iqamah) {
+      return;
     }
+    if (label.includes("fajr")) {
+      prayers.fajr = iqamah;
+    } else if (label.includes("dhuhr") || label.includes("zuhr")) {
+      prayers.zuhr = iqamah;
+    } else if (label.includes("asr")) {
+      prayers.asr = iqamah;
+    } else if (label.includes("maghrib")) {
+      prayers.maghrib = iqamah;
+    } else if (label.includes("isha")) {
+      prayers.isha = iqamah;
+    }
+  });
 
-    // eval() evaluates the selector ids in the browser
-    const t = await table.$$eval("td:last-child", (tds) =>
-      tds
-        .map((td) => td.textContent?.trim() ?? "")
-        .filter((t) => t.length)
-        .filter((t) => t.match(/\d+\s*:\s*\d+/)),
-    );
+  const juma: string[] = [];
+  $(".et_pb_text_5 .cl-prayer-flex h6").each((_, cell) => {
+    const time = util.extractTimeAmPm($(cell).text().trim());
+    if (time) {
+      juma.push(time);
+    }
+  });
 
-    util.setIqamaTimes(ids[0], t);
-    util.setJumaTimes(ids[0], t.pop()?.match(/\d+\s*:\s*\d+\s*\w+/g));
-  } finally {
-    await browser.close();
+  if (
+    !prayers.fajr ||
+    !prayers.zuhr ||
+    !prayers.asr ||
+    !prayers.maghrib ||
+    !prayers.isha
+  ) {
+    throw new Error("incomplete prayer iqamah table");
   }
+
+  util.setIqamaTimes(ids[0], [
+    prayers.fajr,
+    prayers.zuhr,
+    prayers.asr,
+    prayers.maghrib,
+    prayers.isha,
+  ]);
+  util.setJumaTimes(ids[0], juma);
 
   return ids;
 };
@@ -49,5 +80,4 @@ export const crawler: CrawlerModule = {
   name: "US/MO/islamic-foundation-of-greater-st-louis-daar-ul-islam-masjid-ballwin",
   ids,
   run,
-  puppeteer: crawlerPuppeteer,
 };

@@ -15,12 +15,59 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
+
+const PRAYER_IFRAME_URL =
+  "https://themasjidapp.org/129175/prayers?stylesheet=https://theicr.org/wp-content/uploads/prayer.css";
+
 const run = async () => {
-  const $ = await util.load(ids[0].url);
+  const $ = await util.load(PRAYER_IFRAME_URL);
+  const prayers = {
+    asr: "",
+    fajr: "",
+    isha: "",
+    maghrib: "",
+    zuhr: "",
+  };
 
-  const a = util.mapToText($, ".masjidnow-salah-time-iqamah");
+  $("tbody tr").each((_, row) => {
+    const cells = $(row).find("td");
+    if (cells.length < 3) {
+      return;
+    }
 
-  util.setIqamaTimes(ids[0], a);
+    const label = cells.first().text().trim().toLowerCase();
+    const iqama = util.extractTimeAmPm(cells.eq(2).text().trim());
+
+    if (label.includes("fajr")) {
+      prayers.fajr = iqama;
+    } else if (label.includes("dhuhr") || label.includes("zuhr")) {
+      prayers.zuhr = iqama;
+    } else if (label.includes("asr")) {
+      prayers.asr = iqama;
+    } else if (label.includes("maghrib")) {
+      prayers.maghrib = iqama;
+    } else if (label.includes("isha")) {
+      prayers.isha = iqama;
+    }
+  });
+
+  if (
+    !prayers.fajr ||
+    !prayers.zuhr ||
+    !prayers.asr ||
+    !prayers.maghrib ||
+    !prayers.isha
+  ) {
+    throw new Error("incomplete masjid app prayer table");
+  }
+
+  util.setIqamaTimes(ids[0], [
+    prayers.fajr,
+    prayers.zuhr,
+    prayers.asr,
+    prayers.maghrib,
+    prayers.isha,
+  ]);
   util.setJumaTimes(ids[0], ["check website"]);
 
   return ids;

@@ -1,6 +1,8 @@
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
+const MASJIDAL_ID = "xdyqbZdX";
+
 const ids: CrawlerModule["ids"] = [
   {
     uuid4: "403af7a7-b7ae-4d9b-b29a-8d2e902ad439",
@@ -16,13 +18,23 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const $ = await util.load(ids[0].url);
+  const iqama = await util.loadMasjidalIqama(MASJIDAL_ID);
+  const jumaTimes = [iqama.jummah1, iqama.jummah2, iqama.jummah3]
+    .map(util.extractTimeAmPm)
+    .filter((time) => time.length > 0);
 
-  const a = ["Fajr", "Dzuhr", "Asr", "Maghreb", "Isha", "Jumaa"]
-    .map((s) => util.toText($, `span:not(:has(*)):contains("${s}")`))
-    .map(util.extractTimeAmPm);
+  util.setIqamaTimes(ids[0], [
+    iqama.fajr,
+    iqama.zuhr,
+    iqama.asr,
+    iqama.maghrib,
+    iqama.isha,
+  ]);
 
-  util.setTimes(ids[0], a);
+  if (jumaTimes.length === 0) {
+    throw new Error("failed to parse juma times");
+  }
+  util.setJumaTimes(ids[0], jumaTimes.slice(0, 3));
 
   return ids;
 };

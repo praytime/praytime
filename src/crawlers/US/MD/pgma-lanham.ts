@@ -17,15 +17,62 @@ const ids: CrawlerModule["ids"] = [
 ];
 const run = async () => {
   const $ = await util.load(ids[0].url);
+  const prayers = {
+    asr: "",
+    fajr: "",
+    isha: "",
+    maghrib: "",
+    zuhr: "",
+  };
+  const juma = new Set<string>();
 
-  const a = util.mapToText(
-    $,
-    "div#prayer-times div.prayer-row > div:last-child",
-  );
-  const j = (a[a.length - 1] ?? "").match(/\d+\s*:\s*\d+\s*\w+/g);
+  $("table.salah_timings_class tr").each((_, row) => {
+    const cells = $(row).find("td");
+    if (cells.length < 2) {
+      return;
+    }
 
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], j);
+    const label = cells.first().text().trim().toLowerCase();
+    const iqamahCell = cells.length >= 3 ? cells.eq(2) : cells.last();
+    const iqamahText = iqamahCell.text().trim();
+    const iqamah = util.extractTimeAmPm(iqamahText);
+
+    if (label.includes("fajr")) {
+      prayers.fajr = iqamah;
+    } else if (label.includes("zuhr") || label.includes("dhuhr")) {
+      prayers.zuhr = iqamah;
+    } else if (label.includes("asr")) {
+      prayers.asr = iqamah;
+    } else if (label.includes("maghrib")) {
+      prayers.maghrib = iqamah;
+    } else if (label.includes("isha")) {
+      prayers.isha = iqamah;
+    } else if (label.includes("jummah")) {
+      const times = util.matchTimeAmPmG(iqamahText) ?? [];
+      times.forEach((time) => {
+        juma.add(time);
+      });
+    }
+  });
+
+  if (
+    !prayers.fajr ||
+    !prayers.zuhr ||
+    !prayers.asr ||
+    !prayers.maghrib ||
+    !prayers.isha
+  ) {
+    throw new Error("incomplete prayer timings table");
+  }
+
+  util.setIqamaTimes(ids[0], [
+    prayers.fajr,
+    prayers.zuhr,
+    prayers.asr,
+    prayers.maghrib,
+    prayers.isha,
+  ]);
+  util.setJumaTimes(ids[0], Array.from(juma).slice(0, 3));
 
   return ids;
 };
