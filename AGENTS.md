@@ -32,9 +32,10 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
 Praytime scrapes masjid iqamah/jumuah times, emits JSON crawl records, and loads them into Firestore with change notifications.
 
 ## Repo Layout
-- `src`: crawlers
+- `src`: ts code runs crawlers and saves to Firestore
+- `src/crawlers`: crawlers
 - `go/pkg/praytime/`: Shared Go models and time normalization/comparison logic.
-- `go/cmd/praytime-load/`: Reads crawl JSON from stdin and writes to Firestore, sends FCM notifications on change.
+- `go/cmd/praytime-load/`: Reads crawl JSON from stdin and writes to Firestore, sends FCM notifications on change. (deprecated, ts now saves directly)
 - `go/cmd/new-masjid/`: Scaffolds crawler modules from Google Maps place details.
 - `go/cmd/message/`, `go/cmd/topicMessage/`, `go/cmd/text-search/`: Utility commands for messaging/discovery.
 - `script/`: Shell wrappers for running crawlers, Go tools, and Maps API helpers.
@@ -63,7 +64,6 @@ Each crawler module should export:
 - `GMAPS_API_KEY`: required by Maps-based scripts and `new-masjid`.
 
 ## Conventions
-- Bun code uses CommonJS.
 - Crawler outputs are JSON lines with `{ result, error, source }`.
 - `.env` is loaded by shell scripts via `script/common.sh`.
 
