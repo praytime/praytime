@@ -1,8 +1,10 @@
+import { CrawlStateStore, getGitMetadata } from "./localdb";
 import {
   discoverCrawlers,
   filterCrawlerEntries,
   listCrawlerNames,
 } from "./registry";
+import { formatRunReport } from "./report";
 import { dumpCrawlerMetadata, runCrawlers } from "./runner";
 import { PraytimeSaver } from "./save";
 import type { CliOptions } from "./types";
@@ -13,6 +15,7 @@ Options:
   --crawler <name-or-glob>  Select crawler(s), repeatable
   --list                    List crawler names and exit
   --dump                    Dump static crawler metadata and exit
+  --run-report              Print local SQLite crawler run report table and exit
   --save                    Save crawler output to Firestore and send FCM changes
   --force                   Ignore deletions and force save (requires --save)
   --verbose                 Verbose save logging (requires --save)
@@ -26,6 +29,7 @@ export const parseCliArgs = (argv: string[]): CliOptions => {
     dump: false,
     list: false,
     help: false,
+    runReport: false,
     save: false,
     force: false,
     verbose: false,
@@ -62,6 +66,11 @@ export const parseCliArgs = (argv: string[]): CliOptions => {
 
     if (arg === "--save") {
       options.save = true;
+      continue;
+    }
+
+    if (arg === "--run-report") {
+      options.runReport = true;
       continue;
     }
 
@@ -121,12 +130,36 @@ export const parseCliArgs = (argv: string[]): CliOptions => {
       throw new Error("--save cannot be used with --list");
     }
 
+    if (options.runReport && options.dump) {
+      throw new Error("--run-report cannot be used with --dump");
+    }
+
+    if (options.runReport && options.list) {
+      throw new Error("--run-report cannot be used with --list");
+    }
+
+    if (options.runReport && options.save) {
+      throw new Error("--run-report cannot be used with --save");
+    }
+
     if (!options.save && options.force) {
       throw new Error("--force requires --save");
     }
 
     if (!options.save && options.verbose) {
       throw new Error("--verbose requires --save");
+    }
+
+    if (options.runReport && options.patterns.length > 0) {
+      throw new Error("--run-report does not accept crawler patterns");
+    }
+
+    if (options.runReport && options.skipStatic) {
+      throw new Error("--run-report cannot be used with --skip-static");
+    }
+
+    if (options.runReport && options.skipPuppeteer) {
+      throw new Error("--run-report cannot be used with --skip-ppt");
     }
   }
 
@@ -138,6 +171,16 @@ export const main = async (argv = process.argv.slice(2)): Promise<void> => {
 
   if (options.help) {
     console.log(usage);
+    return;
+  }
+
+  if (options.runReport) {
+    const store = new CrawlStateStore();
+    try {
+      console.log(formatRunReport(store.getRunReport()));
+    } finally {
+      store.close();
+    }
     return;
   }
 
@@ -158,30 +201,78 @@ export const main = async (argv = process.argv.slice(2)): Promise<void> => {
     return;
   }
 
-  if (options.save) {
-    const saver = new PraytimeSaver({
-      force: options.force,
-      verbose: options.verbose,
-    });
+  const store = new CrawlStateStore();
+  const git = getGitMetadata(process.cwd());
+  const descriptors = selectedEntries.map((entry) => ({
+    name: entry.crawler.name,
+    sourcePath: entry.sourcePath,
+    isStatic: !entry.crawler.run,
+    isPuppeteer: entry.crawler.puppeteer === true,
+  }));
+  const saver = options.save
+    ? new PraytimeSaver({
+        force: options.force,
+        verbose: options.verbose,
+      })
+    : null;
+  let runErrorMessage: string | undefined;
+  let hasStartedRunSession = false;
 
-    try {
-      await runCrawlers(selectedCrawlers, {
+  try {
+    store.registerCrawlerDescriptors(descriptors);
+    store.startRunSession({
+      argv,
+      patterns: options.patterns,
+      crawlerNames: descriptors.map((descriptor) => descriptor.name),
+      options: {
+        save: options.save,
+        force: options.force,
+        verbose: options.verbose,
         skipStatic: options.skipStatic,
         skipPuppeteer: options.skipPuppeteer,
-        emitJson: false,
-        onOutput: (line) => saver.saveLine(line),
-      });
-    } finally {
-      await saver.close();
+      },
+      git,
+    });
+    hasStartedRunSession = true;
+
+    await runCrawlers(selectedCrawlers, {
+      skipStatic: options.skipStatic,
+      skipPuppeteer: options.skipPuppeteer,
+      emitJson: !options.save,
+      onOutput: async (line) => {
+        store.recordCrawlerOutput(line);
+        if (saver) {
+          await saver.saveLine(line);
+        }
+      },
+      onCrawlerComplete: (event) => {
+        store.recordCrawlerCompletion(event);
+      },
+    });
+  } catch (error: unknown) {
+    runErrorMessage = error instanceof Error ? error.message : String(error);
+    throw error;
+  } finally {
+    if (hasStartedRunSession) {
+      try {
+        store.finishRunSession({
+          fatalError: runErrorMessage,
+        });
+      } catch (error: unknown) {
+        console.error("failed to finalize local crawler session:", error);
+      }
     }
 
-    return;
-  }
+    try {
+      store.close();
+    } catch (error: unknown) {
+      console.error("failed to close local crawler db:", error);
+    }
 
-  await runCrawlers(selectedCrawlers, {
-    skipStatic: options.skipStatic,
-    skipPuppeteer: options.skipPuppeteer,
-  });
+    if (saver) {
+      await saver.close();
+    }
+  }
 };
 
 if (import.meta.main) {

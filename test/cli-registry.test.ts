@@ -53,6 +53,7 @@ test("parseCliArgs accepts repeated --crawler and positional patterns", () => {
 
   expect(parsed.skipPuppeteer).toBeTrue();
   expect(parsed.patterns).toEqual(["US/GA/*", "US/IL/batavia-islamic-center"]);
+  expect(parsed.runReport).toBeFalse();
   expect(parsed.save).toBeFalse();
   expect(parsed.force).toBeFalse();
   expect(parsed.verbose).toBeFalse();
@@ -64,7 +65,18 @@ test("parseCliArgs accepts save mode flags", () => {
   expect(parsed.save).toBeTrue();
   expect(parsed.force).toBeTrue();
   expect(parsed.verbose).toBeTrue();
+  expect(parsed.runReport).toBeFalse();
   expect(parsed.patterns).toEqual(["US/GA/*"]);
+});
+
+test("parseCliArgs accepts run-report mode", () => {
+  const parsed = parseCliArgs(["--run-report"]);
+
+  expect(parsed.runReport).toBeTrue();
+  expect(parsed.list).toBeFalse();
+  expect(parsed.dump).toBeFalse();
+  expect(parsed.save).toBeFalse();
+  expect(parsed.patterns).toEqual([]);
 });
 
 test("parseCliArgs validates save-only flags and incompatible modes", () => {
@@ -77,6 +89,15 @@ test("parseCliArgs validates save-only flags and incompatible modes", () => {
   );
   expect(() => parseCliArgs(["--save", "--list"])).toThrow(
     /--save cannot be used with --list/,
+  );
+  expect(() => parseCliArgs(["--run-report", "--save"])).toThrow(
+    /--run-report cannot be used with --save/,
+  );
+  expect(() => parseCliArgs(["--run-report", "--dump"])).toThrow(
+    /--run-report cannot be used with --dump/,
+  );
+  expect(() => parseCliArgs(["--run-report", "US/GA/*"])).toThrow(
+    /--run-report does not accept crawler patterns/,
   );
 });
 

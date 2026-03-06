@@ -61,12 +61,36 @@ export type CrawlOutputHandler = (
   line: CrawlOutputLine,
 ) => void | Promise<void>;
 
+export type CrawlerSkipReason =
+  | "cli-skip-static"
+  | "cli-skip-puppeteer"
+  | "env-puppeteer-disabled";
+
+export interface CrawlerRunCompleteEvent {
+  name: string;
+  isStatic: boolean;
+  isPuppeteer: boolean;
+  runInvoked: boolean;
+  skippedReason?: CrawlerSkipReason;
+  error: string;
+  startedAt: Date;
+  finishedAt: Date;
+  durationMs: number;
+  emittedCount: number;
+  crawlerTimeoutMs: number;
+}
+
+export type CrawlerRunCompleteHandler = (
+  event: CrawlerRunCompleteEvent,
+) => void | Promise<void>;
+
 export interface RunnerOptions {
   skipStatic?: boolean;
   skipPuppeteer?: boolean;
   crawlerTimeoutMs?: number;
   emitJson?: boolean;
   onOutput?: CrawlOutputHandler;
+  onCrawlerComplete?: CrawlerRunCompleteHandler;
 }
 
 export interface DumpRecord {
@@ -80,6 +104,7 @@ export interface CliOptions {
   dump: boolean;
   list: boolean;
   help: boolean;
+  runReport: boolean;
   save: boolean;
   force: boolean;
   verbose: boolean;

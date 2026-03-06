@@ -46,3 +46,72 @@ test("runCrawlers suppresses stdout when emitJson is false and still calls onOut
   expect(lines[0]?.result.geohash).toBeDefined();
   expect(lines[0]?.result.crawlTime).toBeInstanceOf(Date);
 });
+
+test("runCrawlers suppresses output for env-skipped puppeteer crawlers", async () => {
+  const previousEnv = process.env.PUPPETEER_DISABLED;
+  process.env.PUPPETEER_DISABLED = "1";
+
+  let runCalled = false;
+  const crawler: CrawlerModule = {
+    name: "US/GA/puppeteer",
+    ids: [{ ...sampleRecord }],
+    puppeteer: true,
+    run: () => {
+      runCalled = true;
+      return [
+        {
+          ...sampleRecord,
+          fajrIqama: "5:15a",
+        },
+      ];
+    },
+  };
+
+  const lines: CrawlOutputLine[] = [];
+  const completions: {
+    skippedReason?: string;
+    runInvoked: boolean;
+    emittedCount: number;
+  }[] = [];
+  const originalLog = console.log;
+  const originalError = console.error;
+  const logged: unknown[][] = [];
+  console.log = (...args: unknown[]) => {
+    logged.push(args);
+  };
+  console.error = () => {};
+
+  try {
+    await runCrawlers([crawler], {
+      onOutput: (line) => {
+        lines.push(line);
+      },
+      onCrawlerComplete: (event) => {
+        completions.push({
+          skippedReason: event.skippedReason,
+          runInvoked: event.runInvoked,
+          emittedCount: event.emittedCount,
+        });
+      },
+    });
+  } finally {
+    console.log = originalLog;
+    console.error = originalError;
+    if (previousEnv === undefined) {
+      delete process.env.PUPPETEER_DISABLED;
+    } else {
+      process.env.PUPPETEER_DISABLED = previousEnv;
+    }
+  }
+
+  expect(runCalled).toBe(false);
+  expect(logged).toHaveLength(0);
+  expect(lines).toHaveLength(0);
+  expect(completions).toEqual([
+    {
+      skippedReason: "env-puppeteer-disabled",
+      runInvoked: false,
+      emittedCount: 0,
+    },
+  ]);
+});

@@ -1,6 +1,7 @@
 import { geohashForLocation } from "geofire-common";
 import type {
   CrawlerModule,
+  CrawlerSkipReason,
   CrawlOutputLine,
   DumpRecord,
   MasjidRecord,
@@ -73,19 +74,28 @@ export const runCrawlers = async (
   const skipStatic = options.skipStatic === true;
   const emitJson = options.emitJson !== false;
   const onOutput = options.onOutput;
+  const onCrawlerComplete = options.onCrawlerComplete;
 
   for (const crawler of util.shuffle([...crawlers])) {
+    const startedAt = new Date();
+    const crawlResults = crawler.ids;
+    let crawlError = "";
+    let skippedReason: CrawlerSkipReason | undefined;
+    let runInvoked = false;
+    let emittedCount = 0;
+
     try {
-      const crawlResults = crawler.ids;
-      let crawlError = "";
+      let shouldEmitResults = true;
 
       if (crawler.run) {
         if ((puppeteerDisabled || skipPuppeteer) && crawler.puppeteer) {
           console.error("skipping puppeteer crawler: %s", crawler.name);
-          if (skipPuppeteer) {
-            continue;
-          }
+          skippedReason = skipPuppeteer
+            ? "cli-skip-puppeteer"
+            : "env-puppeteer-disabled";
+          shouldEmitResults = false;
         } else {
+          runInvoked = true;
           try {
             const maybeUpdatedRecords = await withTimeout(
               Promise.resolve(crawler.run()),
@@ -106,30 +116,67 @@ export const runCrawlers = async (
         }
       } else if (skipStatic) {
         console.error("skipping static crawler: %s", crawler.name);
-        continue;
+        skippedReason = "cli-skip-static";
+        shouldEmitResults = false;
       }
 
-      for (const result of crawlResults) {
-        const output: CrawlOutputLine = {
-          result: enrichRecord(result),
-          error: crawlError,
-          source: crawler.name,
-        };
+      if (shouldEmitResults) {
+        for (const result of crawlResults) {
+          const output: CrawlOutputLine = {
+            result: enrichRecord(result),
+            error: crawlError,
+            source: crawler.name,
+          };
 
-        if (onOutput) {
-          try {
-            await onOutput(output);
-          } catch (error: unknown) {
-            console.error("output handler failed for %s:", crawler.name, error);
+          if (onOutput) {
+            try {
+              await onOutput(output);
+            } catch (error: unknown) {
+              console.error(
+                "output handler failed for %s:",
+                crawler.name,
+                error,
+              );
+            }
           }
-        }
 
-        if (emitJson) {
-          console.log("%j", output);
+          if (emitJson) {
+            console.log("%j", output);
+          }
+
+          emittedCount += 1;
         }
       }
     } catch (error: unknown) {
+      if (crawlError.length === 0) {
+        crawlError = stringifyError(error);
+      }
       console.error("caught error processing %s:", crawler.name, error);
+    } finally {
+      if (onCrawlerComplete) {
+        const finishedAt = new Date();
+        try {
+          await onCrawlerComplete({
+            name: crawler.name,
+            isStatic: !crawler.run,
+            isPuppeteer: crawler.puppeteer === true,
+            runInvoked,
+            skippedReason,
+            error: crawlError,
+            startedAt,
+            finishedAt,
+            durationMs: finishedAt.getTime() - startedAt.getTime(),
+            emittedCount,
+            crawlerTimeoutMs,
+          });
+        } catch (error: unknown) {
+          console.error(
+            "crawler completion handler failed for %s:",
+            crawler.name,
+            error,
+          );
+        }
+      }
     }
   }
 };
