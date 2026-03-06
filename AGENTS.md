@@ -12,7 +12,6 @@ Default to using Bun instead of Node.js.
 
 - `bun:sqlite` for SQLite. Don't use `better-sqlite3`.
 - Prefer `Bun.file` over `node:fs`'s readFile/writeFile
-- Bun.$`ls` instead of execa.
 
 ## Testing
 
