@@ -15,6 +15,7 @@ Default to using Bun instead of Node.js.
 
 - `bun:sqlite` for SQLite. Don't use `better-sqlite3`.
 - Prefer `Bun.file` over `node:fs`'s readFile/writeFile
+- Prefer direct Masjidal API calls via `util.loadMasjidalIqama` when the website exposes a usable Masjidal/AthanPlus `masjid_id`; only fall back to HTML scraping when no stable ID can be obtained.
 
 ## Testing
 
