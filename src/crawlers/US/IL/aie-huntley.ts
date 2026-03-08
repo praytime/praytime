@@ -1,6 +1,7 @@
-import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
+
+const MASJIDAL_ID = "0kAkaKqD";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -17,22 +18,17 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const [salahResp, jumuaResp] = await Promise.all([
-    util.get("https://masjidal.com/api/v1/time?masjid_id=0kAkaKqD"),
-    util.get("http://masjidal.com/aie/"),
+  const iqama = await util.loadMasjidalIqama(MASJIDAL_ID);
+  util.setTimes(ids[0], [
+    iqama.fajr,
+    iqama.zuhr,
+    iqama.asr,
+    iqama.maghrib,
+    iqama.isha,
+    iqama.jummah1,
+    iqama.jummah2,
+    iqama.jummah3,
   ]);
-
-  const data = salahResp.data;
-  if (data.status === "success") {
-    ids[0].fajrIqama = data.data.iqama.fajr;
-    ids[0].zuhrIqama = data.data.iqama.zuhr;
-    ids[0].asrIqama = data.data.iqama.asr;
-    ids[0].maghribIqama = data.data.iqama.maghrib;
-    ids[0].ishaIqama = data.data.iqama.isha;
-  }
-
-  const $ = cheerio.load(jumuaResp.data);
-  ids[0].juma1 = $("#jummah1 > td.salah").text().trim();
 
   return ids;
 };

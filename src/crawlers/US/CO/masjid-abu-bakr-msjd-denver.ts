@@ -18,12 +18,30 @@ const ids: CrawlerModule["ids"] = [
 const run = async () => {
   const $ = await util.load(ids[0].url);
 
-  const a = util.mapToText($, ".begins");
-  a.splice(1, 1); // remove sunrise
-  const j = util.mapToText($, 'th.prayerName:contains("Jumuah") + td');
+  const iqamaTimes = util
+    .mapToText($, "table.dptTimetable td.jamah")
+    .map(util.extractTimeAmPm)
+    .slice(0, 5);
+  if (iqamaTimes.length < 5 || iqamaTimes.some((time) => !time)) {
+    throw new Error(
+      "incomplete iqama times on Colorado Muslim Society timetable",
+    );
+  }
 
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], j);
+  const jumaTimes = [
+    ...new Set(
+      util
+        .mapToText($, "table.dptTimetable .dsJumuah")
+        .map(util.extractTimeAmPm)
+        .filter((time) => time.length > 0),
+    ),
+  ];
+  if (jumaTimes.length === 0) {
+    throw new Error("missing Juma times on Colorado Muslim Society timetable");
+  }
+
+  util.setIqamaTimes(ids[0], iqamaTimes);
+  util.setJumaTimes(ids[0], jumaTimes.slice(0, 3));
 
   return ids;
 };

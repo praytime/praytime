@@ -18,15 +18,41 @@ const ids: CrawlerModule["ids"] = [
 const run = async () => {
   const $ = await util.load(ids[0].url);
 
-  const a = util
+  const iqamaTimes = util
     .mapToText($, ".nectar-list-item[data-text-align=right]")
     .slice(1);
-  const j = util
-    .mapToText($, '.nectar-hor-list-item:contains("Khutba")')
-    .map(util.extractTimeAmPm);
+  if (iqamaTimes.length < 5) {
+    throw new Error("missing iqama times on SALAM Center homepage");
+  }
 
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], j);
+  const jumaTimesFromHeadings = util
+    .mapToText($, "h3")
+    .filter((text) => text.toLowerCase().includes("jumu"))
+    .flatMap((text) => util.matchTimeAmPmG(text) ?? []);
+
+  const jumaTimesFromEvents = $(".mec-event-title")
+    .toArray()
+    .flatMap((title) => {
+      if (!$(title).text().toLowerCase().includes("jumu")) {
+        return [];
+      }
+
+      const startTimeText =
+        $(title).siblings(".mec-time-details").find(".mec-start-time").text() ||
+        $(title).closest("article, li, div").find(".mec-start-time").text();
+      const startTime = util.extractTimeAmPm(startTimeText);
+      return startTime ? [startTime] : [];
+    });
+
+  const jumaTimes = [
+    ...new Set([...jumaTimesFromHeadings, ...jumaTimesFromEvents]),
+  ];
+  if (jumaTimes.length === 0) {
+    throw new Error("missing Juma times on SALAM Center homepage");
+  }
+
+  util.setIqamaTimes(ids[0], iqamaTimes.slice(0, 5));
+  util.setJumaTimes(ids[0], jumaTimes.slice(0, 3));
 
   return ids;
 };

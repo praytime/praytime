@@ -18,15 +18,38 @@ const ids: CrawlerModule["ids"] = [
 const run = async () => {
   const $ = await util.load(ids[0].url);
 
-  const a = util.mapToText($, ".jamah");
-  const j = util
-    .mapToText($, ".dptTimetable th")
-    .slice(0, 1)
-    .map(util.matchTimeAmPmG)
-    .shift();
+  const iqamaTimes = util
+    .mapToText($, "table.dptTimetable td.jamah")
+    .map(util.extractTimeAmPm)
+    .slice(0, 5);
+  if (iqamaTimes.length < 5 || iqamaTimes.some((time) => !time)) {
+    throw new Error("incomplete iqama times on ICA Michigan timetable");
+  }
 
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], j);
+  let jumaTimes = [
+    ...new Set(
+      util
+        .mapToText($, "p strong, strong, p")
+        .filter((text) => /jum[a-z]*\s+khutbah/i.test(text))
+        .flatMap((text) => util.matchTimeAmPmG(text) ?? []),
+    ),
+  ];
+  if (jumaTimes.length === 0) {
+    jumaTimes = [
+      ...new Set(
+        util
+          .mapToText($, "table.dptTimetable .dsJumuah")
+          .map(util.extractTimeAmPm)
+          .filter((time) => time.length > 0),
+      ),
+    ];
+  }
+  if (jumaTimes.length === 0) {
+    throw new Error("missing Juma times on ICA Michigan homepage");
+  }
+
+  util.setIqamaTimes(ids[0], iqamaTimes);
+  util.setJumaTimes(ids[0], jumaTimes.slice(0, 3));
 
   return ids;
 };
