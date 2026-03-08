@@ -258,6 +258,259 @@ export const loadMasjidalIqama = async (
   };
 };
 
+type MasjidAppPrayerKey = "fajr" | "dhuhr" | "asr" | "maghrib" | "isha";
+
+type MasjidAppDayIqama = {
+  asr?: unknown;
+  dhuhr?: unknown;
+  fajr?: unknown;
+  isha?: unknown;
+  maghrib?: unknown;
+  zuhr?: unknown;
+};
+
+type MasjidAppEvent = {
+  isJuma?: unknown;
+  order?: unknown;
+  timeDesc?: unknown;
+};
+
+type MasjidAppPayload = {
+  props?: {
+    pageProps?: {
+      masjid?: {
+        events?: unknown;
+        iqamas?: unknown;
+      };
+    };
+  };
+};
+
+type MasjidAppPrayerTable = {
+  begins: Record<MasjidAppPrayerKey, string>;
+  iqama: Record<MasjidAppPrayerKey, string>;
+  juma: string[];
+};
+
+const createMasjidAppPrayerMap = (): Record<MasjidAppPrayerKey, string> => ({
+  fajr: "",
+  dhuhr: "",
+  asr: "",
+  maghrib: "",
+  isha: "",
+});
+
+const normalizeMasjidAppUrl = (url: string): string =>
+  url.replace("themasjidapp.net", "themasjidapp.org").replace("/masjids/", "/");
+
+const extractMasjidAppClock = (value: unknown): string => {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  return extractTimeAmPm(value) || extractTime(value);
+};
+
+const parseMasjidAppDayKey = (value: string): number =>
+  Number.parseInt(value, 10);
+
+const nearestMasjidAppIqamaValue = (
+  iqamas: Record<string, MasjidAppDayIqama>,
+  dayOfYear: number,
+  key: keyof MasjidAppDayIqama,
+): string => {
+  const direct = extractMasjidAppClock(iqamas[String(dayOfYear)]?.[key]);
+  if (direct) {
+    return direct;
+  }
+
+  const availableDays = Object.keys(iqamas)
+    .map(parseMasjidAppDayKey)
+    .filter(Number.isFinite)
+    .sort((a, b) => a - b);
+
+  for (const day of [...availableDays].reverse()) {
+    if (day > dayOfYear) {
+      continue;
+    }
+
+    const value = extractMasjidAppClock(iqamas[String(day)]?.[key]);
+    if (value) {
+      return value;
+    }
+  }
+
+  for (const day of availableDays) {
+    if (day < dayOfYear) {
+      continue;
+    }
+
+    const value = extractMasjidAppClock(iqamas[String(day)]?.[key]);
+    if (value) {
+      return value;
+    }
+  }
+
+  return "";
+};
+
+const getMasjidAppPrayerKey = (
+  label: string,
+): MasjidAppPrayerKey | undefined => {
+  if (label.includes("fajr")) {
+    return "fajr";
+  }
+  if (label.includes("dhuhr") || label.includes("zuhr")) {
+    return "dhuhr";
+  }
+  if (label.includes("asr")) {
+    return "asr";
+  }
+  if (label.includes("maghrib")) {
+    return "maghrib";
+  }
+  if (label.includes("isha")) {
+    return "isha";
+  }
+
+  return undefined;
+};
+
+const parseMasjidAppPrayerTable = (
+  $: cheerio.CheerioAPI,
+): MasjidAppPrayerTable => {
+  const begins = createMasjidAppPrayerMap();
+  const iqama = createMasjidAppPrayerMap();
+  const jumaTimes: string[] = [];
+
+  $("tbody tr").each((_, row) => {
+    const cells = $(row).find("td");
+    if (cells.length < 2) {
+      return;
+    }
+
+    const label = cells
+      .first()
+      .text()
+      .replace(/\s+/g, " ")
+      .trim()
+      .toLowerCase();
+    if (!label) {
+      return;
+    }
+
+    if (label.includes("jumu")) {
+      const rowText = cells
+        .toArray()
+        .slice(1)
+        .map((cell) => $(cell).text())
+        .join(" ");
+      jumaTimes.push(...(matchTimeAmPmG(rowText) ?? matchTimeG(rowText) ?? []));
+      return;
+    }
+
+    const prayer = getMasjidAppPrayerKey(label);
+    if (!prayer) {
+      return;
+    }
+
+    begins[prayer] =
+      extractMasjidAppClock(cells.eq(1).text()) || begins[prayer];
+    iqama[prayer] = extractMasjidAppClock(cells.eq(2).text()) || iqama[prayer];
+  });
+
+  return {
+    begins,
+    iqama,
+    juma: Array.from(new Set(jumaTimes.filter(Boolean))),
+  };
+};
+
+export const loadMasjidAppPrayerTimes = async (
+  url: string,
+  input: { timeZoneId: string },
+): Promise<{
+  asr: string;
+  fajr: string;
+  isha: string;
+  juma: string[];
+  maghrib: string;
+  zuhr: string;
+}> => {
+  const normalizedUrl = normalizeMasjidAppUrl(url);
+  const $ = await load(normalizedUrl);
+  const table = parseMasjidAppPrayerTable($);
+
+  let iqamas: Record<string, MasjidAppDayIqama> = {};
+  let events: MasjidAppEvent[] = [];
+  const nextDataText = $("#__NEXT_DATA__").text().trim();
+  if (nextDataText) {
+    const nextData = JSON.parse(nextDataText) as MasjidAppPayload;
+    const masjidData = nextData.props?.pageProps?.masjid;
+    if (Array.isArray(masjidData?.events)) {
+      events = masjidData.events as MasjidAppEvent[];
+    }
+    if (masjidData?.iqamas && typeof masjidData.iqamas === "object") {
+      iqamas = masjidData.iqamas as Record<string, MasjidAppDayIqama>;
+    }
+  }
+
+  const dayOfYear = Number.parseInt(strftime("%j", input), 10);
+  if (!Number.isFinite(dayOfYear)) {
+    throw new Error("failed to derive masjid app day-of-year");
+  }
+
+  const jsonFajr = nearestMasjidAppIqamaValue(iqamas, dayOfYear, "fajr");
+  const jsonZuhr =
+    nearestMasjidAppIqamaValue(iqamas, dayOfYear, "dhuhr") ||
+    nearestMasjidAppIqamaValue(iqamas, dayOfYear, "zuhr");
+  const jsonAsr = nearestMasjidAppIqamaValue(iqamas, dayOfYear, "asr");
+  const jsonMaghrib = nearestMasjidAppIqamaValue(iqamas, dayOfYear, "maghrib");
+  const jsonIsha = nearestMasjidAppIqamaValue(iqamas, dayOfYear, "isha");
+
+  const fajr = jsonFajr || table.iqama.fajr || table.begins.fajr;
+  const zuhr = jsonZuhr || table.iqama.dhuhr || table.begins.dhuhr;
+  const asr = jsonAsr || table.iqama.asr || table.begins.asr;
+  const maghrib =
+    jsonMaghrib ||
+    table.iqama.maghrib ||
+    (table.begins.maghrib ? "sunset" : "");
+  const isha = jsonIsha || table.iqama.isha || table.begins.isha;
+
+  if (!fajr || !zuhr || !asr || !maghrib || !isha) {
+    throw new Error("incomplete masjid app prayer times");
+  }
+
+  const eventTimes = events
+    .filter((event) => event?.isJuma === true)
+    .sort(
+      (a, b) =>
+        (typeof a.order === "number" ? a.order : 0) -
+        (typeof b.order === "number" ? b.order : 0),
+    )
+    .map((event) => extractMasjidAppClock(event.timeDesc))
+    .filter((time) => time.length > 0);
+  const juma: string[] = [];
+  const seenJumaTimes = new Set<string>();
+  for (const time of [...eventTimes, ...table.juma]) {
+    const key = time.replace(/\s+/g, "").toLowerCase();
+    if (!key || seenJumaTimes.has(key)) {
+      continue;
+    }
+    seenJumaTimes.add(key);
+    juma.push(time);
+  }
+
+  return {
+    asr,
+    fajr,
+    isha,
+    juma,
+    maghrib,
+    zuhr,
+  };
+};
+
 const AWQAT_SUPABASE_URL =
   process.env.AWQAT_SUPABASE_URL ?? "https://kjbutgbpddsadvnbgblg.supabase.co";
 const AWQAT_SUPABASE_ANON_KEY =

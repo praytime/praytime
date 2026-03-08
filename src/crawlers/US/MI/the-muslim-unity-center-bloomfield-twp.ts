@@ -16,16 +16,19 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const $ = await util.load("https://themasjidapp.net/masjids/muc/prayers");
+  const prayerTimes = await util.loadMasjidAppPrayerTimes(
+    "https://themasjidapp.net/masjids/muc/prayers",
+    ids[0],
+  );
 
-  const a = util
-    .mapToText($, "tbody td:last-child")
-    .filter(util.matchTimeAmPm)
-    .map(util.extractTimeAmPm);
-
-  a.splice(1, 1); // remove sunrise
-
-  util.setTimes(ids[0], a);
+  util.setIqamaTimes(ids[0], [
+    prayerTimes.fajr,
+    prayerTimes.zuhr,
+    prayerTimes.asr,
+    prayerTimes.maghrib,
+    prayerTimes.isha,
+  ]);
+  util.setJumaTimes(ids[0], prayerTimes.juma.slice(0, 3));
 
   return ids;
 };
