@@ -18,10 +18,15 @@ const ids: CrawlerModule["ids"] = [
 const run = async () => {
   const $ = await util.load(ids[0].url);
 
-  $('table.prayer_table tr:contains("Sunrise")').remove();
+  $('table.prayer-table tr:contains("Sunrise")').remove();
 
-  const a = util.mapToText($, "table.prayer_table td:last-child");
-  const j = util.mapToText($, "div.jumuatime td:nth-child(2)");
+  const a = util
+    .mapToText($, "table.prayer-table td:last-child")
+    .map(util.extractTimeAmPm);
+  const j = util
+    .mapToText($, "div.juma-main .cl-time")
+    .map(util.extractTimeAmPm)
+    .filter((value) => value.length > 0);
 
   util.setIqamaTimes(ids[0], a);
   util.setJumaTimes(ids[0], j);

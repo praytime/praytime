@@ -28,12 +28,10 @@ const run = async () => {
     a.splice(1, 1); // remove sunrise
     util.setIqamaTimes(ids[0], a);
 
-    let j = await util.pptMapToText(page, "h4 > strong");
+    let j = await util.pptMapToText(page, ".textwidget h4");
     j = j
-      .map((time) => time.match(util.timeAmPmRxG)?.[0])
-      .filter(
-        (value): value is string => value !== undefined && value.length > 0,
-      );
+      .flatMap((time) => time.match(util.timeAmPmRxG) ?? [])
+      .filter((value) => value.length > 0);
     util.setJumaTimes(ids[0], j);
   } finally {
     await browser.close();

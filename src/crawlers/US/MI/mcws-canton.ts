@@ -1,6 +1,7 @@
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
+const MASJIDAL_ID = "RKxwV5dO";
 const ids: CrawlerModule["ids"] = [
   {
     uuid4: "6967897e-bb45-46a7-bae0-9221659e6b0f",
@@ -16,15 +17,16 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const $ = await util.load(ids[0].url);
+  const iqama = await util.loadMasjidalIqama(MASJIDAL_ID);
 
-  const a = util.mapToText($, ".jamah");
-
-  util.setTimes(ids[0], a);
-
-  if (util.isJumaToday(ids[0])) {
-    util.setJumaTimes(ids[0], [a[1]]);
-  }
+  util.setIqamaTimes(ids[0], [
+    iqama.fajr,
+    iqama.zuhr,
+    iqama.asr,
+    iqama.maghrib,
+    iqama.isha,
+  ]);
+  util.setJumaTimes(ids[0], [iqama.jummah1, iqama.jummah2, iqama.jummah3]);
 
   return ids;
 };

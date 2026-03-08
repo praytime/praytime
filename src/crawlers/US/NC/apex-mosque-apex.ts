@@ -19,9 +19,7 @@ const run = async () => {
   const $ = await util.load(ids[0].url);
 
   const a = util.mapToText($, ".jamah");
-  const j = util
-    .mapToText($, ".gridtable tr:nth-child(2) td:last-child")
-    .flatMap(util.matchTimeG);
+  const j = util.mapToText($, "span.dsJumuah");
 
   util.setIqamaTimes(ids[0], a);
   util.setJumaTimes(ids[0], j);

@@ -16,22 +16,10 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const response = await util.get(
-    "http://srvic.org/index.php?option=com_kaprayertimes&task=ajax.gettimes&id=4",
-  );
+  const $ = await util.load("https://srvic.org/");
 
-  const data = response.data;
-  if (data.status === "success") {
-    const iqama = data.data;
-    util.setIqamaTimes(ids[0], [
-      iqama.fajr_iqama,
-      iqama.dhuhr_iqama,
-      iqama.asr_iqama,
-      iqama.maghrib_iqama,
-      iqama.isha_iqama,
-    ]);
-    ids[0].juma1 = iqama.jumuah;
-  }
+  util.setIqamaTimes(ids[0], util.mapToText($, "td.jamah").slice(0, 5));
+  util.setJumaTimes(ids[0], util.mapToText($, "span.dsJumuah"));
 
   return ids;
 };
