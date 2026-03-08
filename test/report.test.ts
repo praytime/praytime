@@ -61,7 +61,7 @@ test("formatRunReport renders tabular session and crawler rows", () => {
         isPuppeteer: false,
         lastRunAt: "2026-03-06T00:01:00.000Z",
         lastStatus: "no_change",
-        lastError: "",
+        lastError: "save diff: Juma2 is deleted",
         consecutiveErrors: 0,
         lastDurationMs: 900,
         lastRecordCount: 1,
@@ -82,6 +82,7 @@ test("formatRunReport renders tabular session and crawler rows", () => {
   expect(output).toContain("Recent Sessions");
   expect(output).toContain("Crawler State");
   expect(output).toContain("US/IL/example");
+  expect(output).toContain("save diff: Juma2 is deleted");
   expect(output).toContain("no_change");
   expect(output).toContain("abc123");
 });

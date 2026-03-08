@@ -267,3 +267,52 @@ test("CrawlStateStore does not count intentionally skipped puppeteer crawlers as
     rmSync(tempDir, { recursive: true, force: true });
   }
 });
+
+test("CrawlStateStore records save-layer failures as crawler errors", () => {
+  const tempDir = mkdtempSync(path.join(tmpdir(), "praytime-localdb-"));
+  const dbPath = path.join(tempDir, "crawler-state.sqlite");
+  const store = new CrawlStateStore(dbPath);
+
+  try {
+    store.registerCrawlerDescriptors([
+      {
+        name: "US/IL/save-error",
+        sourcePath: "src/crawlers/US/IL/save-error.ts",
+        isStatic: false,
+        isPuppeteer: false,
+      },
+    ]);
+
+    startSession(store, ["US/IL/save-error"]);
+    store.recordCrawlerOutput({
+      source: "US/IL/save-error",
+      error: "",
+      result: baseRecord("44444444-4444-4444-8444-444444444444", {
+        juma1: "1:00p",
+      }),
+    });
+    store.recordCrawlerSaveError(
+      "US/IL/save-error",
+      "save diff: Juma2 is deleted",
+    );
+    const status = store.recordCrawlerCompletion(
+      completeEvent("US/IL/save-error"),
+    );
+    store.finishRunSession();
+
+    expect(status).toBe("error");
+
+    const report = store.getRunReport({ crawlerLimit: 10, sessionLimit: 10 });
+    const crawler = report.crawlers.find(
+      (entry) => entry.crawlerName === "US/IL/save-error",
+    );
+
+    expect(crawler).toBeDefined();
+    expect(crawler?.lastStatus).toBe("error");
+    expect(crawler?.lastError).toContain("save diff: Juma2 is deleted");
+    expect(report.latestSession?.status).toBe("completed_with_errors");
+  } finally {
+    store.close();
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+});

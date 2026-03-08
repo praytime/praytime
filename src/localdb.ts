@@ -123,6 +123,23 @@ const defaultSessionCounters = (): SessionCounters => ({
   timingsUpdated: 0,
 });
 
+const mergeErrorMessages = (existing: string, incoming: string): string => {
+  const next = incoming.trim();
+  if (next.length === 0) {
+    return existing;
+  }
+
+  const current = existing.trim();
+  if (current.length === 0) {
+    return next;
+  }
+  if (current.includes(next)) {
+    return current;
+  }
+
+  return `${current} | ${next}`;
+};
+
 const normalizeTimeValue = (value: unknown): string => {
   if (typeof value !== "string") {
     return "";
@@ -460,6 +477,11 @@ export class CrawlStateStore {
     }
 
     accumulator.noChangeCount += 1;
+  }
+
+  recordCrawlerSaveError(crawlerName: string, error: string): void {
+    const accumulator = this.ensureAccumulator(crawlerName);
+    accumulator.lastError = mergeErrorMessages(accumulator.lastError, error);
   }
 
   recordCrawlerCompletion(event: CrawlerRunCompleteEvent): CrawlerRunStatus {

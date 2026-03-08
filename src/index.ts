@@ -242,7 +242,10 @@ export const main = async (argv = process.argv.slice(2)): Promise<void> => {
       onOutput: async (line) => {
         store.recordCrawlerOutput(line);
         if (saver) {
-          await saver.saveLine(line);
+          const saveResult = await saver.saveLine(line);
+          if (saveResult.outcome === "error") {
+            store.recordCrawlerSaveError(line.source, saveResult.error);
+          }
         }
       },
       onCrawlerComplete: (event) => {

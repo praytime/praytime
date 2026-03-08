@@ -1,140 +1,101 @@
+import type { AnyNode } from "domhandler";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-type PrayerWithIqama = {
-  iqamahTime?: unknown;
-};
-
-type JumaBlock = {
-  juma1IqamahTime?: unknown;
-  juma2IqamahTime?: unknown;
-  juma3IqamahTime?: unknown;
-};
-
-type JumaTimeEntry = {
-  iqamahTime?: unknown;
-};
-
-type PrayerDataEntry = {
-  date?: unknown;
-  fajr?: PrayerWithIqama;
-  dhuhr?: PrayerWithIqama;
-  zuhr?: PrayerWithIqama;
-  asr?: PrayerWithIqama;
-  maghrib?: PrayerWithIqama;
-  isha?: PrayerWithIqama;
-  juma?: JumaBlock;
-  jumaTimes?: JumaTimeEntry[];
-};
-
+type PrayerKey = "fajr" | "zuhr" | "asr" | "maghrib" | "isha" | "juma";
+type IqamaPrayerKey = Exclude<PrayerKey, "juma">;
 type Page = Awaited<ReturnType<typeof util.load>>;
 
-const extractAssignedJson = (
-  scriptText: string,
-  variableName: string,
-  openChar: "{" | "[",
-  closeChar: "}" | "]",
-): string => {
-  const assignmentPattern = new RegExp(`\\bvar\\s+${variableName}\\s*=`);
-  const assignmentMatch = assignmentPattern.exec(scriptText);
-  if (!assignmentMatch) {
-    return "";
+const prayerLabelToKey = (text: string): PrayerKey | "" => {
+  const value = text.trim().toLowerCase();
+  if (value.startsWith("fajr")) {
+    return "fajr";
   }
-
-  const start = scriptText.indexOf(openChar, assignmentMatch.index);
-  if (start === -1) {
-    return "";
+  if (
+    value.startsWith("zuhr") ||
+    value.startsWith("duhr") ||
+    value.startsWith("dhuhr")
+  ) {
+    return "zuhr";
   }
-
-  let depth = 0;
-  let inString = false;
-  let escaped = false;
-
-  for (let index = start; index < scriptText.length; index += 1) {
-    const char = scriptText[index];
-    if (!char) {
-      continue;
-    }
-
-    if (inString) {
-      if (escaped) {
-        escaped = false;
-        continue;
-      }
-      if (char === "\\") {
-        escaped = true;
-        continue;
-      }
-      if (char === '"') {
-        inString = false;
-      }
-      continue;
-    }
-
-    if (char === '"') {
-      inString = true;
-      continue;
-    }
-    if (char === openChar) {
-      depth += 1;
-      continue;
-    }
-    if (char === closeChar) {
-      depth -= 1;
-      if (depth === 0) {
-        return scriptText.slice(start, index + 1);
-      }
-    }
+  if (value.startsWith("asr")) {
+    return "asr";
   }
-
+  if (value.startsWith("maghrib")) {
+    return "maghrib";
+  }
+  if (value.startsWith("isha")) {
+    return "isha";
+  }
+  if (value.startsWith("jumu")) {
+    return "juma";
+  }
   return "";
 };
 
-const parsePrayerDataEntries = ($: Page): PrayerDataEntry[] => {
-  for (const script of $("script").toArray()) {
-    const scriptText = $(script).html() ?? "";
-    if (!scriptText) {
+const extractPrayerCardText = ($: Page, selector: AnyNode): string => {
+  const card = $(selector).clone();
+  card.find("script, style").remove();
+  return card.text().replace(/\s+/g, " ").trim();
+};
+
+const parsePrayerCards = ($: Page) => {
+  const iqamaByPrayer = new Map<IqamaPrayerKey, string>();
+  let jumaTimes: string[] = [];
+
+  for (const card of $(".mk-time .et_pb_text_inner").toArray()) {
+    const text = extractPrayerCardText($, card);
+    const prayerKey = prayerLabelToKey(text);
+    if (!prayerKey) {
       continue;
     }
 
-    const jsonDataText = extractAssignedJson(scriptText, "json_data", "[", "]");
-    if (jsonDataText) {
-      try {
-        const parsed = JSON.parse(jsonDataText) as unknown;
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed as PrayerDataEntry[];
-        }
-      } catch {
-        // Keep scanning script tags for a valid payload.
+    const times = (util.matchTimeAmPmG(text) ?? []).map((value) =>
+      util.extractTimeAmPm(value),
+    );
+    if (prayerKey === "juma") {
+      jumaTimes = [...new Set(times.filter((value) => value.length > 0))];
+
+      if (jumaTimes.length === 0) {
+        jumaTimes = [
+          ...new Set(
+            (
+              util.matchTimeAmPmG($(card).attr("data-et-multi-view") ?? "") ??
+              []
+            )
+              .map((value) => util.extractTimeAmPm(value))
+              .filter((value) => value.length > 0),
+          ),
+        ];
       }
+
+      continue;
     }
 
-    const mnDataText = extractAssignedJson(scriptText, "mn", "{", "}");
-    if (mnDataText) {
-      try {
-        const parsed = JSON.parse(mnDataText) as {
-          prayerTimes?: PrayerDataEntry[];
-        };
-        if (
-          Array.isArray(parsed.prayerTimes) &&
-          parsed.prayerTimes.length > 0
-        ) {
-          return parsed.prayerTimes;
-        }
-      } catch {
-        // Keep scanning script tags for a valid payload.
-      }
+    const iqama = times.at(-1) ?? "";
+    if (!iqama || iqamaByPrayer.has(prayerKey)) {
+      continue;
     }
+
+    iqamaByPrayer.set(prayerKey, iqama);
   }
 
-  return [];
-};
+  const iqamaTimes = [
+    iqamaByPrayer.get("fajr") ?? "",
+    iqamaByPrayer.get("zuhr") ?? "",
+    iqamaByPrayer.get("asr") ?? "",
+    iqamaByPrayer.get("maghrib") ?? "",
+    iqamaByPrayer.get("isha") ?? "",
+  ];
 
-const normalizeTime = (value: unknown): string => {
-  if (typeof value !== "string") {
-    return "";
+  if (iqamaTimes.some((value) => value.length === 0)) {
+    throw new Error("incomplete iqama times on bolingbrookmasjid.com/home/");
   }
-  return util.extractTimeAmPm(value) || util.extractTime(value);
+  if (jumaTimes.length === 0) {
+    throw new Error("missing Juma times on bolingbrookmasjid.com/home/");
+  }
+
+  return { iqamaTimes, jumaTimes };
 };
 
 const ids: CrawlerModule["ids"] = [
@@ -163,56 +124,10 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
+
 const run = async () => {
-  const $ = await util.load("http://bolingbrookmasjid.com");
-  const entries = parsePrayerDataEntries($);
-  if (entries.length === 0) {
-    throw new Error("missing prayer data payload on bolingbrookmasjid.com");
-  }
-
-  const localDate = util.strftime("%d %B %Y", ids[0]).toLowerCase();
-  const todayEntry =
-    entries.find(
-      (entry) =>
-        typeof entry.date === "string" &&
-        entry.date.trim().toLowerCase() === localDate,
-    ) ?? entries[0];
-
-  if (!todayEntry) {
-    throw new Error("missing prayer data entry for bolingbrookmasjid.com");
-  }
-
-  const iqamaTimes = [
-    normalizeTime(todayEntry.fajr?.iqamahTime),
-    normalizeTime(todayEntry.dhuhr?.iqamahTime ?? todayEntry.zuhr?.iqamahTime),
-    normalizeTime(todayEntry.asr?.iqamahTime),
-    normalizeTime(todayEntry.maghrib?.iqamahTime),
-    normalizeTime(todayEntry.isha?.iqamahTime),
-  ];
-
-  if (iqamaTimes.some((value) => value.length === 0)) {
-    throw new Error("incomplete iqama times on bolingbrookmasjid.com");
-  }
-
-  let jumaTimes = (
-    Array.isArray(todayEntry.jumaTimes) ? todayEntry.jumaTimes : []
-  )
-    .map((entry) => normalizeTime(entry.iqamahTime))
-    .filter((value) => value.length > 0);
-
-  if (jumaTimes.length === 0) {
-    const juma = todayEntry.juma;
-    jumaTimes = [
-      normalizeTime(juma?.juma1IqamahTime),
-      normalizeTime(juma?.juma2IqamahTime),
-      normalizeTime(juma?.juma3IqamahTime),
-    ].filter((value) => value.length > 0);
-  }
-
-  jumaTimes = [...new Set(jumaTimes)];
-  if (jumaTimes.length === 0) {
-    throw new Error("missing Juma times on bolingbrookmasjid.com");
-  }
+  const $ = await util.load("https://bolingbrookmasjid.com/home/");
+  const { iqamaTimes, jumaTimes } = parsePrayerCards($);
 
   util.setIqamaTimesAll(ids, iqamaTimes);
   util.setJumaTimesAll(ids, jumaTimes.slice(0, 3));

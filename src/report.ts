@@ -58,6 +58,14 @@ const formatTable = <Row>(
 
 const yesNo = (value: boolean): string => (value ? "yes" : "no");
 
+const truncate = (value: string, max: number): string => {
+  if (value.length <= max) {
+    return value;
+  }
+
+  return `${value.slice(0, max - 3)}...`;
+};
+
 export const formatRunReport = (report: RunReport): string => {
   const lines: string[] = [];
 
@@ -172,6 +180,10 @@ export const formatRunReport = (report: RunReport): string => {
         { header: "Static", value: (row) => yesNo(row.isStatic) },
         { header: "Pptr", value: (row) => yesNo(row.isPuppeteer) },
         { header: "Skip", value: (row) => row.lastSkippedReason ?? "-" },
+        {
+          header: "Error",
+          value: (row) => truncate(row.lastError || "-", 48),
+        },
         { header: "Git", value: (row) => row.lastGitCommitHash },
       ]),
     );

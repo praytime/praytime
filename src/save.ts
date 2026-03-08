@@ -351,6 +351,20 @@ export interface SaveOptions {
   messaging?: Messaging;
 }
 
+export type SaveLineResult =
+  | {
+      outcome: "saved";
+      updated: boolean;
+    }
+  | {
+      outcome: "skipped";
+      reason: "crawl_error";
+    }
+  | {
+      outcome: "error";
+      error: string;
+    };
+
 export class PraytimeSaver {
   private readonly db: Firestore;
   private readonly messaging: Messaging;
@@ -425,12 +439,15 @@ export class PraytimeSaver {
     }
   }
 
-  async saveLine(line: CrawlOutputLine): Promise<void> {
+  async saveLine(line: CrawlOutputLine): Promise<SaveLineResult> {
     const prefix = this.prefix(line);
 
     if (line.error.length > 0) {
       this.log(prefix, `ERROR crawl error: ${line.error}`);
-      return;
+      return {
+        outcome: "skipped",
+        reason: "crawl_error",
+      };
     }
 
     const record = line.result as PrayerEventRecord;
@@ -444,8 +461,12 @@ export class PraytimeSaver {
     try {
       snapshot = await docRef.get();
     } catch (error: unknown) {
-      this.log(prefix, `ERROR getting prev value: ${stringifyError(error)}`);
-      return;
+      const message = `save get prev value: ${stringifyError(error)}`;
+      this.log(prefix, `ERROR ${message}`);
+      return {
+        outcome: "error",
+        error: message,
+      };
     }
 
     if (snapshot.exists) {
@@ -455,8 +476,12 @@ export class PraytimeSaver {
       try {
         ({ diff } = compareToPrevious(record, previous, this.force));
       } catch (error: unknown) {
-        this.log(prefix, `ERROR diff: ${stringifyError(error)}`);
-        return;
+        const message = `save diff: ${stringifyError(error)}`;
+        this.log(prefix, `ERROR ${message}`);
+        return {
+          outcome: "error",
+          error: message,
+        };
       }
 
       if (diff.length > 0) {
@@ -497,8 +522,17 @@ export class PraytimeSaver {
       const payload = omitUndefinedDeep(record) as PrayerEventRecord;
       await docRef.set(payload);
       this.log(prefix, `set (updated: ${updated})`);
+      return {
+        outcome: "saved",
+        updated,
+      };
     } catch (error: unknown) {
-      this.log(prefix, `ERROR setting new value: ${stringifyError(error)}`);
+      const message = `save set new value: ${stringifyError(error)}`;
+      this.log(prefix, `ERROR ${message}`);
+      return {
+        outcome: "error",
+        error: message,
+      };
     }
   }
 
