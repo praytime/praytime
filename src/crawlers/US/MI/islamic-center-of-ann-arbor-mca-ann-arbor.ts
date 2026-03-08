@@ -1,11 +1,32 @@
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
+type PrayerTimesIqamah = {
+  asr?: unknown;
+  fajr?: unknown;
+  isha?: unknown;
+  jummah1?: unknown;
+  jummah2?: unknown;
+  jummah3?: unknown;
+  maghrib?: unknown;
+  zuhr?: unknown;
+};
+
+type PrayerTimesResponse = {
+  data?: {
+    iqamah?: PrayerTimesIqamah[];
+  };
+  success?: unknown;
+};
+
+const normalizeText = (value: unknown): string =>
+  typeof value === "string" ? value.trim() : "";
+
 const ids: CrawlerModule["ids"] = [
   {
     uuid4: "dd1bc539-cafe-4f39-b21d-f2a51e9040e7",
     name: "Islamic Center of Ann Arbor (MCA)",
-    url: "http://mca-a2.org/",
+    url: "https://mca-a2.org/",
     timeZoneId: "America/Detroit",
     address: "2301 Plymouth Rd, Ann Arbor, MI 48105, USA",
     placeId: "ChIJoTX09ymsPIgRO8InMPpKP-4",
@@ -16,21 +37,42 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const $ = await util.load(ids[0].url);
+  const { data } = await util.get<PrayerTimesResponse>(
+    "https://mca-a2.org/wp-admin/admin-ajax.php",
+    {
+      fetch: {
+        body: "action=prayer_times",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        method: "POST",
+      },
+    },
+  );
 
-  const a = util.mapToText($, "table.dptTimetable td.jamah");
-  util.setIqamaTimes(ids[0], a);
-
-  const j = util
-    .mapToText($, "table.dptTimetable ~ ul li")
-    .map(util.extractTimeAmPm);
-
-  if (j.length > 3) {
-    // stuff fourth juma into third
-    j[2] = `${j[2]}, fourth: ${j[3]}`;
+  const today = Array.isArray(data.data?.iqamah) ? data.data?.iqamah[0] : null;
+  if (data.success !== true || !today) {
+    throw new Error("missing prayer_times ajax payload");
   }
 
-  util.setJumaTimes(ids[0], j);
+  const iqamaTimes = [
+    normalizeText(today.fajr),
+    normalizeText(today.zuhr),
+    normalizeText(today.asr),
+    normalizeText(today.maghrib),
+    normalizeText(today.isha),
+  ];
+  if (iqamaTimes.some((time) => !time)) {
+    throw new Error("incomplete iqamah times from prayer_times ajax");
+  }
+
+  util.setIqamaTimes(ids[0], iqamaTimes);
+  util.setJumaTimes(ids[0], [
+    normalizeText(today.jummah1),
+    normalizeText(today.jummah2),
+    // Site frontend renders a third slot at 2:00 PM when the API omits it.
+    normalizeText(today.jummah3) || "2:00 PM",
+  ]);
 
   return ids;
 };

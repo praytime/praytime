@@ -1,12 +1,18 @@
-import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
+
+const normalizeLabel = (value: string): string =>
+  value
+    .replace(/\u00a0/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
 
 const ids: CrawlerModule["ids"] = [
   {
     uuid4: "78ffa969-e54f-4a4d-92cb-c049a9088d7f",
     name: "Islamic Center of Eastside",
-    url: "http://www.eastsidemosque.com/",
+    url: "https://www.eastsidemosque.com/",
     timeZoneId: "America/Los_Angeles",
     address: "14230 NE 21st St, Bellevue, WA 98007, USA",
     geo: {
@@ -17,55 +23,64 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const response = await util.get("http://www.eastsidemosque.com/");
-  const $ = cheerio.load(response.data);
+  const $ = await util.load(ids[0].url);
 
-  ids[0].fajrIqama = $(
-    "div.azan-time-body > table:nth-child(1) > tbody > tr:nth-child(1) > td:nth-child(3)",
-  )
-    .first()
-    .text()
-    .trim();
-  ids[0].zuhrIqama = $(
-    "div.azan-time-body > table:nth-child(1) > tbody > tr:nth-child(3) > td:nth-child(3)",
-  )
-    .first()
-    .text()
-    .trim();
-  ids[0].asrIqama = $(
-    "div.azan-time-body > table:nth-child(1) > tbody > tr:nth-child(4) > td:nth-child(3)",
-  )
-    .first()
-    .text()
-    .trim();
-  ids[0].maghribIqama = $(
-    "div.azan-time-body > table:nth-child(1) > tbody > tr:nth-child(6) > td:nth-child(3)",
-  )
-    .first()
-    .text()
-    .trim();
-  ids[0].ishaIqama = $(
-    "div.azan-time-body > table:nth-child(1) > tbody > tr:nth-child(7) > td:nth-child(3)",
-  )
-    .first()
-    .text()
-    .trim();
-  ids[0].juma1 =
-    $(
-      "div.azan-time-body > table:nth-child(2) > tbody > tr:nth-child(1) > td.lower-text",
-    )
-      .first()
-      .text()
-      .replace(/\s/g, "")
-      .match(/\d{1,2}:\d{2}/)?.[0] ?? "";
-  ids[0].juma2 =
-    $(
-      "div.azan-time-body > table:nth-child(2) > tbody > tr:nth-child(2) > td.lower-text",
-    )
-      .first()
-      .text()
-      .replace(/\s/g, "")
-      .match(/\d{1,2}:\d{2}/)?.[0] ?? "";
+  const prayerTable = $("div.azan-time-body table").first();
+  const iqamaByPrayer = new Map<string, string>();
+
+  prayerTable.find("tbody tr").each((_, row) => {
+    const cells = $(row).find("td");
+    if (cells.length < 3) {
+      return;
+    }
+
+    const label = normalizeLabel(cells.eq(0).text());
+    const iqama = cells.eq(2).text().trim();
+    if (!iqama) {
+      return;
+    }
+
+    if (label === "fajr") {
+      iqamaByPrayer.set("fajr", iqama);
+    } else if (label === "dhuhr main st") {
+      iqamaByPrayer.set("zuhr", iqama);
+    } else if (label === "asar") {
+      iqamaByPrayer.set("asr", iqama);
+    } else if (label === "maghrib") {
+      iqamaByPrayer.set("maghrib", iqama);
+    } else if (label === "isha") {
+      iqamaByPrayer.set("isha", iqama);
+    }
+  });
+
+  const iqamaTimes = [
+    iqamaByPrayer.get("fajr") ?? "",
+    iqamaByPrayer.get("zuhr") ?? "",
+    iqamaByPrayer.get("asr") ?? "",
+    iqamaByPrayer.get("maghrib") ?? "",
+    iqamaByPrayer.get("isha") ?? "",
+  ];
+  if (iqamaTimes.some((time) => !time)) {
+    throw new Error("incomplete prayer rows on ICOE homepage");
+  }
+
+  const seen = new Set<string>();
+  const jumaTimes = $("div.azan-time-body table")
+    .eq(1)
+    .find("td.lower-text")
+    .toArray()
+    .map((cell) => util.extractTime($(cell).text()))
+    .filter((time) => time && time !== "0:00")
+    .filter((time) => {
+      if (seen.has(time)) {
+        return false;
+      }
+      seen.add(time);
+      return true;
+    });
+
+  util.setIqamaTimes(ids[0], iqamaTimes);
+  util.setJumaTimes(ids[0], jumaTimes);
 
   return ids;
 };

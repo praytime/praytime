@@ -1,12 +1,14 @@
-import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
+
+const normalizeText = (value: string): string =>
+  value.replace(/\u00a0/g, " ").trim();
 
 const ids: CrawlerModule["ids"] = [
   {
     uuid4: "12d8631a-8c92-408c-b8e3-141def46c2d6",
     name: "Islamic Association of Allen",
-    url: "http://allenmasjid.com/",
+    url: "https://allenmasjid.com/",
     timeZoneId: "America/Chicago",
     address: "909 Allen Central Dr, Allen, TX 75013, USA",
     geo: {
@@ -17,18 +19,63 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const response = await util.get("http://allenmasjid.com/");
-  const $ = cheerio.load(response.data);
+  const $ = await util.load(ids[0].url);
 
-  ids[0].fajrIqama = $("td:contains('Fajr') ~ td:nth-child(3)").text().trim();
-  ids[0].zuhrIqama = $("td:contains('Dhuhr') ~ td:nth-child(3)").text().trim();
-  ids[0].asrIqama = $("td:contains('Asr') ~ td:nth-child(3)").text().trim();
-  ids[0].maghribIqama = $("td:contains('Maghrib') ~ td:nth-child(3)")
-    .text()
-    .trim();
-  ids[0].ishaIqama = $("td:contains('Isha') ~ td:nth-child(3)").text().trim();
-  ids[0].juma1 = $("td:contains('1st Jum') ~ td:nth-child(2)").text().trim();
-  ids[0].juma2 = $("td:contains('2nd Jum') ~ td:nth-child(2)").text().trim();
+  const iqamaByPrayer = new Map<string, string>();
+  const jumaTimes: string[] = [];
+
+  $("table tr").each((_, row) => {
+    const cells = $(row).find("td");
+    if (cells.length < 4) {
+      return;
+    }
+
+    const label = normalizeText(cells.eq(1).text()).toLowerCase();
+    const adhan = normalizeText(cells.eq(2).text());
+    const iqama = normalizeText(cells.eq(3).text());
+
+    if (label === "fajr") {
+      iqamaByPrayer.set("fajr", iqama);
+      return;
+    }
+    if (label === "duhar" || label === "dhuhr") {
+      iqamaByPrayer.set("zuhr", iqama);
+      return;
+    }
+    if (label === "asr") {
+      iqamaByPrayer.set("asr", iqama);
+      return;
+    }
+    if (label === "maghrib") {
+      iqamaByPrayer.set("maghrib", iqama);
+      return;
+    }
+    if (label === "isha") {
+      iqamaByPrayer.set("isha", iqama);
+      return;
+    }
+    if (label.startsWith("khutbah")) {
+      const time =
+        util.extractTimeAmPm(adhan) || util.extractTime(adhan) || adhan;
+      if (time) {
+        jumaTimes.push(time);
+      }
+    }
+  });
+
+  const iqamaTimes = [
+    iqamaByPrayer.get("fajr") ?? "",
+    iqamaByPrayer.get("zuhr") ?? "",
+    iqamaByPrayer.get("asr") ?? "",
+    iqamaByPrayer.get("maghrib") ?? "",
+    iqamaByPrayer.get("isha") ?? "",
+  ];
+  if (iqamaTimes.some((time) => !time)) {
+    throw new Error("incomplete iqama rows on Allen Masjid homepage");
+  }
+
+  util.setIqamaTimes(ids[0], iqamaTimes);
+  util.setJumaTimes(ids[0], jumaTimes);
 
   return ids;
 };

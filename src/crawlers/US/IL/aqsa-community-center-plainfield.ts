@@ -1,4 +1,3 @@
-import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
@@ -6,7 +5,7 @@ const ids: CrawlerModule["ids"] = [
   {
     uuid4: "a29de6c9-b35b-4c29-956d-f0eda7338c61",
     name: "Al-Aqsa Community Center",
-    url: "http://www.accplainfield.org/",
+    url: "https://www.accplainfield.org/",
     address: "17940 Bronk Rd, Plainfield, IL 60586, USA",
     placeId: "ChIJu0A5cfKKDogRwwN7sNgCylw",
     timeZoneId: "America/Chicago",
@@ -17,19 +16,62 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const response = await util.get("http://www.accplainfield.org/");
-  const $ = cheerio.load(response.data);
+  const $ = await util.load(ids[0].url);
 
-  ids[0].fajrIqama = $('table#Table_01 td:contains("Fajr") + td').text().trim();
-  ids[0].zuhrIqama = $('table#Table_01 td:contains("ZUHR") + td').text().trim();
-  ids[0].asrIqama = $('table#Table_01 td:contains("ASR") + td').text().trim();
-  ids[0].maghribIqama = $('table#Table_01 td:contains("MAGHRIB") + td')
-    .text()
-    .trim();
-  ids[0].ishaIqama = $('table#Table_01 td:contains("ISHA") + td').text().trim();
-  ids[0].juma1 = $('table#Table_01 td:contains("1st Jumu") + td').text().trim();
-  ids[0].juma2 = $('table#Table_01 td:contains("2nd Jumu") + td').text().trim();
-  // ids[0].juma3 = $('table#Table_01 td:contains("3rd Jumu") + td').text().trim()
+  const iqamaByPrayer = new Map<string, string>();
+  let jumaTimes: string[] = [];
+
+  $(".salah > div").each((_, block) => {
+    const title = $(block).find(".salah-title").text().trim().toLowerCase();
+    const spans = $(block)
+      .find(".salah-desc span")
+      .toArray()
+      .map((span) =>
+        $(span)
+          .text()
+          .replace(/^Iqamah:\s*/i, "")
+          .trim(),
+      )
+      .filter(Boolean);
+
+    if (title === "jumu'ah") {
+      jumaTimes = spans
+        .map((value) => util.extractTimeAmPm(value) || util.extractTime(value))
+        .filter(Boolean);
+      return;
+    }
+
+    const iqama = spans[0] ?? "";
+    if (!iqama) {
+      return;
+    }
+
+    if (title === "fajr") {
+      iqamaByPrayer.set("fajr", iqama);
+    } else if (title === "zuhr") {
+      iqamaByPrayer.set("zuhr", iqama);
+    } else if (title === "asr") {
+      iqamaByPrayer.set("asr", iqama);
+    } else if (title === "magrib") {
+      iqamaByPrayer.set("maghrib", iqama);
+    } else if (title === "isha'a") {
+      iqamaByPrayer.set("isha", iqama);
+    }
+  });
+
+  const iqamaTimes = [
+    iqamaByPrayer.get("fajr") ?? "",
+    iqamaByPrayer.get("zuhr") ?? "",
+    iqamaByPrayer.get("asr") ?? "",
+    iqamaByPrayer.get("maghrib") ?? "",
+    iqamaByPrayer.get("isha") ?? "",
+  ];
+  if (iqamaTimes.some((time) => !time)) {
+    throw new Error("incomplete salah blocks on Al-Aqsa homepage");
+  }
+
+  util.setIqamaTimes(ids[0], iqamaTimes);
+  util.setJumaTimes(ids[0], jumaTimes);
 
   return ids;
 };
