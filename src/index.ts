@@ -24,6 +24,19 @@ Options:
   --help                    Show this help message
 `;
 
+const writeStdout = async (value: string): Promise<void> => {
+  await new Promise<void>((resolve, reject) => {
+    process.stdout.write(value, (error) => {
+      if (error) {
+        reject(error);
+        return;
+      }
+
+      resolve();
+    });
+  });
+};
+
 export const parseCliArgs = (argv: string[]): CliOptions => {
   const options: CliOptions = {
     dump: false,
@@ -170,14 +183,14 @@ export const main = async (argv = process.argv.slice(2)): Promise<void> => {
   const options = parseCliArgs(argv);
 
   if (options.help) {
-    console.log(usage);
+    await writeStdout(usage);
     return;
   }
 
   if (options.runReport) {
     const store = new CrawlStateStore();
     try {
-      console.log(formatRunReport(store.getRunReport()));
+      await writeStdout(`${formatRunReport(store.getRunReport())}\n`);
     } finally {
       store.close();
     }
@@ -197,7 +210,9 @@ export const main = async (argv = process.argv.slice(2)): Promise<void> => {
   const selectedCrawlers = selectedEntries.map((entry) => entry.crawler);
 
   if (options.dump) {
-    console.log("%j", dumpCrawlerMetadata(selectedCrawlers));
+    await writeStdout(
+      `${JSON.stringify(dumpCrawlerMetadata(selectedCrawlers))}\n`,
+    );
     return;
   }
 

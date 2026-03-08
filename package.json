@@ -1,7 +1,7 @@
 {
   "name": "praytime",
   "description": "Praytime scraping backend",
-  "main": "index.js",
+  "main": "index.ts",
   "version": "1.0.0",
   "repository": {
     "type": "git",
@@ -17,8 +17,9 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "start": "bun run index.ts",
-    "list": "bun run index.ts --list",
+    "report": "bun run . --run-report",
+    "start": "bun run .",
+    "list": "bun run . --list",
     "typecheck": "tsc --noEmit",
     "lintfix": "biome check --write",
     "lint": "biome check --error-on-warnings",

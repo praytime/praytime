@@ -1,3 +1,6 @@
+## Purpose
+Praytime scrapes masjid iqamah/jumuah times, emits JSON crawl records, and loads them into Firestore with change notifications.
+
 Default to using Bun instead of Node.js.
 
 - Use `bun <file>` instead of `node <file>` or `ts-node <file>`
@@ -27,9 +30,6 @@ test("hello world", () => {
 
 For more information, read the Bun API docs in `node_modules/bun-types/docs/**.mdx`.
 
-## Purpose
-Praytime scrapes masjid iqamah/jumuah times, emits JSON crawl records, and loads them into Firestore with change notifications.
-
 ## Repo Layout
 - `src`: ts code runs crawlers and saves to Firestore
 - `src/crawlers`: crawlers
@@ -53,6 +53,9 @@ Each crawler module should export:
       e.g.: `bun run . US/IL/islamic-center-of-naperville`
 2. Optional ingest to Firestore:
    - `bun run . --save [...]`
+
+## Crawler History
+Crawler runtime history is saved in .run/praytime.sqlite. `bun run report` to see a current status of each crawler.
 
 ## Environment Variables
 - `PUPPETEER_DISABLED`: skip browser crawlers.
