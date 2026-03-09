@@ -1,13 +1,13 @@
-import puppeteer from "puppeteer";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const crawlerPuppeteer = true;
+const MASJIDAL_ID = "nzKzJoKO";
+
 const ids: CrawlerModule["ids"] = [
   {
     uuid4: "90346b00-804c-410c-8d81-945a6cf544c8",
     name: "Islamic Society of Milwaukee",
-    url: "https://www.ismonline.org/ism-center.html",
+    url: "https://www.ismonline.org/ism-main-center",
     timeZoneId: "America/Chicago",
     address: "4707 South 13th Street, Milwaukee, WI 53221, USA",
     placeId: "ChIJTeFDRdQWBYgRwISakD6RR40",
@@ -18,22 +18,17 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const browser = await puppeteer.launch();
-  try {
-    const page = await browser.newPage();
-
-    await page.goto(ids[0].url, { waitUntil: "networkidle0" });
-
-    const t = await page.$$eval(
-      "#iqamaTimeContainer .circular-bar-content",
-      (tds) => tds.map((td) => td.textContent.match(/\d+\s*:\s*\d+\s*\w+/)[0]),
-    );
-    util.setJumaTimes(ids[0], [t[2]]);
-    t.splice(2, 1); // remove juma time
-    util.setIqamaTimes(ids[0], t);
-  } finally {
-    await browser.close();
-  }
+  const iqama = await util.loadMasjidalIqama(MASJIDAL_ID);
+  util.setTimes(ids[0], [
+    iqama.fajr,
+    iqama.zuhr,
+    iqama.asr,
+    iqama.maghrib,
+    iqama.isha,
+    iqama.jummah1,
+    iqama.jummah2,
+    iqama.jummah3,
+  ]);
 
   return ids;
 };
@@ -42,5 +37,4 @@ export const crawler: CrawlerModule = {
   name: "US/WI/islamic-society-of-milwaukee-milwaukee",
   ids,
   run,
-  puppeteer: crawlerPuppeteer,
 };

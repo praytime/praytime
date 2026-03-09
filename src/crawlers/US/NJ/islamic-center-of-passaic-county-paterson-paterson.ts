@@ -50,29 +50,19 @@ const run = async () => {
   util.setIqamaTimes(ids[1], a);
   util.setIqamaTimes(ids[2], a);
 
-  // matching:
-  // 1st Jumuah - Paterson/Clifton\t12:15 PM
-  // 2nd Jumuah - Paterson/Clifton\t01:15 PM
-  // 1st Jumuah - Masid Younis\t01:15 PM
-  const j = util.mapToText($, ".prayer li").filter((t) => t.match(/jumuah/i));
-  util.setJumaTimes(
-    ids[0],
-    j
-      .filter((t) => t.match(/paterson/i))
-      .map((t) => t.match(/\d+\s*:\s*\d+/)?.[0]),
-  );
-  util.setJumaTimes(
-    ids[1],
-    j
-      .filter((t) => t.match(/clifton/i))
-      .map((t) => t.match(/\d+\s*:\s*\d+/)?.[0]),
-  );
-  util.setJumaTimes(
-    ids[2],
-    j
-      .filter((t) => t.match(/Prospect Park/i))
-      .map((t) => t.match(/\d+\s*:\s*\d+/)?.[0]),
-  );
+  const fridayIqamas = util
+    .mapToText($, ".list.plusG li")
+    .map((row) => row.replace(/\s+/g, " ").trim())
+    .filter((row) => row.startsWith("Friday Iqama"))
+    .map(util.extractTimeAmPm)
+    .filter((time) => time.length > 0);
+  if (fridayIqamas.length < 3) {
+    throw new Error("failed to parse friday iqama times");
+  }
+
+  util.setJumaTimes(ids[0], fridayIqamas.slice(0, 2));
+  util.setJumaTimes(ids[1], fridayIqamas.slice(0, 2));
+  util.setJumaTimes(ids[2], fridayIqamas.slice(2, 3));
 
   return ids;
 };
