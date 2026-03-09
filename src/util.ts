@@ -258,6 +258,168 @@ export const loadMasjidalIqama = async (
   };
 };
 
+type MadinaAppsPrayerTime = {
+  iqamahTime?: unknown;
+};
+
+type MadinaAppsJuma = {
+  juma1KhutbaTime?: unknown;
+  juma2KhutbaTime?: unknown;
+  juma3KhutbaTime?: unknown;
+  juma1IqamahTime?: unknown;
+  juma2IqamahTime?: unknown;
+  juma3IqamahTime?: unknown;
+};
+
+type MadinaAppsJumaEntry = {
+  khutbaTime?: unknown;
+  iqamahTime?: unknown;
+  locationLink?: unknown;
+  notes?: unknown;
+  title?: unknown;
+};
+
+type MadinaAppsPrayerDay = {
+  asr?: MadinaAppsPrayerTime;
+  dhuhr?: MadinaAppsPrayerTime;
+  fajr?: MadinaAppsPrayerTime;
+  isha?: MadinaAppsPrayerTime;
+  juma?: MadinaAppsJuma;
+  jumaTimes?: unknown;
+  maghrib?: MadinaAppsPrayerTime;
+};
+
+type MadinaAppsPrayerResponse = {
+  prayerTimes?: unknown;
+};
+
+const normalizeMadinaAppsClock = (value: unknown): string => {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  return extractTimeAmPm(value) || extractTime(value);
+};
+
+const normalizeMadinaAppsText = (value: unknown): string => {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  return value.trim();
+};
+
+export const loadMadinaAppsPrayerTimes = async (
+  clientId: string,
+): Promise<{
+  asr: string;
+  fajr: string;
+  isha: string;
+  jumaEntries: Array<{
+    khutbaTime: string;
+    iqamahTime: string;
+    locationLink: string;
+    notes: string;
+    title: string;
+  }>;
+  maghrib: string;
+  zuhr: string;
+}> => {
+  if (!clientId.trim()) {
+    throw new Error("missing MadinaApps client id");
+  }
+
+  const response = await loadJson<MadinaAppsPrayerResponse>(
+    `https://services.madinaapps.com/kiosk-rest/clients/${encodeURIComponent(clientId)}/prayerTimes`,
+  );
+  const prayerTimes = Array.isArray(response.prayerTimes)
+    ? (response.prayerTimes as MadinaAppsPrayerDay[])
+    : [];
+  const today = prayerTimes[0];
+  if (!today) {
+    throw new Error("missing MadinaApps prayer times payload");
+  }
+
+  const fajr = normalizeMadinaAppsClock(today.fajr?.iqamahTime);
+  const zuhr = normalizeMadinaAppsClock(today.dhuhr?.iqamahTime);
+  const asr = normalizeMadinaAppsClock(today.asr?.iqamahTime);
+  const maghrib = normalizeMadinaAppsClock(today.maghrib?.iqamahTime);
+  const isha = normalizeMadinaAppsClock(today.isha?.iqamahTime);
+  if (!fajr || !zuhr || !asr || !maghrib || !isha) {
+    throw new Error("incomplete MadinaApps iqamah payload");
+  }
+
+  const jumaEntries: Array<{
+    khutbaTime: string;
+    iqamahTime: string;
+    locationLink: string;
+    notes: string;
+    title: string;
+  }> = [];
+  const rawJumaEntries = Array.isArray(today.jumaTimes)
+    ? (today.jumaTimes as MadinaAppsJumaEntry[])
+    : [];
+
+  for (const entry of rawJumaEntries) {
+    const khutbaTime = normalizeMadinaAppsClock(entry?.khutbaTime);
+    const iqamahTime = normalizeMadinaAppsClock(entry?.iqamahTime);
+    if (!khutbaTime && !iqamahTime) {
+      continue;
+    }
+
+    jumaEntries.push({
+      khutbaTime,
+      iqamahTime,
+      locationLink: normalizeMadinaAppsText(entry?.locationLink),
+      notes: normalizeMadinaAppsText(entry?.notes),
+      title: normalizeMadinaAppsText(entry?.title),
+    });
+  }
+
+  if (jumaEntries.length === 0) {
+    const fallbackEntries = [
+      {
+        title: "Juma 1",
+        khutbaTime: normalizeMadinaAppsClock(today.juma?.juma1KhutbaTime),
+        iqamahTime: normalizeMadinaAppsClock(today.juma?.juma1IqamahTime),
+      },
+      {
+        title: "Juma 2",
+        khutbaTime: normalizeMadinaAppsClock(today.juma?.juma2KhutbaTime),
+        iqamahTime: normalizeMadinaAppsClock(today.juma?.juma2IqamahTime),
+      },
+      {
+        title: "Juma 3",
+        khutbaTime: normalizeMadinaAppsClock(today.juma?.juma3KhutbaTime),
+        iqamahTime: normalizeMadinaAppsClock(today.juma?.juma3IqamahTime),
+      },
+    ];
+
+    for (const entry of fallbackEntries) {
+      if (!entry.khutbaTime && !entry.iqamahTime) {
+        continue;
+      }
+
+      jumaEntries.push({
+        khutbaTime: entry.khutbaTime,
+        iqamahTime: entry.iqamahTime,
+        locationLink: "",
+        notes: "",
+        title: entry.title,
+      });
+    }
+  }
+
+  return {
+    asr,
+    fajr,
+    isha,
+    jumaEntries,
+    maghrib,
+    zuhr,
+  };
+};
+
 type MasjidAppPrayerKey = "fajr" | "dhuhr" | "asr" | "maghrib" | "isha";
 
 type MasjidAppDayIqama = {

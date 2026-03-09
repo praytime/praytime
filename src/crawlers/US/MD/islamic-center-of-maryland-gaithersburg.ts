@@ -1,6 +1,8 @@
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
+const MADINAAPPS_CLIENT_ID = "40";
+
 const ids: CrawlerModule["ids"] = [
   {
     uuid4: "1e8965a1-0922-44fc-8d26-e186cada1e0b",
@@ -39,26 +41,42 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
+
+const selectKhutbaTimes = (
+  prayerTimes: Awaited<ReturnType<typeof util.loadMadinaAppsPrayerTimes>>,
+  titleNeedle: string,
+): string[] =>
+  prayerTimes.jumaEntries
+    .filter((entry) =>
+      entry.title.toLowerCase().includes(titleNeedle.toLowerCase()),
+    )
+    .map((entry) => entry.khutbaTime)
+    .filter((time) => time.length > 0);
+
 const run = async () => {
-  const $ = await util.load(ids[0].url);
+  const prayerTimes =
+    await util.loadMadinaAppsPrayerTimes(MADINAAPPS_CLIENT_ID);
+  const icmJumaTimes = selectKhutbaTimes(prayerTimes, "icm");
+  const caseyJumaTimes = selectKhutbaTimes(prayerTimes, "casey");
+  const rollinsJumaTimes = selectKhutbaTimes(prayerTimes, "rollins");
+  if (
+    icmJumaTimes.length === 0 ||
+    caseyJumaTimes.length === 0 ||
+    rollinsJumaTimes.length === 0
+  ) {
+    throw new Error("missing location-specific juma times payload");
+  }
 
-  const a = util.mapToText($, ".prayertime td:last-child");
-  a.splice(1, 1); // remove sunrise
-
-  util.setIqamaTimes(ids[0], a);
-
-  util.setJumaTimes(
-    ids[0],
-    util.mapToText($, '.jumuatime td:contains("ICM") + td'),
-  );
-  util.setJumaTimes(
-    ids[1],
-    util.mapToText($, '.jumuatime td:contains("Casey") + td'),
-  );
-  util.setJumaTimes(
-    ids[2],
-    util.mapToText($, '.jumuatime td:contains("Rollins") + td'),
-  );
+  util.setIqamaTimes(ids[0], [
+    prayerTimes.fajr,
+    prayerTimes.zuhr,
+    prayerTimes.asr,
+    prayerTimes.maghrib,
+    prayerTimes.isha,
+  ]);
+  util.setJumaTimes(ids[0], icmJumaTimes.slice(0, 3));
+  util.setJumaTimes(ids[1], caseyJumaTimes.slice(0, 3));
+  util.setJumaTimes(ids[2], rollinsJumaTimes.slice(0, 3));
 
   return ids;
 };

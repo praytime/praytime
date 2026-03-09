@@ -1,8 +1,8 @@
-import puppeteer from "puppeteer";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const crawlerPuppeteer = true;
+const MASJIDAL_ID = "b3AOggAe";
+
 const ids: CrawlerModule["ids"] = [
   {
     uuid4: "5a1e7a1d-ed50-41dc-ac2d-08b94e32e287",
@@ -18,29 +18,26 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const browser = await puppeteer.launch();
-  try {
-    const page = await browser.newPage();
-
-    const [$] = await Promise.all([
-      util.load(ids[0].url),
-      page.goto(
-        "https://madina-widget-2.web.app/RayyanCenter/dailyprayertime",
-        { waitUntil: "networkidle0" },
-      ),
-    ]);
-
-    const a = await page.$$eval("td:last-child", (tds) =>
-      tds.map((td) => td.textContent),
-    );
-    a.splice(1, 1); // remove sunrise
-    util.setIqamaTimes(ids[0], a);
-
-    const j = util.mapToText($, ".jumuatime tr:last-child td:nth-child(2)");
-    util.setJumaTimes(ids[0], j);
-  } finally {
-    await browser.close();
+  const [{ data: html }, iqama] = await Promise.all([
+    util.get<string>(ids[0].url),
+    util.loadMasjidalIqama(MASJIDAL_ID),
+  ]);
+  const jumaText =
+    /"title":"Jummah Prayer Timings","message":"([^"]+)"/i.exec(html)?.[1] ??
+    "";
+  const jumaTimes = util.matchTimeAmPmG(jumaText) ?? [];
+  if (jumaTimes.length === 0) {
+    throw new Error("failed to parse juma announcement");
   }
+
+  util.setIqamaTimes(ids[0], [
+    iqama.fajr,
+    iqama.zuhr,
+    iqama.asr,
+    iqama.maghrib,
+    iqama.isha,
+  ]);
+  util.setJumaTimes(ids[0], jumaTimes.slice(0, 3));
 
   return ids;
 };
@@ -49,5 +46,4 @@ export const crawler: CrawlerModule = {
   name: "US/MI/rayyan-center-plymouth",
   ids,
   run,
-  puppeteer: crawlerPuppeteer,
 };

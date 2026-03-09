@@ -17,16 +17,33 @@ const ids: CrawlerModule["ids"] = [
 ];
 const run = async () => {
   const $ = await util.load(ids[0].url);
+  const prayerTimes = $(".prayertimes tr")
+    .eq(1)
+    .find("td")
+    .toArray()
+    .map((cell) =>
+      $(cell)
+        .text()
+        .replace(/\s+/g, " ")
+        .replace(/^(Fajr|Dhuhr|Asr|Maghrib|Isha)\s*/i, "")
+        .trim(),
+    );
+  if (prayerTimes.length < 5) {
+    throw new Error("failed to parse prayer table");
+  }
 
-  const a = util.mapToText($, ".prayertimes td").map(util.extractTime);
-  a[3] = "-";
+  const jumaText =
+    $(".sqs-html-content")
+      .toArray()
+      .map((element) => $(element).text().replace(/\s+/g, " ").trim())
+      .find((text) => /juma timings/i.test(text)) ?? "";
+  const jumaTimes = util.matchTimeG(jumaText) ?? [];
+  if (jumaTimes.length === 0) {
+    throw new Error("failed to parse juma times");
+  }
 
-  const j = util
-    .mapToText($, '.sqs-block-content :contains("Juma Prayer")')
-    .flatMap(util.matchTimeG);
-
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], j);
+  util.setIqamaTimes(ids[0], prayerTimes.slice(0, 5));
+  util.setJumaTimes(ids[0], jumaTimes.slice(0, 3));
 
   return ids;
 };
