@@ -1,6 +1,8 @@
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
+const MADINAAPPS_CLIENT_ID = "86";
+
 const ids: CrawlerModule["ids"] = [
   {
     uuid4: "06218b10-3f44-4217-ac3b-e98eb30461d7",
@@ -16,15 +18,23 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const $ = await util.load(ids[0].url);
+  const prayerTimes =
+    await util.loadMadinaAppsPrayerTimes(MADINAAPPS_CLIENT_ID);
+  const jumaTimes = prayerTimes.jumaEntries
+    .map((entry) => entry.khutbaTime)
+    .filter((time) => time.length > 0);
+  if (jumaTimes.length === 0) {
+    throw new Error("missing juma times payload");
+  }
 
-  const a = util.mapToText($, ".prayertime .prayer_table td:last-child");
-  a.splice(1, 1); // remove sunrise
-
-  const j = util.mapToText($, ".jumuatime .prayer_table td:nth-child(2)");
-
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], j);
+  util.setIqamaTimes(ids[0], [
+    prayerTimes.fajr,
+    prayerTimes.zuhr,
+    prayerTimes.asr,
+    prayerTimes.maghrib,
+    prayerTimes.isha,
+  ]);
+  util.setJumaTimes(ids[0], jumaTimes.slice(0, 3));
 
   return ids;
 };

@@ -1,6 +1,8 @@
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
+const FRIDAY_PRAYERS_URL = "https://abuubakar.org/friday-prayers/";
+
 const ids: CrawlerModule["ids"] = [
   {
     uuid4: "1563a69b-ca08-4ee8-90b8-75320349643d",
@@ -16,12 +18,24 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const $ = await util.load(ids[0].url);
+  const $ = await util.load(FRIDAY_PRAYERS_URL);
+  const jumaText =
+    $(".et_pb_text_inner")
+      .toArray()
+      .map((element) => $(element).text().replace(/\s+/g, " ").trim())
+      .find((text) => /sermon begins promptly/i.test(text)) ?? "";
+  const jumaMatch = /\b(\d{1,2})(?::(\d{2}))?\s*([ap])\.?m\.?/i.exec(jumaText);
+  if (!jumaMatch?.[1] || !jumaMatch[3]) {
+    throw new Error("failed to parse friday prayer time");
+  }
+  const hour = jumaMatch[1];
+  const minute = jumaMatch[2] ?? "00";
+  const meridiem = `${jumaMatch[3].toUpperCase()}M`;
 
   // TODO: check for re-opening of daily salat
   // util.setIqamaTimes(ids[0], a)
 
-  util.setJumaTimes(ids[0], util.mapToText($, ".jumuatime .subtext"));
+  util.setJumaTimes(ids[0], [`${hour}:${minute} ${meridiem}`]);
 
   return ids;
 };
