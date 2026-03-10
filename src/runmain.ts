@@ -1,5 +1,5 @@
-export const runMain = (main: () => Promise<void>): void => {
-  if (!import.meta.main) {
+export const runMain = (main: () => Promise<void>, isMain: boolean): void => {
+  if (!isMain) {
     return;
   }
 

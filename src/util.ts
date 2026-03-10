@@ -841,17 +841,18 @@ type StandardPrayerTimesInput =
 
 export const getStandardPrayerKey = (text: string): StandardPrayerKey | "" => {
   const value = text.trim().toLowerCase();
-  if (value.startsWith("fajr")) {
+  if (value.startsWith("fajr") || value.startsWith("fajar")) {
     return "fajr";
   }
   if (
     value.startsWith("zuhr") ||
     value.startsWith("duhr") ||
-    value.startsWith("dhuhr")
+    value.startsWith("dhuhr") ||
+    value.startsWith("duhar")
   ) {
     return "zuhr";
   }
-  if (value.startsWith("asr")) {
+  if (value.startsWith("asr") || value.startsWith("asar")) {
     return "asr";
   }
   if (value.startsWith("maghrib")) {
@@ -1016,6 +1017,60 @@ export const extractTimeAmPm = (text: string | undefined): string => {
 export const matchTimeAmPmG = (
   text: string | undefined,
 ): RegExpMatchArray | null => text?.match(timeAmPmRxG) ?? null;
+
+export type TimeMatchParser = "matchTimeG" | "matchTimeAmPmG";
+
+export const extractMatchedTimes = (
+  text: string | undefined,
+  parser: TimeMatchParser = "matchTimeAmPmG",
+): string[] => {
+  if (parser === "matchTimeG") {
+    return [...(matchTimeG(text) ?? [])];
+  }
+
+  return [...(matchTimeAmPmG(text) ?? matchTimeG(text) ?? [])];
+};
+
+export const normalizeLooseClock = (value: unknown): string => {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  const trimmed = value.trim();
+  return extractTimeAmPm(trimmed) || extractTime(trimmed) || trimmed;
+};
+
+export const setTrailingJumaTimes = (
+  record: MasjidRecord | undefined,
+  times: MaybeTimeList,
+  options?: {
+    parser?: TimeMatchParser;
+    sourceIndex?: number;
+  },
+): void => {
+  const values = normalizeTimes(times);
+  const source =
+    options?.sourceIndex === undefined
+      ? values.at(-1)
+      : values[options.sourceIndex];
+
+  setJumaTimes(
+    record,
+    extractMatchedTimes(source ?? undefined, options?.parser),
+  );
+};
+
+export const setIqamaAndTrailingJumaTimes = (
+  record: MasjidRecord | undefined,
+  times: MaybeTimeList,
+  options?: {
+    parser?: TimeMatchParser;
+    sourceIndex?: number;
+  },
+): void => {
+  setIqamaTimes(record, times);
+  setTrailingJumaTimes(record, times, options);
+};
 
 export const hourMinuteAmPmToMinutes = (hm: string | undefined): number => {
   const match = hm?.match(/(\d{1,2})\s*:\s*(\d{1,2})\s*([ap]\.?m\.?)/i);

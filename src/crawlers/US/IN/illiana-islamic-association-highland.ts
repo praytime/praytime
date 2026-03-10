@@ -1,5 +1,7 @@
+import { createMasjidalRun } from "../../../masjidal";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
+
+const MASJIDAL_ID = "XAlRlVKb";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,29 +17,8 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-/* jscpd:ignore-start */
-const run = async () => {
-  const $ = await util.load(ids[0].url);
-
-  const a = util.mapToText($, ".jamah");
-
-  if (util.isJumaToday(ids[0])) {
-    const j = util.matchTimeAmPmG(a[1]);
-    util.setJumaTimes(ids[0], j);
-    a[1] = "juma";
-  } else {
-    const j = a.slice(-1).map(util.matchTimeG).shift();
-    util.setJumaTimes(ids[0], j);
-  }
-
-  util.setIqamaTimes(ids[0], a);
-
-  return ids;
-};
-/* jscpd:ignore-end */
-
 export const crawler: CrawlerModule = {
   name: "US/IN/illiana-islamic-association-highland",
   ids,
-  run,
+  run: createMasjidalRun(ids, MASJIDAL_ID, { jumaCount: 2 }),
 };

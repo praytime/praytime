@@ -1,5 +1,7 @@
+import { createMasjidalRun } from "../../../masjidal";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
+
+const MASJIDAL_ID = "VdwqX8Le";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,25 +17,8 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-/* jscpd:ignore-start */
-const run = async () => {
-  const $ = await util.load(ids[0].url);
-
-  const a = util.mapToText($, ".dpt_jamah");
-  const j = util
-    .mapToText($, 'h5:contains("Khutbah")')
-    .flatMap((t) => t.split("\n"))
-    .map(util.extractTimeAmPm);
-
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], j);
-
-  return ids;
-};
-/* jscpd:ignore-end */
-
 export const crawler: CrawlerModule = {
   name: "US/FL/amcc-longwood",
   ids,
-  run,
+  run: createMasjidalRun(ids, MASJIDAL_ID, { jumaCount: 2 }),
 };

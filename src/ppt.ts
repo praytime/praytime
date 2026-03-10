@@ -1,5 +1,6 @@
-import puppeteer, { type Page } from "puppeteer";
+import puppeteer, { type GoToOptions, type Page } from "puppeteer";
 import type { CrawlerIds, CrawlerRun } from "./types";
+import * as util from "./util";
 
 export const createPuppeteerRun = (
   ids: CrawlerIds,
@@ -15,4 +16,18 @@ export const createPuppeteerRun = (
       await browser.close();
     }
   };
+};
+
+export const loadFrameAfterGoto = async (
+  page: Page,
+  url: string,
+  frameUrlFragment: string,
+  gotoOptions?: GoToOptions,
+) => {
+  const [frame] = await Promise.all([
+    util.waitForFrame(page, frameUrlFragment),
+    page.goto(url, { waitUntil: "networkidle0", ...gotoOptions }),
+  ]);
+
+  return frame;
 };

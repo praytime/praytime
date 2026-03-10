@@ -64,3 +64,60 @@ export const createMohidWidgetRun = (
     return ids;
   };
 };
+
+export const loadMohidListTimes = async (
+  url: string,
+  options?: MohidWidgetOptions,
+): Promise<{ iqamaTimes: string[]; jumaTimes: string[] }> => {
+  const $ = await util.load(url);
+  const prayers = new Map<util.StandardPrayerKey, string>();
+  const jumaTimes: string[] = [];
+  const jumaLabelPattern = options?.jumaLabelPattern ?? /friday iqama/i;
+
+  $(".list li").each((_, row) => {
+    const rowText = normalizeSpace($(row).text());
+    if (!rowText) {
+      return;
+    }
+
+    const iqama = normalizeSpace(
+      $(row).find(".prayer_iqama_div").first().text(),
+    );
+    const prayerKey = util.getStandardPrayerKey(rowText);
+
+    if (prayerKey && iqama) {
+      prayers.set(prayerKey, iqama);
+      return;
+    }
+
+    if (iqama && jumaLabelPattern.test(rowText)) {
+      jumaTimes.push(iqama);
+    }
+  });
+
+  const iqamaTimes = util.requireStandardPrayerTimes(
+    prayers,
+    "failed to parse mohid list iqama timings",
+  );
+  const uniqueJumaTimes = uniqueTimes(jumaTimes);
+
+  return {
+    iqamaTimes,
+    jumaTimes: uniqueJumaTimes.slice(0, options?.jumaLimit ?? 3),
+  };
+};
+
+export const createMohidListRun = (
+  ids: CrawlerIds,
+  url: string,
+  options?: MohidWidgetOptions,
+): CrawlerRun => {
+  return async () => {
+    const { iqamaTimes, jumaTimes } = await loadMohidListTimes(url, options);
+
+    util.setIqamaTimes(ids[0], iqamaTimes);
+    util.setJumaTimes(ids[0], jumaTimes);
+
+    return ids;
+  };
+};

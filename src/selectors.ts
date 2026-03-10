@@ -16,6 +16,7 @@ type SelectorParseOptions = {
   parser?: SelectorParser;
   removeIndexes?: number[];
   selector: string;
+  splitPattern?: RegExp | string;
 };
 
 type SelectorRunOptions = {
@@ -53,6 +54,9 @@ const parseSelectorValues = (
     .mapToText($, options.selector)
     .filter((text) =>
       options.filterPattern ? options.filterPattern.test(text) : true,
+    )
+    .flatMap((text) =>
+      options.splitPattern ? text.split(options.splitPattern) : [text],
     )
     .flatMap((text) => parseValue(text, options.parser ?? "raw"))
     .map((value) => value.trim())

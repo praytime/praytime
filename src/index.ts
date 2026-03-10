@@ -294,4 +294,4 @@ export const main = async (argv = process.argv.slice(2)): Promise<void> => {
   }
 };
 
-runMain(main);
+runMain(main, import.meta.main);

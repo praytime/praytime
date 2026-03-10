@@ -1,5 +1,5 @@
+import { createDptTimetableRun } from "../../../dpt";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,41 +15,10 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-/* jscpd:ignore-start */
-const run = async () => {
-  const $ = await util.load(ids[0].url);
-
-  const iqamaTimes = util
-    .mapToText($, "table.dptTimetable td.jamah")
-    .map(util.extractTimeAmPm)
-    .slice(0, 5);
-  if (iqamaTimes.length < 5 || iqamaTimes.some((time) => !time)) {
-    throw new Error(
-      "incomplete iqama times on Colorado Muslim Society timetable",
-    );
-  }
-
-  const jumaTimes = [
-    ...new Set(
-      util
-        .mapToText($, "table.dptTimetable .dsJumuah")
-        .map(util.extractTimeAmPm)
-        .filter((time) => time.length > 0),
-    ),
-  ];
-  if (jumaTimes.length === 0) {
-    throw new Error("missing Juma times on Colorado Muslim Society timetable");
-  }
-
-  util.setIqamaTimes(ids[0], iqamaTimes);
-  util.setJumaTimes(ids[0], jumaTimes.slice(0, 3));
-
-  return ids;
-};
-/* jscpd:ignore-end */
-
 export const crawler: CrawlerModule = {
   name: "US/CO/masjid-abu-bakr-msjd-denver",
   ids,
-  run,
+  run: createDptTimetableRun(ids, ids[0].url, {
+    errorContext: "Colorado Muslim Society timetable",
+  }),
 };

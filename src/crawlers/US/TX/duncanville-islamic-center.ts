@@ -1,13 +1,15 @@
-import puppeteer from "puppeteer";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const crawlerPuppeteer = true;
+const PRAYER_TIMES_URL = "https://www.mydicenter.org/";
+const PRAYER_CARD_RX =
+  /<p class="prayer-card-title">\s*([^<]+?)\s*<\/p>\s*<p class="prayer-card-time">\s*([^<]+?)\s*<\/p>(?:\s*<p class="prayer-card-title">\s*([^<]+?)\s*<\/p>\s*<p class="prayer-card-time">\s*([^<]+?)\s*<\/p>)?/g;
+
 const ids: CrawlerModule["ids"] = [
   {
     uuid4: "f53572b2-8ac0-47b9-a010-f4cff10800da",
     name: "Duncanville Islamic Center",
-    url: "http://www.dicenter.org/",
+    url: PRAYER_TIMES_URL,
     timeZoneId: "America/Chicago",
     address: "1419 Acton Ave, Duncanville, TX 75137, USA",
     geo: {
@@ -17,43 +19,62 @@ const ids: CrawlerModule["ids"] = [
     placeId: "ChIJhW1M6eyRToYRljThXe1ulDc",
   },
 ];
-/* jscpd:ignore-start */
-const run = async () => {
-  const browser = await puppeteer.launch();
-  try {
-    const page = await browser.newPage();
 
-    // ignore return from page.goto
-    const [frame] = await Promise.all([
-      util.waitForFrame(page, "wix-visual-data.appspot.com"),
-      // networkidle0: all tcp connections idle for at least 500 ms
-      page.goto(ids[0].url, { waitUntil: "networkidle0" }),
-    ]);
+const normalizePrayerLabel = (value: string): string =>
+  value.replace(/^asar/i, "asr");
 
-    const table = await frame.waitForSelector("table#theTable");
-    if (!table) {
-      throw new Error("missing prayer table");
+const run: CrawlerModule["run"] = async () => {
+  const { data } = await util.get<string>(PRAYER_TIMES_URL);
+  if (typeof data !== "string") {
+    throw new Error("failed to load Duncanville prayer times page");
+  }
+
+  const prayers = new Map<util.StandardPrayerKey, string>();
+  const jumaTimes: string[] = [];
+
+  for (const match of data.matchAll(PRAYER_CARD_RX)) {
+    const title = (match[1] ?? "").trim();
+    const primaryTime = util.normalizeLooseClock(match[2]);
+    const secondaryLabel = (match[3] ?? "").trim().toLowerCase();
+    const secondaryTime = util.normalizeLooseClock(match[4]);
+
+    if (/jummah/i.test(title)) {
+      if (primaryTime) {
+        jumaTimes.push(primaryTime);
+      }
+      continue;
     }
 
-    // eval() evaluates the selector ids in the browser
-    const t = await table.$$eval("td", (tds) =>
-      tds.map((td) => td.textContent?.trim() ?? ""),
-    );
+    const prayerKey = util.getStandardPrayerKey(normalizePrayerLabel(title));
+    if (!prayerKey) {
+      continue;
+    }
 
-    util.setIqamaTimes(ids[0], [t[1], t[3], t[5], t[7], t[9]]);
-    ids[0].juma1 = t[11];
-    ids[0].juma2 = t[13];
-  } finally {
-    await browser.close();
+    const iqamaTime =
+      secondaryLabel === "iqamah" && secondaryTime
+        ? secondaryTime
+        : primaryTime;
+    if (!iqamaTime) {
+      continue;
+    }
+
+    prayers.set(prayerKey, iqamaTime);
   }
+
+  util.setIqamaTimes(
+    ids[0],
+    util.requireStandardPrayerTimes(
+      prayers,
+      "failed to parse Duncanville prayer times",
+    ),
+  );
+  util.setJumaTimes(ids[0], jumaTimes);
 
   return ids;
 };
-/* jscpd:ignore-end */
 
 export const crawler: CrawlerModule = {
   name: "US/TX/duncanville-islamic-center",
   ids,
   run,
-  puppeteer: crawlerPuppeteer,
 };
