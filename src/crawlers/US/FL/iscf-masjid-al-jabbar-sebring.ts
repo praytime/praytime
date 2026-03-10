@@ -1,8 +1,6 @@
-import puppeteer from "puppeteer";
+import { createMawaqitMobileRun } from "../../../mawaqit";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
-const crawlerPuppeteer = true;
 const ids: CrawlerModule["ids"] = [
   {
     uuid4: "ce7bfa06-83ca-4a74-8824-ec91809aff58",
@@ -17,54 +15,9 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const browser = await puppeteer.launch();
-  try {
-    const page = await browser.newPage();
-
-    await page.goto("https://mawaqit.net/en/aljabbar-sebring-florida", {
-      waitUntil: "networkidle0",
-    });
-
-    const divs = await page.$$eval(".prayers > div", (es) =>
-      es.map((e) => e.textContent.trim()),
-    );
-
-    const a = divs
-      .map((t) => t.split("\n"))
-      .map(([_, az, iq]) => {
-        if (util.matchTimeAmPm(iq)) {
-          // iqama time exact
-          return util.extractTimeAmPm(iq);
-        } else if (iq.match(/\s*[+-]\s*\d+/)) {
-          // iqama time offset from azan
-          return [az]
-            .map(util.hourMinuteAmPmToMinutes)
-            .map((minutes) => minutes + util.minuteOffsetFromText(iq))
-            .map(util.minutesTohourMinute)
-            .shift();
-        } else {
-          // ?
-          return `${az}|${iq}`;
-        }
-      });
-
-    util.setIqamaTimes(ids[0], a);
-
-    const j = await page.$$eval('div.joumouaa [class*="joumouaa"]', (es) =>
-      es.map((e) => e.textContent.trim()),
-    );
-    util.setJumaTimes(ids[0], j);
-  } finally {
-    await browser.close();
-  }
-
-  return ids;
-};
 
 export const crawler: CrawlerModule = {
   name: "US/FL/iscf-masjid-al-jabbar-sebring",
   ids,
-  run,
-  puppeteer: crawlerPuppeteer,
+  run: createMawaqitMobileRun(ids, "aljabbar-sebring-florida"),
 };
