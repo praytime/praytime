@@ -19,7 +19,7 @@ Default to using Bun instead of Node.js.
 
 ## Testing
 
-Run `bun run --parallel typecheck lint test` after any changes. Tests will be included.
+Run `bun run --parallel typecheck lint cpd test` after any changes. Tests will be included.
 
 ```ts#index.test.ts
 import { test, expect } from "bun:test";
