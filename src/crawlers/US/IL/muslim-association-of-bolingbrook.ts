@@ -2,35 +2,15 @@ import type { AnyNode } from "domhandler";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-type PrayerKey = "fajr" | "zuhr" | "asr" | "maghrib" | "isha" | "juma";
-type IqamaPrayerKey = Exclude<PrayerKey, "juma">;
+type PrayerKey = util.StandardPrayerKey | "juma";
+type IqamaPrayerKey = util.StandardPrayerKey;
 type Page = Awaited<ReturnType<typeof util.load>>;
 
 const prayerLabelToKey = (text: string): PrayerKey | "" => {
-  const value = text.trim().toLowerCase();
-  if (value.startsWith("fajr")) {
-    return "fajr";
-  }
-  if (
-    value.startsWith("zuhr") ||
-    value.startsWith("duhr") ||
-    value.startsWith("dhuhr")
-  ) {
-    return "zuhr";
-  }
-  if (value.startsWith("asr")) {
-    return "asr";
-  }
-  if (value.startsWith("maghrib")) {
-    return "maghrib";
-  }
-  if (value.startsWith("isha")) {
-    return "isha";
-  }
-  if (value.startsWith("jumu")) {
+  if (text.trim().toLowerCase().startsWith("jumu")) {
     return "juma";
   }
-  return "";
+  return util.getStandardPrayerKey(text);
 };
 
 const extractPrayerCardText = ($: Page, selector: AnyNode): string => {

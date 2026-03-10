@@ -833,6 +833,32 @@ type MaybeTimeList = MaybeTime[] | RegExpMatchArray | undefined | null;
 const normalizeTimes = (times: MaybeTimeList): readonly MaybeTime[] =>
   times ?? [];
 
+export type StandardPrayerKey = "fajr" | "zuhr" | "asr" | "maghrib" | "isha";
+
+export const getStandardPrayerKey = (text: string): StandardPrayerKey | "" => {
+  const value = text.trim().toLowerCase();
+  if (value.startsWith("fajr")) {
+    return "fajr";
+  }
+  if (
+    value.startsWith("zuhr") ||
+    value.startsWith("duhr") ||
+    value.startsWith("dhuhr")
+  ) {
+    return "zuhr";
+  }
+  if (value.startsWith("asr")) {
+    return "asr";
+  }
+  if (value.startsWith("maghrib")) {
+    return "maghrib";
+  }
+  if (value.startsWith("isha")) {
+    return "isha";
+  }
+  return "";
+};
+
 export const setIqamaTimes = (
   record: MasjidRecord | undefined,
   times: MaybeTimeList,
@@ -897,6 +923,19 @@ export const setJumaTimesAll = (
   records.forEach((record) => {
     setJumaTimes(record, times);
   });
+};
+
+export const setCheckWebsiteTimes = (
+  record: MasjidRecord | undefined,
+): void => {
+  setIqamaTimes(record, [
+    "check website",
+    "check website",
+    "check website",
+    "check website",
+    "check website",
+  ]);
+  setJumaTimes(record, ["check website"]);
 };
 
 export const setTimesAll = (

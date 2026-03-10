@@ -30,21 +30,6 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 
-const setUnavailableTimes = (index: number) => {
-  const record = ids[index];
-  if (!record) {
-    return;
-  }
-  util.setIqamaTimes(record, [
-    "check website",
-    "check website",
-    "check website",
-    "check website",
-    "check website",
-  ]);
-  util.setJumaTimes(record, ["check website"]);
-};
-
 const run = async () => {
   const browser = await puppeteer.launch();
   try {
@@ -66,8 +51,8 @@ const run = async () => {
     ); // ...split on newlines
 
     if (aa.length < 4) {
-      setUnavailableTimes(0);
-      setUnavailableTimes(1);
+      util.setCheckWebsiteTimes(ids[0]);
+      util.setCheckWebsiteTimes(ids[1]);
       return ids;
     }
 
@@ -79,8 +64,8 @@ const run = async () => {
     const first = ids[0];
     const second = ids[1];
     if (!first?.fajrIqama || !second?.fajrIqama) {
-      setUnavailableTimes(0);
-      setUnavailableTimes(1);
+      util.setCheckWebsiteTimes(ids[0]);
+      util.setCheckWebsiteTimes(ids[1]);
     }
   } finally {
     await browser.close();

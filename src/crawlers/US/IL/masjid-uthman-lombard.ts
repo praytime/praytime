@@ -1,5 +1,5 @@
+import { createMasjidalRun } from "../../../masjidal";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const MASJIDAL_ID = "0dYBvoK6";
 
@@ -18,28 +18,8 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 
-const run = async () => {
-  const iqama = await util.loadMasjidalIqama(MASJIDAL_ID);
-
-  util.setIqamaTimes(ids[0], [
-    iqama.fajr,
-    iqama.zuhr,
-    iqama.asr,
-    iqama.maghrib,
-    iqama.isha,
-  ]);
-  util.setJumaTimes(
-    ids[0],
-    [iqama.jummah1, iqama.jummah2, iqama.jummah3].filter(
-      (value): value is string => Boolean(value),
-    ),
-  );
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/IL/masjid-uthman-lombard",
   ids,
-  run,
+  run: createMasjidalRun(ids, MASJIDAL_ID, { jumaMode: "setJumaTimes" }),
 };

@@ -1,5 +1,5 @@
+import { createMasjidalRun } from "../../../masjidal";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -16,29 +16,8 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 // https://timing.athanplus.com/masjid/widgets/embed?theme=1&masjid_id=pVdwNMAe&allowTransparency='true'
-const run = async () => {
-  const data = await util.loadJson(
-    "https://masjidal.com/api/v1/time?masjid_id=pVdwNMAe",
-  );
-
-  if (data.status === "success") {
-    const iqama = data.data.iqama;
-    util.setTimes(ids[0], [
-      iqama.fajr,
-      iqama.zuhr,
-      iqama.asr,
-      iqama.maghrib,
-      iqama.isha,
-      iqama.jummah1,
-      iqama.jummah2,
-    ]);
-  }
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/IL/masjid-hidayath-islamic-center-of-aurora-aurora",
   ids,
-  run,
+  run: createMasjidalRun(ids, "pVdwNMAe", { jumaCount: 2 }),
 };

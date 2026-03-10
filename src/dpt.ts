@@ -1,7 +1,7 @@
 import type { CrawlerIds, CrawlerRun } from "./types";
 import * as util from "./util";
 
-type PrayerKey = "fajr" | "zuhr" | "asr" | "maghrib" | "isha";
+type PrayerKey = util.StandardPrayerKey;
 
 type DptTimetableOptions = {
   errorContext: string;
@@ -10,29 +10,8 @@ type DptTimetableOptions = {
   tableSelector?: string;
 };
 
-const toPrayerKey = (text: string): PrayerKey | "" => {
-  const value = text.trim().toLowerCase();
-  if (value.startsWith("fajr")) {
-    return "fajr";
-  }
-  if (
-    value.startsWith("zuhr") ||
-    value.startsWith("duhr") ||
-    value.startsWith("dhuhr")
-  ) {
-    return "zuhr";
-  }
-  if (value.startsWith("asr")) {
-    return "asr";
-  }
-  if (value.startsWith("maghrib")) {
-    return "maghrib";
-  }
-  if (value.startsWith("isha")) {
-    return "isha";
-  }
-  return "";
-};
+const toPrayerKey = (text: string): PrayerKey | "" =>
+  util.getStandardPrayerKey(text);
 
 const uniqueTimes = (times: string[]): string[] =>
   Array.from(new Set(times.filter((time) => time.length > 0)));
