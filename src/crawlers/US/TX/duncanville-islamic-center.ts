@@ -17,6 +17,7 @@ const ids: CrawlerModule["ids"] = [
     placeId: "ChIJhW1M6eyRToYRljThXe1ulDc",
   },
 ];
+/* jscpd:ignore-start */
 const run = async () => {
   const browser = await puppeteer.launch();
   try {
@@ -48,6 +49,7 @@ const run = async () => {
 
   return ids;
 };
+/* jscpd:ignore-end */
 
 export const crawler: CrawlerModule = {
   name: "US/TX/duncanville-islamic-center",

@@ -53,16 +53,10 @@ const run = async () => {
     }
   });
 
-  const iqamaTimes = [
-    iqamaByPrayer.get("fajr") ?? "",
-    iqamaByPrayer.get("zuhr") ?? "",
-    iqamaByPrayer.get("asr") ?? "",
-    iqamaByPrayer.get("maghrib") ?? "",
-    iqamaByPrayer.get("isha") ?? "",
-  ];
-  if (iqamaTimes.some((time) => !time)) {
-    throw new Error("incomplete prayer rows on ICOE homepage");
-  }
+  const iqamaTimes = util.requireStandardPrayerTimes(
+    iqamaByPrayer,
+    "incomplete prayer rows on ICOE homepage",
+  );
 
   const seen = new Set<string>();
   const jumaTimes = $("div.azan-time-body table")

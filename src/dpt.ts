@@ -58,16 +58,10 @@ export const loadDptTimetableTimes = async (
     iqamaByPrayer.set(prayerKey, iqama);
   }
 
-  const iqamaTimes = [
-    iqamaByPrayer.get("fajr") ?? "",
-    iqamaByPrayer.get("zuhr") ?? "",
-    iqamaByPrayer.get("asr") ?? "",
-    iqamaByPrayer.get("maghrib") ?? "",
-    iqamaByPrayer.get("isha") ?? "",
-  ];
-  if (iqamaTimes.some((value) => value.length === 0)) {
-    throw new Error(`incomplete iqama times on ${options.errorContext}`);
-  }
+  const iqamaTimes = util.requireStandardPrayerTimes(
+    iqamaByPrayer,
+    `incomplete iqama times on ${options.errorContext}`,
+  );
 
   let jumaTimes = uniqueTimes(
     util

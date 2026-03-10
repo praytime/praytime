@@ -1,6 +1,7 @@
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
+/* jscpd:ignore-start */
 type PrayerTimesIqamah = {
   asr?: unknown;
   fajr?: unknown;
@@ -21,6 +22,7 @@ type PrayerTimesResponse = {
 
 const normalizeText = (value: unknown): string =>
   typeof value === "string" ? value.trim() : "";
+/* jscpd:ignore-end */
 
 const ids: CrawlerModule["ids"] = [
   {

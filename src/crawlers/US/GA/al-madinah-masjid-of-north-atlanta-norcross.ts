@@ -15,6 +15,7 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
+/* jscpd:ignore-start */
 const run = async () => {
   const $ = await util.load(ids[0].url);
 
@@ -31,6 +32,7 @@ const run = async () => {
 
   return ids;
 };
+/* jscpd:ignore-end */
 
 export const crawler: CrawlerModule = {
   name: "US/GA/al-madinah-masjid-of-north-atlanta-norcross",

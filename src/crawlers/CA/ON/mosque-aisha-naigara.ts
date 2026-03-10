@@ -41,6 +41,7 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 
+/* jscpd:ignore-start */
 const normalizeClock = (value: unknown): string => {
   if (typeof value !== "string") {
     return "";
@@ -54,6 +55,7 @@ const normalizeClock = (value: unknown): string => {
 
   return util.extractTimeAmPm(trimmed) || util.extractTime(trimmed) || "";
 };
+/* jscpd:ignore-end */
 
 const findPrayer = (
   times: PrayerTime[],

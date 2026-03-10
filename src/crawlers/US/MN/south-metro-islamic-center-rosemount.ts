@@ -1,5 +1,5 @@
+import { createMasjidalRun } from "../../../masjidal";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,24 +15,8 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const iqama = await util.loadMasjidalIqama("3AO2BxLe");
-  util.setTimes(ids[0], [
-    iqama.fajr,
-    iqama.zuhr,
-    iqama.asr,
-    iqama.maghrib,
-    iqama.isha,
-    iqama.jummah1,
-    iqama.jummah2,
-    iqama.jummah3,
-  ]);
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/MN/south-metro-islamic-center-rosemount",
   ids,
-  run,
+  run: createMasjidalRun(ids, "3AO2BxLe"),
 };

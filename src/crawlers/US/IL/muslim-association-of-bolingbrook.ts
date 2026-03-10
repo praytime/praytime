@@ -60,17 +60,10 @@ const parsePrayerCards = ($: Page) => {
     iqamaByPrayer.set(prayerKey, iqama);
   }
 
-  const iqamaTimes = [
-    iqamaByPrayer.get("fajr") ?? "",
-    iqamaByPrayer.get("zuhr") ?? "",
-    iqamaByPrayer.get("asr") ?? "",
-    iqamaByPrayer.get("maghrib") ?? "",
-    iqamaByPrayer.get("isha") ?? "",
-  ];
-
-  if (iqamaTimes.some((value) => value.length === 0)) {
-    throw new Error("incomplete iqama times on bolingbrookmasjid.com/home/");
-  }
+  const iqamaTimes = util.requireStandardPrayerTimes(
+    iqamaByPrayer,
+    "incomplete iqama times on bolingbrookmasjid.com/home/",
+  );
   if (jumaTimes.length === 0) {
     throw new Error("missing Juma times on bolingbrookmasjid.com/home/");
   }

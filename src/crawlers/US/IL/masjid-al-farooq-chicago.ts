@@ -1,5 +1,5 @@
+import { createSelectorRun } from "../../../selectors";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -16,25 +16,14 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 
-const run: CrawlerModule["run"] = async () => {
-  const primary = ids[0];
-  if (!primary) {
-    throw new Error("crawler ids is empty");
-  }
-
-  const $ = await util.load(primary.url ?? "");
-
-  const iqama = util.mapToText($, ".mpt_daily td:last-child");
-  const juma = util.mapToText($, ".mpt_jumua .mpt_time").slice(0, 1);
-
-  util.setIqamaTimes(primary, iqama);
-  util.setJumaTimes(primary, juma);
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/IL/masjid-al-farooq-chicago",
   ids,
-  run,
+  run: createSelectorRun(ids, {
+    iqama: { selector: ".mpt_daily td:last-child" },
+    juma: {
+      limit: 1,
+      selector: ".mpt_jumua .mpt_time",
+    },
+  }),
 };

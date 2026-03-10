@@ -1,6 +1,5 @@
-import * as cheerio from "cheerio";
+import { createMuslimFeedRun } from "../../../muslimfeed";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -16,26 +15,8 @@ const ids: CrawlerModule["ids"] = [
     placeId: "ChIJ7eiGP9MGkFQREKOMJdMaFBQ",
   },
 ];
-const run = async () => {
-  const response = await util.get(
-    "http://www.muslimfeed.com/timesframe.aspx?mi=2106",
-  );
-  const $ = cheerio.load(response.data);
-
-  ids[0].fajrIqama = $("#trFajr > td:nth-child(3)").text().trim();
-  ids[0].zuhrIqama = $("#trDhuhr > td:nth-child(3)").text().trim();
-  ids[0].asrIqama = $("#trAsr > td:nth-child(3)").text().trim();
-  ids[0].maghribIqama = $("#trMaghrib > td:nth-child(3)").text().trim();
-  ids[0].ishaIqama = $("#trIsha > td:nth-child(3)").text().trim();
-  ids[0].juma1 = $("#tblDailyTimes > tbody > tr:nth-child(9) > td:nth-child(2)")
-    .text()
-    .trim();
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/WA/bilal-islamic-center-everett",
   ids,
-  run,
+  run: createMuslimFeedRun(ids, "2106"),
 };

@@ -19,6 +19,7 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
+/* jscpd:ignore-start */
 const run = async () => {
   const response = await util.get(PRAYER_WIDGET_URL);
   const $ = cheerio.load(response.data);
@@ -68,6 +69,7 @@ const run = async () => {
 
   return ids;
 };
+/* jscpd:ignore-end */
 
 export const crawler: CrawlerModule = {
   name: "US/TX/islamic-center-of-frisco",

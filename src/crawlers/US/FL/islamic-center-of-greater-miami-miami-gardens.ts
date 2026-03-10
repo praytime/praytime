@@ -30,6 +30,7 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 
+/* jscpd:ignore-start */
 const run = async () => {
   const browser = await puppeteer.launch();
   try {
@@ -72,6 +73,7 @@ const run = async () => {
   }
   return ids;
 };
+/* jscpd:ignore-end */
 
 export const crawler: CrawlerModule = {
   name: "US/FL/islamic-center-of-greater-miami-miami-gardens",

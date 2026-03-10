@@ -5,6 +5,7 @@ import {
   listCrawlerNames,
 } from "./registry";
 import { formatRunReport } from "./report";
+import { runMain } from "./runmain";
 import { dumpCrawlerMetadata, runCrawlers } from "./runner";
 import { PraytimeSaver } from "./save";
 import type { CliOptions } from "./types";
@@ -293,10 +294,4 @@ export const main = async (argv = process.argv.slice(2)): Promise<void> => {
   }
 };
 
-if (import.meta.main) {
-  main().catch((error: unknown) => {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error(message);
-    process.exit(1);
-  });
-}
+runMain(main);

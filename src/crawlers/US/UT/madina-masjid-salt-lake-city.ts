@@ -1,5 +1,8 @@
+import { createMohidWidgetRun } from "../../../mohid";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
+
+const PRAYER_WIDGET_URL =
+  "https://us.mohid.co/ut/saltlakecity/iscu/masjid/widget/api/index/?m=prayertimings";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,25 +18,8 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const $ = await util.load(
-    "https://us.mohid.co/ut/saltlakecity/iscu/masjid/widget/api/index/?m=prayertimings",
-  );
-
-  const a = util.mapToText($, "#daily .prayer_iqama_div");
-  a.splice(0, 1); // remove header
-  const j = util
-    .mapToText($, '#jummah li:contains("Khutba")')
-    .map(util.extractTimeAmPm);
-
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], j);
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/UT/madina-masjid-salt-lake-city",
   ids,
-  run,
+  run: createMohidWidgetRun(ids, PRAYER_WIDGET_URL),
 };

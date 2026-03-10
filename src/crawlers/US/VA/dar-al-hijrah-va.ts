@@ -1,5 +1,5 @@
+import { createSelectorRun } from "../../../selectors";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 // const axios = require('axios')
 // const cheerio = require('cheerio')
@@ -18,21 +18,11 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const $ = await util.load(ids[0].url);
-
-  util.setIqamaTimes(ids[0], util.mapToText($, "table.dptTimetable td.jamah"));
-  util.setJumaTimes(ids[0], [
-    "check website",
-    "check website",
-    "check website",
-  ]);
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/VA/dar-al-hijrah-va",
   ids,
-  run,
+  run: createSelectorRun(ids, {
+    iqama: { selector: "table.dptTimetable td.jamah" },
+    jumaDefault: ["check website", "check website", "check website"],
+  }),
 };

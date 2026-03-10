@@ -1,5 +1,5 @@
+import { createSelectorRun } from "../../../selectors";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -16,23 +16,11 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 
-const run: CrawlerModule["run"] = async () => {
-  const primary = ids[0];
-  if (!primary) {
-    throw new Error("crawler ids is empty");
-  }
-
-  const $ = await util.load(primary.url ?? "");
-
-  const iqama = util.mapToText($, "section#prayerSchedule td:last-child");
-  util.setIqamaTimes(primary, iqama);
-
-  util.setJumaTimes(primary, ["check website", "check website"]);
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/GA/al-farooq-masjid-atlanta",
   ids,
-  run,
+  run: createSelectorRun(ids, {
+    iqama: { selector: "section#prayerSchedule td:last-child" },
+    jumaDefault: ["check website", "check website"],
+  }),
 };

@@ -835,6 +835,10 @@ const normalizeTimes = (times: MaybeTimeList): readonly MaybeTime[] =>
 
 export type StandardPrayerKey = "fajr" | "zuhr" | "asr" | "maghrib" | "isha";
 
+type StandardPrayerTimesInput =
+  | Map<string, string>
+  | Partial<Record<StandardPrayerKey, string>>;
+
 export const getStandardPrayerKey = (text: string): StandardPrayerKey | "" => {
   const value = text.trim().toLowerCase();
   if (value.startsWith("fajr")) {
@@ -857,6 +861,36 @@ export const getStandardPrayerKey = (text: string): StandardPrayerKey | "" => {
     return "isha";
   }
   return "";
+};
+
+const standardPrayerTimeValue = (
+  input: StandardPrayerTimesInput,
+  key: StandardPrayerKey,
+): string => {
+  if (input instanceof Map) {
+    return input.get(key) ?? "";
+  }
+
+  return input[key] ?? "";
+};
+
+export const requireStandardPrayerTimes = (
+  input: StandardPrayerTimesInput,
+  errorContext: string,
+): string[] => {
+  const times = [
+    standardPrayerTimeValue(input, "fajr"),
+    standardPrayerTimeValue(input, "zuhr"),
+    standardPrayerTimeValue(input, "asr"),
+    standardPrayerTimeValue(input, "maghrib"),
+    standardPrayerTimeValue(input, "isha"),
+  ];
+
+  if (times.some((value) => value.length === 0)) {
+    throw new Error(errorContext);
+  }
+
+  return times;
 };
 
 export const setIqamaTimes = (

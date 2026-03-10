@@ -1,5 +1,5 @@
+import { createCheckWebsiteRun } from "../../../checkwebsite";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,22 +15,8 @@ const ids: CrawlerModule["ids"] = [
     timeZoneId: "America/Chicago",
   },
 ];
-const run = async () => {
-  util.setTimes(ids[0], [
-    "check website",
-    "check website",
-    "check website",
-    "check website",
-    "check website",
-    "check website",
-    "check website",
-  ]);
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/TX/mesquite-islamic-center",
   ids,
-  run,
+  run: createCheckWebsiteRun(ids),
 };

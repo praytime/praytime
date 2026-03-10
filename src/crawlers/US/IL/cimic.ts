@@ -1,5 +1,8 @@
+import { createSelectorRun } from "../../../selectors";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
+
+const PRAYER_WIDGET_URL =
+  "https://us.mohid.co/il/school/cimic/masjid/widget/api/index/?m=prayertimings";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -16,33 +19,19 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 
-const run: CrawlerModule["run"] = async () => {
-  const primary = ids[0];
-  if (!primary) {
-    throw new Error("crawler ids is empty");
-  }
-
-  const $ = await util.load(
-    "https://us.mohid.co/il/school/cimic/masjid/widget/api/index/?m=prayertimings",
-  );
-
-  const iqama = util.mapToText($, "#daily .prayer_iqama_div");
-  iqama.splice(0, 1);
-
-  const juma = util
-    .mapToText($, "#jummah li")
-    .filter((line) => /khateeb/i.test(line))
-    .map((line) => util.extractTime(line))
-    .filter((line) => line.length > 0);
-
-  util.setIqamaTimes(primary, iqama);
-  util.setJumaTimes(primary, juma);
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/IL/cimic",
   ids,
-  run,
+  run: createSelectorRun(ids, {
+    iqama: {
+      removeIndexes: [0],
+      selector: "#daily .prayer_iqama_div",
+    },
+    juma: {
+      filterPattern: /khateeb/i,
+      parser: "extractTime",
+      selector: "#jummah li",
+    },
+    url: PRAYER_WIDGET_URL,
+  }),
 };

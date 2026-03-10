@@ -1,5 +1,6 @@
 import type { Cheerio, CheerioAPI } from "cheerio";
 import type { AnyNode } from "domhandler";
+import type { CrawlerIds, CrawlerRun } from "./types";
 import * as util from "./util";
 
 type PrayerTableContext = {
@@ -13,6 +14,12 @@ type PrayerTableOptions = {
   errorContext: string;
   iqamaCellIndex?: number;
   parseJumaTimes: (context: PrayerTableContext) => string[];
+};
+
+type PrayerTableRunOptions = PrayerTableOptions & {
+  jumaLimit?: number;
+  tableSelector: string;
+  url?: string;
 };
 
 const uniqueTimes = (times: string[]): string[] =>
@@ -84,5 +91,27 @@ export const parsePrayerTable = (
       prayers.isha,
     ],
     jummah,
+  };
+};
+
+export const createPrayerTableRun = (
+  ids: CrawlerIds,
+  options: PrayerTableRunOptions,
+): CrawlerRun => {
+  return async () => {
+    const $ = await util.load(options.url ?? ids[0]?.url ?? "");
+    const prayerTable = parsePrayerTable(
+      $,
+      $(options.tableSelector).first(),
+      options,
+    );
+
+    util.setIqamaTimes(ids[0], prayerTable.iqamah);
+    util.setJumaTimes(
+      ids[0],
+      prayerTable.jummah.slice(0, options.jumaLimit ?? 3),
+    );
+
+    return ids;
   };
 };

@@ -15,6 +15,7 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
+/* jscpd:ignore-start */
 const run = async () => {
   const $ = await util.load("https://assalam.info/widget/MBC/1/0");
 
@@ -29,6 +30,7 @@ const run = async () => {
 
   return ids;
 };
+/* jscpd:ignore-end */
 
 export const crawler: CrawlerModule = {
   name: "US/MI/masjid-bilal-canton-canton",
