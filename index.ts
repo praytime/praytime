@@ -1,9 +1,4 @@
 import { main } from "./src/index";
+import { runMain } from "./src/runmain";
 
-if (import.meta.main) {
-  main().catch((error: unknown) => {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error(message);
-    process.exit(1);
-  });
-}
+runMain(main, import.meta.main);

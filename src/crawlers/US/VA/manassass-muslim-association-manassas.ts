@@ -1,8 +1,6 @@
-import puppeteer from "puppeteer";
+import { createMawaqitMobileRun } from "../../../mawaqit";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
-const crawlerPuppeteer = true;
 const ids: CrawlerModule["ids"] = [
   {
     uuid4: "76feca79-7b47-486d-a5b9-dcb4d8b8f26a",
@@ -17,36 +15,8 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const browser = await puppeteer.launch();
-  try {
-    const page = await browser.newPage();
-
-    await page.goto(
-      "https://mawaqit.net/en/m/mma?showNotification=0&showSearchButton=0&showFooter=0&showFlashMessage=0",
-      { waitUntil: "networkidle0" },
-    );
-
-    const t = await page.$$eval(".wait", (es) =>
-      es.map((e) => e.textContent.trim()),
-    );
-    util.setIqamaTimes(ids[0], t);
-
-    const j = await page.$$eval(".joumouaa", (es) =>
-      es.map((e) => e.textContent.trim()),
-    );
-    // j = ['Jumua\n1:00PM\n2:00PM']
-    util.setJumaTimes(ids[0], j[0].match(util.timeRxG));
-  } finally {
-    await browser.close();
-  }
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/VA/manassass-muslim-association-manassas",
   ids,
-  run,
-  puppeteer: crawlerPuppeteer,
+  run: createMawaqitMobileRun(ids, "mma"),
 };

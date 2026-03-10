@@ -1,5 +1,5 @@
+import { createSelectorRun } from "../../../selectors";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,22 +15,14 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const $ = await util.load(ids[0].url);
-
-  const a = util.mapToText($, ".jamah");
-  const j = util
-    .mapToText($, 'th:contains("Jumuah")')
-    .map(util.extractTimeAmPm);
-
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], j);
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/PA/masjid-al-madinah-upper-darby",
   ids,
-  run,
+  run: createSelectorRun(ids, {
+    iqama: { limit: 5, selector: ".jamah" },
+    juma: {
+      parser: "extractTimeAmPm",
+      selector: 'th:contains("Jumuah")',
+    },
+  }),
 };

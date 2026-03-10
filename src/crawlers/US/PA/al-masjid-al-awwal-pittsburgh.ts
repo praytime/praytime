@@ -1,4 +1,4 @@
-import puppeteer from "puppeteer";
+import { createPuppeteerRun } from "../../../ppt";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
@@ -17,27 +17,18 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const browser = await puppeteer.launch();
-  try {
-    const page = await browser.newPage();
-
-    await page.goto(ids[0].url, { waitUntil: "networkidle2" });
-
-    const a = await page.$$eval("#prayerbar div", (ds) =>
-      ds.map((d) => d.textContent).map((t) => t.replace(/^\S+\s+/, "")),
-    );
-    util.setTimes(ids[0], a);
-  } finally {
-    await browser.close();
-  }
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/PA/al-masjid-al-awwal-pittsburgh",
   ids,
-  run,
+  run: createPuppeteerRun(ids, async (page) => {
+    await page.goto(ids[0].url ?? "", { waitUntil: "networkidle2" });
+
+    const times = await page.$$eval("#prayerbar div", (divs) =>
+      divs
+        .map((div) => div.textContent ?? "")
+        .map((text) => text.replace(/^\S+\s+/, "")),
+    );
+    util.setTimes(ids[0], times);
+  }),
   puppeteer: crawlerPuppeteer,
 };

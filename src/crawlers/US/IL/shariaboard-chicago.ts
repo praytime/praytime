@@ -1,3 +1,4 @@
+import { parsePrayerTable } from "../../../prayertable";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
@@ -30,77 +31,22 @@ const ids: CrawlerModule["ids"] = [
 const run = async () => {
   const $ = await util.load(ids[0].url);
   const tables = $(".prayer-timings table.timings-table");
+  const parseJumaTimes = ({ iqamaText }: { iqamaText: string }) =>
+    util.matchTimeAmPmG(iqamaText) ?? [];
 
-  const parseTable = (
-    tableIndex: number,
-  ): { iqamah: string[]; jummah: string[] } => {
-    const table = tables.eq(tableIndex);
-    if (!table.length) {
-      throw new Error(`missing prayer table ${tableIndex}`);
-    }
-
-    const prayers = {
-      asr: "",
-      fajr: "",
-      isha: "",
-      maghrib: "",
-      zuhr: "",
-    };
-    let jummah: string[] = [];
-
-    table.find("tr").each((_, row) => {
-      const cells = $(row).find("td");
-      if (cells.length < 2) {
-        return;
-      }
-
-      const label = cells.first().text().trim().toLowerCase();
-      const iqamahCell = cells.length >= 3 ? cells.eq(2) : cells.last();
-      const iqamahText = iqamahCell.text().trim();
-      const iqamah = util.extractTimeAmPm(iqamahText);
-
-      if (label.includes("fajr")) {
-        prayers.fajr = iqamah;
-      } else if (label.includes("zuhr") || label.includes("dhuhr")) {
-        prayers.zuhr = iqamah;
-      } else if (label.includes("asr")) {
-        prayers.asr = iqamah;
-      } else if (label.includes("maghrib")) {
-        prayers.maghrib = iqamah;
-      } else if (label.includes("isha")) {
-        prayers.isha = iqamah;
-      } else if (label.includes("jummah")) {
-        jummah = util.matchTimeAmPmG(iqamahText) ?? [];
-      }
-    });
-
-    if (
-      !prayers.fajr ||
-      !prayers.zuhr ||
-      !prayers.asr ||
-      !prayers.maghrib ||
-      !prayers.isha
-    ) {
-      throw new Error(`incomplete prayer table ${tableIndex}`);
-    }
-
-    return {
-      iqamah: [
-        prayers.fajr,
-        prayers.zuhr,
-        prayers.asr,
-        prayers.maghrib,
-        prayers.isha,
-      ],
-      jummah,
-    };
-  };
-
-  const west = parseTable(0);
+  const west = parsePrayerTable($, tables.eq(0), {
+    errorContext: "shariaboard table 0",
+    iqamaCellIndex: 2,
+    parseJumaTimes,
+  });
   util.setIqamaTimes(ids[0], west.iqamah);
   util.setJumaTimes(ids[0], west.jummah);
 
-  const california = parseTable(1);
+  const california = parsePrayerTable($, tables.eq(1), {
+    errorContext: "shariaboard table 1",
+    iqamaCellIndex: 2,
+    parseJumaTimes,
+  });
   util.setIqamaTimes(ids[1], california.iqamah);
   util.setJumaTimes(ids[1], california.jummah);
 

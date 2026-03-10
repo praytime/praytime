@@ -1,6 +1,7 @@
-import * as cheerio from "cheerio";
+import { createMohidWidgetRun } from "../../../mohid";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
+
+const PRAYER_WIDGET_URL = "https://us.mohid.co/il/nwcs/msi";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -17,48 +18,8 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 
-// ChIJLXNcEpisD4gRdq5lUx4FvkE - dup
-const run = async () => {
-  const response = await util.get("https://us.mohid.co/il/nwcs/msi");
-  const $ = cheerio.load(response.data);
-
-  ids[0].fajrIqama = $(
-    "#daily > div.list.plusG > ul > li:nth-child(1) > div.prayer_iqama_div",
-  )
-    .text()
-    .trim();
-  ids[0].zuhrIqama = $(
-    "#daily > div.list.plusG > ul > li:nth-child(2) > div.prayer_iqama_div",
-  )
-    .text()
-    .trim();
-  ids[0].asrIqama = $(
-    "#daily > div.list.plusG > ul > li:nth-child(3) > div.prayer_iqama_div",
-  )
-    .text()
-    .trim();
-  ids[0].maghribIqama = $(
-    "#daily > div.list.plusG > ul > li:nth-child(4) > div.prayer_iqama_div",
-  )
-    .text()
-    .trim();
-  ids[0].ishaIqama = $(
-    "#daily > div.list.plusG > ul > li:nth-child(5) > div.prayer_iqama_div",
-  )
-    .text()
-    .trim();
-  ids[0].juma1 = $("#jummah > div > ul > li:nth-child(1) > div.num")
-    .text()
-    .trim();
-  ids[0].juma2 = $("#jummah > div > ul > li:nth-child(3) > div.num")
-    .text()
-    .trim();
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/IL/muslim-society-inc-bloomingdale",
   ids,
-  run,
+  run: createMohidWidgetRun(ids, PRAYER_WIDGET_URL, { jumaLimit: 2 }),
 };

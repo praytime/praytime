@@ -1,5 +1,5 @@
+import { createFivePrayersRun } from "../../../fiveprayers";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,22 +15,8 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const $ = await util.load(
-    "http://fiveprayers.org/display/index.php?id=MasjidSunnah",
-  );
-
-  const a = util.mapToText($, "td[id$=Iq]");
-  const j = util.mapToText($, "td#fdp");
-
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], j);
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/NY/masjid-as-sunnah-inc-rochester",
   ids,
-  run,
+  run: createFivePrayersRun(ids, "MasjidSunnah"),
 };

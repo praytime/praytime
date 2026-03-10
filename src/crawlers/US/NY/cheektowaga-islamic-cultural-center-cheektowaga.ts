@@ -1,4 +1,4 @@
-import puppeteer from "puppeteer";
+import { createPuppeteerRun } from "../../../ppt";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
@@ -17,25 +17,18 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const browser = await puppeteer.launch();
-  try {
-    const page = await browser.newPage();
-
-    await page.goto(ids[0].url, { waitUntil: "networkidle0" });
-
-    const a = await util.pptMapToText(page, ".timetable-verticle .brrt .tdy");
-    a.splice(1, 1); // remove shuruq
-    util.setTimes(ids[0], a);
-  } finally {
-    await browser.close();
-  }
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/NY/cheektowaga-islamic-cultural-center-cheektowaga",
   ids,
-  run,
+  run: createPuppeteerRun(ids, async (page) => {
+    await page.goto(ids[0].url ?? "", { waitUntil: "networkidle0" });
+
+    const times = await util.pptMapToText(
+      page,
+      ".timetable-verticle .brrt .tdy",
+    );
+    times.splice(1, 1);
+    util.setTimes(ids[0], times);
+  }),
   puppeteer: crawlerPuppeteer,
 };

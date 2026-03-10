@@ -1,4 +1,4 @@
-import puppeteer from "puppeteer";
+import { createPuppeteerRun } from "../../../ppt";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
@@ -17,35 +17,26 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const browser = await puppeteer.launch();
-  try {
-    const page = await browser.newPage();
-
-    await page.goto(ids[0].url, { waitUntil: "networkidle0" });
-
-    const a = await page.$$eval(".iqamah", (tds) =>
-      tds.map((td) => td.textContent.trim()),
-    );
-    util.setIqamaTimes(ids[0], a);
-
-    const j = await page.$$eval(".sunan", (tds) =>
-      tds.map((td) => td.textContent.trim()),
-    );
-    util.setJumaTimes(
-      ids[0],
-      j.filter((t) => t.includes("Khuṭbah")).map(util.extractTimeAmPm),
-    );
-  } finally {
-    await browser.close();
-  }
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/FL/tsentralna-dzhamiia-na-apopka-apopka",
   ids,
-  run,
+  run: createPuppeteerRun(ids, async (page) => {
+    await page.goto(ids[0].url ?? "", { waitUntil: "networkidle0" });
+
+    const iqamaTimes = await page.$$eval(".iqamah", (elements) =>
+      elements.map((element) => element.textContent?.trim() ?? ""),
+    );
+    util.setIqamaTimes(ids[0], iqamaTimes);
+
+    const jumaRows = await page.$$eval(".sunan", (elements) =>
+      elements.map((element) => element.textContent?.trim() ?? ""),
+    );
+    util.setJumaTimes(
+      ids[0],
+      jumaRows
+        .filter((text) => text.includes("Khuṭbah"))
+        .map(util.extractTimeAmPm),
+    );
+  }),
   puppeteer: crawlerPuppeteer,
 };

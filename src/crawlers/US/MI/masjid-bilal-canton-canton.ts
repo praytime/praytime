@@ -1,5 +1,8 @@
+import { createMohidListRun } from "../../../mohid";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
+
+const PRAYER_WIDGET_URL =
+  "https://us.mohid.co/mi/ypsillanti/mb/masjid/widget/api/index/?m=prayertimings";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,23 +18,8 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const $ = await util.load("https://assalam.info/widget/MBC/1/0");
-
-  const a = util
-    .mapToText($, "td:last-child")
-    .filter((t) => t.match(/\d{1,2}\s*:\s*\d{1,2}/));
-  a.splice(1, 1); // remove sunrise
-  const j = (a[5] ?? "").match(/\d+\s*:\s*\d+\s*\w+/g);
-
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], j);
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/MI/masjid-bilal-canton-canton",
   ids,
-  run,
+  run: createMohidListRun(ids, PRAYER_WIDGET_URL, { jumaLimit: 2 }),
 };

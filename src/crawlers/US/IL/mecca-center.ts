@@ -1,5 +1,5 @@
+import { createSelectorRun } from "../../../selectors";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,21 +15,14 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const $ = await util.load(ids[0].url);
-
-  util.setIqamaTimes(ids[0], util.mapToText($, "table.dptTimetable td.jamah"));
-
-  const j = util
-    .mapToText($, 'div.wpb_wrapper > p:contains("Jumuah")')
-    .map((t) => t.match(/\d+\s*:\s*\d+\s*\w+/g)?.[0]);
-  util.setJumaTimes(ids[0], j);
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/IL/mecca-center",
   ids,
-  run,
+  run: createSelectorRun(ids, {
+    iqama: { selector: "table.dptTimetable td.jamah" },
+    juma: {
+      parser: "matchTimeAmPmG",
+      selector: 'div.wpb_wrapper > p:contains("Jumuah")',
+    },
+  }),
 };

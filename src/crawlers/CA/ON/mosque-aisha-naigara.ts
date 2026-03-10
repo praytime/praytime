@@ -41,20 +41,6 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 
-const normalizeClock = (value: unknown): string => {
-  if (typeof value !== "string") {
-    return "";
-  }
-
-  const trimmed = value.trim();
-  const shortClock = trimmed.match(/^(\d{1,2}:\d{2})(?::\d{2})?$/);
-  if (shortClock?.[1]) {
-    return shortClock[1];
-  }
-
-  return util.extractTimeAmPm(trimmed) || util.extractTime(trimmed) || "";
-};
-
 const findPrayer = (
   times: PrayerTime[],
   matcher: RegExp,
@@ -87,15 +73,16 @@ const setLocationTimes = (
     throw new Error("missing Mosque Aisha record");
   }
 
-  const fajr = normalizeClock(findPrayer(times, /^fajr$/i)?.time);
-  const zuhr = normalizeClock(
+  const fajr = util.normalizeLooseClock(findPrayer(times, /^fajr$/i)?.time);
+  const zuhr = util.normalizeLooseClock(
     findPrayer(times, /^dhuhr$|^duhur$|^zuhr$/i)?.time,
   );
-  const asr = normalizeClock(findPrayer(times, /^asr$/i)?.time);
+  const asr = util.normalizeLooseClock(findPrayer(times, /^asr$/i)?.time);
   const maghribPrayer = findPrayer(times, /^maghrib$/i);
   const maghrib =
-    normalizeClock(maghribPrayer?.start) || normalizeClock(maghribPrayer?.time);
-  const isha = normalizeClock(findPrayer(times, /^isha$/i)?.time);
+    util.normalizeLooseClock(maghribPrayer?.start) ||
+    util.normalizeLooseClock(maghribPrayer?.time);
+  const isha = util.normalizeLooseClock(findPrayer(times, /^isha$/i)?.time);
 
   if (!fajr || !zuhr || !asr || !maghrib || !isha) {
     throw new Error(`missing iqama times for ${record.name}`);
@@ -109,7 +96,7 @@ const setLocationTimes = (
           /jumah|jummah|jumuah|juma/i.test(entry.name)),
     )
     .sort((a, b) => Number(a.jummah_order ?? 99) - Number(b.jummah_order ?? 99))
-    .map((entry) => normalizeClock(entry.time))
+    .map((entry) => util.normalizeLooseClock(entry.time))
     .filter((time): time is string => Boolean(time))
     .slice(0, 3);
 

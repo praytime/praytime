@@ -1,5 +1,5 @@
+import { createMasjidalRun } from "../../../masjidal";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,30 +15,8 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const response = await util.get(
-    "https://masjidal.com/api/v1/time?masjid_id=1QL0GKZD&_=1635769879216",
-  );
-
-  const data = response.data;
-  if (data.status === "success") {
-    const iqama = data.data.iqama;
-    util.setTimes(ids[0], [
-      iqama.fajr,
-      iqama.zuhr,
-      iqama.asr,
-      iqama.maghrib,
-      iqama.isha,
-      iqama.jummah1,
-      iqama.jummah2,
-    ]);
-  }
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/IL/masjid-al-huda-schaumburg",
   ids,
-  run,
+  run: createMasjidalRun(ids, "1QL0GKZD", { jumaCount: 2 }),
 };

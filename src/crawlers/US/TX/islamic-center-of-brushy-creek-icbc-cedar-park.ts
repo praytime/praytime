@@ -1,5 +1,5 @@
+import { createSelectorRun } from "../../../selectors";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,25 +15,18 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const $ = await util.load(ids[0].url);
-
-  const a = util.mapToText($, ".pt");
-  a.splice(1, 1); // remove sunrise
-
-  const j = util
-    .mapToText($, "#plansKRQ .plan h3")
-    .filter(util.matchTime)
-    .map(util.extractTime);
-
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], j);
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/TX/islamic-center-of-brushy-creek-icbc-cedar-park",
   ids,
-  run,
+  run: createSelectorRun(ids, {
+    iqama: {
+      removeIndexes: [1],
+      selector: ".pt",
+    },
+    juma: {
+      filterPattern: /\d{1,2}\s*:\s*\d{1,2}/,
+      parser: "extractTime",
+      selector: "#plansKRQ .plan h3",
+    },
+  }),
 };

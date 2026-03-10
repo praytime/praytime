@@ -1,5 +1,8 @@
+import { createSelectorRun } from "../../../selectors";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
+
+const PRAYER_WIDGET_URL =
+  "https://us.mohid.co/ca/losangeles/iscn/masjid/widget/api/index/?m=prayertimings";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,20 +18,15 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const $ = await util.load(
-    "https://us.mohid.co/ca/losangeles/iscn/masjid/widget/api/index/?m=prayertimings",
-  );
-
-  const a = util.mapToText($, ".prayer_iqama_div");
-  a.splice(0, 1); // remove header
-  util.setTimes(ids[0], a);
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/CA/islamic-society-of-corona-iscn-corona-masjid-corona",
   ids,
-  run,
+  run: createSelectorRun(ids, {
+    iqama: {
+      removeIndexes: [0],
+      selector: ".prayer_iqama_div",
+    },
+    mode: "setTimes",
+    url: PRAYER_WIDGET_URL,
+  }),
 };

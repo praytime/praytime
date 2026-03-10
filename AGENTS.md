@@ -5,7 +5,6 @@ Default to using Bun instead of Node.js.
 
 - Use `bun <file>` instead of `node <file>` or `ts-node <file>`
 - Use `bun test` instead of `jest` or `vitest`
-- Use `bun build <file.html|file.ts|file.css>` instead of `webpack` or `esbuild`
 - Use `bun install` instead of `npm install` or `yarn install` or `pnpm install`
 - Use `bun run <script>` instead of `npm run <script>` or `yarn run <script>` or `pnpm run <script>`
 - Use `bunx <package> <command>` instead of `npx <package> <command>`
@@ -19,7 +18,7 @@ Default to using Bun instead of Node.js.
 
 ## Testing
 
-Run `bun run --parallel typecheck lint test` after any changes. Tests will be included.
+Run `bun run --parallel typecheck lint cpd test` after any changes. Tests will be included.
 
 ```ts#index.test.ts
 import { test, expect } from "bun:test";
@@ -28,6 +27,8 @@ test("hello world", () => {
   expect(1).toBe(1);
 });
 ```
+
+Always test crawler changes using `bun run . --save <crawler>` to verify there are no regressions. If a save error is reported due to a missing prayer, check the site to see what is listed, and update the crawler or use the `--save --force` option to actually delete the prayer if the site is no longer listing it.
 
 For more information, read the Bun API docs in `node_modules/bun-types/docs/**.mdx`.
 

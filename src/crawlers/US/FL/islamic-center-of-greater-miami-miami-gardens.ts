@@ -1,13 +1,13 @@
-import puppeteer from "puppeteer";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
-const crawlerPuppeteer = true;
+const PRAYER_TIMES_URL = "https://www.icgm-fl.org/";
+
 const ids: CrawlerModule["ids"] = [
   {
     uuid4: "4309d979-d730-4a9e-a12e-316a0f6218da",
     name: "Islamic Center of Greater Miami",
-    url: "https://miamimuslim.org/",
+    url: PRAYER_TIMES_URL,
     timeZoneId: "America/New_York",
     address: "4305 NW 183rd St, Miami Gardens, FL 33055, USA",
     placeId: "ChIJXzKFYoav2YgREiNAZ9Ly22M",
@@ -19,7 +19,7 @@ const ids: CrawlerModule["ids"] = [
   {
     uuid4: "23932380-e633-4c90-a41d-6218f72be2cf",
     name: "Miami Masjid",
-    url: "https://miamimuslim.org/",
+    url: PRAYER_TIMES_URL,
     timeZoneId: "America/New_York",
     address: "7350 NW 3rd St, Miami, FL 33126, USA",
     placeId: "ChIJLzBk26652YgRoq6Ojwn5pFo",
@@ -30,61 +30,55 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 
-const setUnavailableTimes = (index: number) => {
-  const record = ids[index];
-  if (!record) {
-    return;
+const rowTexts = (values: string[]): string[] =>
+  values.map((value) => value.replace(/\s+/g, " ").trim()).filter(Boolean);
+
+const extractTimes = (values: string[]): string[] =>
+  rowTexts(values)
+    .map((value) => util.extractTimeAmPm(value))
+    .filter((value) => value.length > 0);
+
+const run: CrawlerModule["run"] = async () => {
+  const $ = await util.load(PRAYER_TIMES_URL);
+
+  const iqamaTimes = extractTimes(
+    $(".gcm-daily-table")
+      .first()
+      .find("tr")
+      .eq(1)
+      .find("td > div")
+      .toArray()
+      .map((cell) => $(cell).text()),
+  );
+  if (iqamaTimes.length < 5) {
+    throw new Error("failed to parse ICGM daily iqama table");
   }
-  util.setIqamaTimes(record, [
-    "check website",
-    "check website",
-    "check website",
-    "check website",
-    "check website",
-  ]);
-  util.setJumaTimes(record, ["check website"]);
-};
 
-const run = async () => {
-  const browser = await puppeteer.launch();
-  try {
-    const page = await browser.newPage();
+  const jumaRows = $("table tr")
+    .toArray()
+    .map((row) =>
+      rowTexts(
+        $(row)
+          .find("td")
+          .toArray()
+          .map((cell) => $(cell).text()),
+      ),
+    )
+    .filter((row) => row.some((cell) => /jummah/i.test(cell)));
 
-    await page.goto(ids[0].url);
-
-    // TODO how to do this with cheerio
-    const aa = await page.$$eval(
-      "span", // all span elements...
-      (ss) =>
-        ss
-          .filter((s) => [...s.childNodes].find((n) => n.nodeType === 3)) // ...with text nodes
-          .filter((s) =>
-            s.innerText.match(/\d{1,2}\s*:\s*\d{1,2}\s*[ap]\.?m\.?/i),
-          ) // ...with time strings
-          .map((s) => s.innerText) // ...get the text
-          .map((t) => t.split("\n")),
-    ); // ...split on newlines
-
-    if (aa.length < 4) {
-      setUnavailableTimes(0);
-      setUnavailableTimes(1);
-      return ids;
-    }
-
-    util.setIqamaTimes(ids[0], aa[0]);
-    util.setJumaTimes(ids[0], aa[1]);
-    util.setIqamaTimes(ids[1], aa[2]);
-    util.setJumaTimes(ids[1], aa[3]);
-
-    const first = ids[0];
-    const second = ids[1];
-    if (!first?.fajrIqama || !second?.fajrIqama) {
-      setUnavailableTimes(0);
-      setUnavailableTimes(1);
-    }
-  } finally {
-    await browser.close();
+  const greaterMiamiJuma = jumaRows.find((row) =>
+    /greater miami/i.test(row[0] ?? ""),
+  );
+  const flaglerJuma = jumaRows.find((row) => /flagler/i.test(row[0] ?? ""));
+  if (!greaterMiamiJuma || !flaglerJuma) {
+    throw new Error("failed to parse ICGM jummah table");
   }
+
+  util.setIqamaTimes(ids[0], iqamaTimes);
+  util.setJumaTimes(ids[0], extractTimes(greaterMiamiJuma));
+  util.setIqamaTimes(ids[1], iqamaTimes);
+  util.setJumaTimes(ids[1], extractTimes(flaglerJuma));
+
   return ids;
 };
 
@@ -92,5 +86,4 @@ export const crawler: CrawlerModule = {
   name: "US/FL/islamic-center-of-greater-miami-miami-gardens",
   ids,
   run,
-  puppeteer: crawlerPuppeteer,
 };

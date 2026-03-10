@@ -1,5 +1,7 @@
+import { createAwqatPageRun } from "../../../awqat";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
+
+const AWQAT_URL = "http://www.awqat.net/Masjids/BCAlArqam/bcalarqam.html";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -16,46 +18,8 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 
-const setUnavailableTimes = (index: number) => {
-  const record = ids[index];
-  if (!record) {
-    return;
-  }
-  util.setIqamaTimes(record, [
-    "check website",
-    "check website",
-    "check website",
-    "check website",
-    "check website",
-  ]);
-  util.setJumaTimes(record, ["check website"]);
-};
-
-const run = async () => {
-  const $ = await util.load(
-    "http://www.awqat.net/Masjids/BCAlArqam/bcalarqam.html",
-  );
-
-  $('tr:contains("Zawal")').remove();
-  $('tr:contains("Sunrise")').remove();
-
-  const a = util.mapToText($, ".prayer_entry:last-child");
-  const j = util.mapToText($, ".prayer_entry:nth-child(2)").slice(5);
-
-  if (a.length >= 5) {
-    util.setIqamaTimes(ids[0], a);
-  } else {
-    setUnavailableTimes(0);
-  }
-  if (j.length > 0) {
-    util.setJumaTimes(ids[0], j);
-  }
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "CA/BC/al-arqam-foundation-community-centre-and-services-vancouver",
   ids,
-  run,
+  run: createAwqatPageRun(ids, AWQAT_URL),
 };

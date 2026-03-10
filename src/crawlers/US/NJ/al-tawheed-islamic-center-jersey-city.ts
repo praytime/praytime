@@ -1,4 +1,4 @@
-import puppeteer from "puppeteer";
+import { createPuppeteerRun } from "../../../ppt";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
@@ -17,28 +17,17 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const browser = await puppeteer.launch();
-  try {
-    const page = await browser.newPage();
-
-    await page.goto(ids[0].url, { waitUntil: "networkidle2" });
-
-    const spans = await page.$$eval(".pr-tm-lst span:last-child", (es) =>
-      es.map((e) => e.textContent.trim()),
-    );
-
-    util.setTimes(ids[0], spans.map(util.extractTimeAmPm));
-  } finally {
-    await browser.close();
-  }
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/NJ/al-tawheed-islamic-center-jersey-city",
   ids,
-  run,
+  run: createPuppeteerRun(ids, async (page) => {
+    await page.goto(ids[0].url ?? "", { waitUntil: "networkidle2" });
+
+    const spans = await page.$$eval(".pr-tm-lst span:last-child", (elements) =>
+      elements.map((element) => element.textContent?.trim() ?? ""),
+    );
+
+    util.setTimes(ids[0], spans.map(util.extractTimeAmPm));
+  }),
   puppeteer: crawlerPuppeteer,
 };

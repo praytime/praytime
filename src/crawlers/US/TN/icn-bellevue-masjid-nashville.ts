@@ -1,5 +1,5 @@
+import { createMadinaAppsRun } from "../../../madinaapps";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const MADINAAPPS_CLIENT_ID = "86";
 
@@ -17,30 +17,8 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const prayerTimes =
-    await util.loadMadinaAppsPrayerTimes(MADINAAPPS_CLIENT_ID);
-  const jumaTimes = prayerTimes.jumaEntries
-    .map((entry) => entry.khutbaTime)
-    .filter((time) => time.length > 0);
-  if (jumaTimes.length === 0) {
-    throw new Error("missing juma times payload");
-  }
-
-  util.setIqamaTimes(ids[0], [
-    prayerTimes.fajr,
-    prayerTimes.zuhr,
-    prayerTimes.asr,
-    prayerTimes.maghrib,
-    prayerTimes.isha,
-  ]);
-  util.setJumaTimes(ids[0], jumaTimes.slice(0, 3));
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/TN/icn-bellevue-masjid-nashville",
   ids,
-  run,
+  run: createMadinaAppsRun(ids, MADINAAPPS_CLIENT_ID),
 };

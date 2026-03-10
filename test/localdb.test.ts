@@ -58,12 +58,40 @@ const startSession = (store: CrawlStateStore, crawlerNames: string[]): void => {
   });
 };
 
-test("CrawlStateStore classifies timings_updated and no_change transitions", () => {
+const recordSuccessfulRun = (
+  store: CrawlStateStore,
+  name: string,
+  uuid4: string,
+  fajrIqama: string,
+): CrawlerRunStatus => {
+  startSession(store, [name]);
+  store.recordCrawlerOutput({
+    source: name,
+    error: "",
+    result: baseRecord(uuid4, {
+      fajrIqama,
+    }),
+  });
+  const status = store.recordCrawlerCompletion(completeEvent(name));
+  store.finishRunSession();
+  return status;
+};
+
+const withStore = (callback: (store: CrawlStateStore) => void): void => {
   const tempDir = mkdtempSync(path.join(tmpdir(), "praytime-localdb-"));
   const dbPath = path.join(tempDir, "crawler-state.sqlite");
   const store = new CrawlStateStore(dbPath);
 
   try {
+    callback(store);
+  } finally {
+    store.close();
+    rmSync(tempDir, { recursive: true, force: true });
+  }
+};
+
+test("CrawlStateStore classifies timings_updated and no_change transitions", () => {
+  withStore((store) => {
     store.registerCrawlerDescriptors([
       {
         name: "US/IL/dynamic",
@@ -75,44 +103,30 @@ test("CrawlStateStore classifies timings_updated and no_change transitions", () 
 
     const statuses: CrawlerRunStatus[] = [];
 
-    startSession(store, ["US/IL/dynamic"]);
-    store.recordCrawlerOutput({
-      source: "US/IL/dynamic",
-      error: "",
-      result: baseRecord("11111111-1111-4111-8111-111111111111", {
-        fajrIqama: "5:00a",
-      }),
-    });
     statuses.push(
-      store.recordCrawlerCompletion(completeEvent("US/IL/dynamic")),
+      recordSuccessfulRun(
+        store,
+        "US/IL/dynamic",
+        "11111111-1111-4111-8111-111111111111",
+        "5:00a",
+      ),
     );
-    store.finishRunSession();
-
-    startSession(store, ["US/IL/dynamic"]);
-    store.recordCrawlerOutput({
-      source: "US/IL/dynamic",
-      error: "",
-      result: baseRecord("11111111-1111-4111-8111-111111111111", {
-        fajrIqama: "5:00a",
-      }),
-    });
     statuses.push(
-      store.recordCrawlerCompletion(completeEvent("US/IL/dynamic")),
+      recordSuccessfulRun(
+        store,
+        "US/IL/dynamic",
+        "11111111-1111-4111-8111-111111111111",
+        "5:00a",
+      ),
     );
-    store.finishRunSession();
-
-    startSession(store, ["US/IL/dynamic"]);
-    store.recordCrawlerOutput({
-      source: "US/IL/dynamic",
-      error: "",
-      result: baseRecord("11111111-1111-4111-8111-111111111111", {
-        fajrIqama: "5:10a",
-      }),
-    });
     statuses.push(
-      store.recordCrawlerCompletion(completeEvent("US/IL/dynamic")),
+      recordSuccessfulRun(
+        store,
+        "US/IL/dynamic",
+        "11111111-1111-4111-8111-111111111111",
+        "5:10a",
+      ),
     );
-    store.finishRunSession();
 
     expect(statuses).toEqual([
       "timings_updated",
@@ -130,18 +144,11 @@ test("CrawlStateStore classifies timings_updated and no_change transitions", () 
     expect(dynamic?.lastUpdatedCount).toBe(1);
     expect(report.recentSessions).toHaveLength(3);
     expect(report.latestSession?.status).toBe("completed");
-  } finally {
-    store.close();
-    rmSync(tempDir, { recursive: true, force: true });
-  }
+  });
 });
 
 test("CrawlStateStore classifies static and error crawlers and increments consecutive errors", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "praytime-localdb-"));
-  const dbPath = path.join(tempDir, "crawler-state.sqlite");
-  const store = new CrawlStateStore(dbPath);
-
-  try {
+  withStore((store) => {
     store.registerCrawlerDescriptors([
       {
         name: "US/IL/static",
@@ -204,18 +211,11 @@ test("CrawlStateStore classifies static and error crawlers and increments consec
     expect(errorCrawler?.consecutiveErrors).toBe(2);
     expect(staticCrawler?.lastStatus).toBe("static");
     expect(report.latestSession?.status).toBe("completed_with_errors");
-  } finally {
-    store.close();
-    rmSync(tempDir, { recursive: true, force: true });
-  }
+  });
 });
 
 test("CrawlStateStore does not count intentionally skipped puppeteer crawlers as errors", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "praytime-localdb-"));
-  const dbPath = path.join(tempDir, "crawler-state.sqlite");
-  const store = new CrawlStateStore(dbPath);
-
-  try {
+  withStore((store) => {
     store.registerCrawlerDescriptors([
       {
         name: "US/IL/puppeteer",
@@ -262,18 +262,11 @@ test("CrawlStateStore does not count intentionally skipped puppeteer crawlers as
     expect(crawler?.consecutiveErrors).toBe(0);
     expect(crawler?.lastSkippedReason).toBe("env-puppeteer-disabled");
     expect(report.latestSession?.status).toBe("completed");
-  } finally {
-    store.close();
-    rmSync(tempDir, { recursive: true, force: true });
-  }
+  });
 });
 
 test("CrawlStateStore records save-layer failures as crawler errors", () => {
-  const tempDir = mkdtempSync(path.join(tmpdir(), "praytime-localdb-"));
-  const dbPath = path.join(tempDir, "crawler-state.sqlite");
-  const store = new CrawlStateStore(dbPath);
-
-  try {
+  withStore((store) => {
     store.registerCrawlerDescriptors([
       {
         name: "US/IL/save-error",
@@ -311,8 +304,5 @@ test("CrawlStateStore records save-layer failures as crawler errors", () => {
     expect(crawler?.lastStatus).toBe("error");
     expect(crawler?.lastError).toContain("save diff: Juma2 is deleted");
     expect(report.latestSession?.status).toBe("completed_with_errors");
-  } finally {
-    store.close();
-    rmSync(tempDir, { recursive: true, force: true });
-  }
+  });
 });

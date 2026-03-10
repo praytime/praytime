@@ -1,3 +1,4 @@
+import { parsePrayerTable } from "../../../prayertable";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
@@ -29,82 +30,30 @@ const ids: CrawlerModule["ids"] = [
 ];
 const run = async () => {
   const $ = await util.load("https://www.mcabayarea.org/prayer-schedule/");
-
-  const parseTable = (
-    tableSelector: string,
-  ): { iqamah: string[]; jummah: string[] } => {
-    const table = $(tableSelector);
-    if (!table.length) {
-      throw new Error(`missing prayer table: ${tableSelector}`);
-    }
-
-    const prayers = {
-      asr: "",
-      fajr: "",
-      isha: "",
-      maghrib: "",
-      zuhr: "",
-    };
-    const jummah: string[] = [];
-
-    table.find("tr").each((_, row) => {
-      const cells = $(row).find("td");
-      if (cells.length < 2) {
-        return;
-      }
-
-      const label = cells.first().text().trim().toLowerCase();
-      const iqamahCell = cells.eq(2);
-      const iqamahText = iqamahCell.text().trim();
-      const iqamah = util.extractTimeAmPm(iqamahText);
-
-      if (label.includes("fajr")) {
-        prayers.fajr = iqamah;
-      } else if (label.includes("zuhr") || label.includes("dhuhr")) {
-        prayers.zuhr = iqamah;
-      } else if (label.includes("asr")) {
-        prayers.asr = iqamah;
-      } else if (label.includes("maghrib")) {
-        prayers.maghrib = iqamah;
-      } else if (label.includes("isha")) {
-        prayers.isha = iqamah;
-      } else if (label.includes("jummah")) {
-        const time = util.extractTimeAmPm(cells.last().text().trim());
-        if (time) {
-          jummah.push(time);
-        }
-      }
-    });
-
-    if (
-      !prayers.fajr ||
-      !prayers.zuhr ||
-      !prayers.asr ||
-      !prayers.maghrib ||
-      !prayers.isha
-    ) {
-      throw new Error(`incomplete prayer table: ${tableSelector}`);
-    }
-
-    return {
-      iqamah: [
-        prayers.fajr,
-        prayers.zuhr,
-        prayers.asr,
-        prayers.maghrib,
-        prayers.isha,
-      ],
-      jummah,
-    };
+  const parseJumaTimes = ({ cells }: { cells: ReturnType<typeof $> }) => {
+    const time = util.extractTimeAmPm(cells.last().text().trim());
+    return time ? [time] : [];
   };
 
-  const mca = parseTable("#loc_mca table.prayer-timing-table");
+  const mca = parsePrayerTable($, $("#loc_mca table.prayer-timing-table"), {
+    errorContext: "#loc_mca table.prayer-timing-table",
+    iqamaCellIndex: 2,
+    parseJumaTimes,
+  });
   util.setIqamaTimes(ids[0], mca.iqamah);
   util.setJumaTimes(ids[0], mca.jummah);
 
   const second = ids[1];
   if (second) {
-    const alNoor = parseTable("#loc_alnoor table.prayer-timing-table");
+    const alNoor = parsePrayerTable(
+      $,
+      $("#loc_alnoor table.prayer-timing-table"),
+      {
+        errorContext: "#loc_alnoor table.prayer-timing-table",
+        iqamaCellIndex: 2,
+        parseJumaTimes,
+      },
+    );
     util.setIqamaTimes(second, alNoor.iqamah);
     util.setJumaTimes(second, alNoor.jummah);
   }

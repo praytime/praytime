@@ -1,5 +1,5 @@
+import { createSelectorRun } from "../../../selectors";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,26 +15,19 @@ const ids: CrawlerModule["ids"] = [
     placeId: "ChIJeTgrLsaJToYRtcOVJIVkLBw",
   },
 ];
-const run = async () => {
-  const $ = await util.load(ids[0].url);
-
-  const a = util
-    .mapToText($, '.elementor-shortcode:contains("Iqama: ")')
-    .map(util.extractTimeAmPm)
-    .map((t) => (t === "" ? "-" : t));
-  const j = util
-    .mapToText($, '.elementor-widget-container > p:contains("Azan: ")')
-    .filter(util.matchTime)
-    .map(util.extractTime);
-
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], j);
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/TX/mansfield-islamic-center-arlington",
   ids,
-  run,
+  run: createSelectorRun(ids, {
+    iqama: {
+      emptyValue: "-",
+      parser: "extractTimeAmPm",
+      selector: '.elementor-shortcode:contains("Iqama: ")',
+    },
+    juma: {
+      filterPattern: /\d{1,2}\s*:\s*\d{1,2}/,
+      parser: "extractTime",
+      selector: '.elementor-widget-container > p:contains("Azan: ")',
+    },
+  }),
 };

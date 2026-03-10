@@ -63,16 +63,10 @@ const run = async () => {
     }
   });
 
-  const iqamaTimes = [
-    iqamaByPrayer.get("fajr") ?? "",
-    iqamaByPrayer.get("zuhr") ?? "",
-    iqamaByPrayer.get("asr") ?? "",
-    iqamaByPrayer.get("maghrib") ?? "",
-    iqamaByPrayer.get("isha") ?? "",
-  ];
-  if (iqamaTimes.some((time) => !time)) {
-    throw new Error("incomplete iqama rows on Allen Masjid homepage");
-  }
+  const iqamaTimes = util.requireStandardPrayerTimes(
+    iqamaByPrayer,
+    "incomplete iqama rows on Allen Masjid homepage",
+  );
 
   util.setIqamaTimes(ids[0], iqamaTimes);
   util.setJumaTimes(ids[0], jumaTimes);

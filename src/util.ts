@@ -833,6 +833,67 @@ type MaybeTimeList = MaybeTime[] | RegExpMatchArray | undefined | null;
 const normalizeTimes = (times: MaybeTimeList): readonly MaybeTime[] =>
   times ?? [];
 
+export type StandardPrayerKey = "fajr" | "zuhr" | "asr" | "maghrib" | "isha";
+
+type StandardPrayerTimesInput =
+  | Map<string, string>
+  | Partial<Record<StandardPrayerKey, string>>;
+
+export const getStandardPrayerKey = (text: string): StandardPrayerKey | "" => {
+  const value = text.trim().toLowerCase();
+  if (value.startsWith("fajr") || value.startsWith("fajar")) {
+    return "fajr";
+  }
+  if (
+    value.startsWith("zuhr") ||
+    value.startsWith("duhr") ||
+    value.startsWith("dhuhr") ||
+    value.startsWith("duhar")
+  ) {
+    return "zuhr";
+  }
+  if (value.startsWith("asr") || value.startsWith("asar")) {
+    return "asr";
+  }
+  if (value.startsWith("maghrib")) {
+    return "maghrib";
+  }
+  if (value.startsWith("isha")) {
+    return "isha";
+  }
+  return "";
+};
+
+const standardPrayerTimeValue = (
+  input: StandardPrayerTimesInput,
+  key: StandardPrayerKey,
+): string => {
+  if (input instanceof Map) {
+    return input.get(key) ?? "";
+  }
+
+  return input[key] ?? "";
+};
+
+export const requireStandardPrayerTimes = (
+  input: StandardPrayerTimesInput,
+  errorContext: string,
+): string[] => {
+  const times = [
+    standardPrayerTimeValue(input, "fajr"),
+    standardPrayerTimeValue(input, "zuhr"),
+    standardPrayerTimeValue(input, "asr"),
+    standardPrayerTimeValue(input, "maghrib"),
+    standardPrayerTimeValue(input, "isha"),
+  ];
+
+  if (times.some((value) => value.length === 0)) {
+    throw new Error(errorContext);
+  }
+
+  return times;
+};
+
 export const setIqamaTimes = (
   record: MasjidRecord | undefined,
   times: MaybeTimeList,
@@ -899,6 +960,19 @@ export const setJumaTimesAll = (
   });
 };
 
+export const setCheckWebsiteTimes = (
+  record: MasjidRecord | undefined,
+): void => {
+  setIqamaTimes(record, [
+    "check website",
+    "check website",
+    "check website",
+    "check website",
+    "check website",
+  ]);
+  setJumaTimes(record, ["check website"]);
+};
+
 export const setTimesAll = (
   records: MasjidRecord[],
   times: MaybeTimeList,
@@ -943,6 +1017,60 @@ export const extractTimeAmPm = (text: string | undefined): string => {
 export const matchTimeAmPmG = (
   text: string | undefined,
 ): RegExpMatchArray | null => text?.match(timeAmPmRxG) ?? null;
+
+export type TimeMatchParser = "matchTimeG" | "matchTimeAmPmG";
+
+export const extractMatchedTimes = (
+  text: string | undefined,
+  parser: TimeMatchParser = "matchTimeAmPmG",
+): string[] => {
+  if (parser === "matchTimeG") {
+    return [...(matchTimeG(text) ?? [])];
+  }
+
+  return [...(matchTimeAmPmG(text) ?? matchTimeG(text) ?? [])];
+};
+
+export const normalizeLooseClock = (value: unknown): string => {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  const trimmed = value.trim();
+  return extractTimeAmPm(trimmed) || extractTime(trimmed) || trimmed;
+};
+
+export const setTrailingJumaTimes = (
+  record: MasjidRecord | undefined,
+  times: MaybeTimeList,
+  options?: {
+    parser?: TimeMatchParser;
+    sourceIndex?: number;
+  },
+): void => {
+  const values = normalizeTimes(times);
+  const source =
+    options?.sourceIndex === undefined
+      ? values.at(-1)
+      : values[options.sourceIndex];
+
+  setJumaTimes(
+    record,
+    extractMatchedTimes(source ?? undefined, options?.parser),
+  );
+};
+
+export const setIqamaAndTrailingJumaTimes = (
+  record: MasjidRecord | undefined,
+  times: MaybeTimeList,
+  options?: {
+    parser?: TimeMatchParser;
+    sourceIndex?: number;
+  },
+): void => {
+  setIqamaTimes(record, times);
+  setTrailingJumaTimes(record, times, options);
+};
 
 export const hourMinuteAmPmToMinutes = (hm: string | undefined): number => {
   const match = hm?.match(/(\d{1,2})\s*:\s*(\d{1,2})\s*([ap]\.?m\.?)/i);

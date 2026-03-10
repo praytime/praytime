@@ -1,5 +1,5 @@
+import { createSelectorRun } from "../../../selectors";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,19 +15,14 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const $ = await util.load(ids[0].url);
-
-  const a = util.mapToText($, ".dptTimetable td:last-child");
-  a.splice(1, 1); // remove sunrise
-
-  util.setTimes(ids[0], a);
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/NY/masjid-al-aman-brooklyn",
   ids,
-  run,
+  run: createSelectorRun(ids, {
+    iqama: {
+      removeIndexes: [1],
+      selector: ".dptTimetable td:last-child",
+    },
+    mode: "setTimes",
+  }),
 };

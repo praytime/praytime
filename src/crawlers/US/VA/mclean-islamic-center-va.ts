@@ -1,5 +1,5 @@
+import { createMasjidAppRun } from "../../../masjidapp";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,26 +15,11 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const prayerTimes = await util.loadMasjidAppPrayerTimes(
-    "https://themasjidapp.net/masjids/mic/prayers",
-    ids[0],
-  );
-
-  util.setIqamaTimes(ids[0], [
-    prayerTimes.fajr,
-    prayerTimes.zuhr,
-    prayerTimes.asr,
-    prayerTimes.maghrib,
-    prayerTimes.isha,
-  ]);
-  util.setJumaTimes(ids[0], prayerTimes.juma.slice(0, 3));
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/VA/mclean-islamic-center-va",
   ids,
-  run,
+  run: createMasjidAppRun(ids, {
+    prayerUrl: "https://themasjidapp.net/masjids/mic/prayers",
+    requireJuma: true,
+  }),
 };
