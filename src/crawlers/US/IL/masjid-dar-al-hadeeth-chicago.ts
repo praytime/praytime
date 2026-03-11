@@ -1,5 +1,5 @@
+import { createPrayersConnectRun } from "../../../prayersconnect";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,29 +15,11 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const $ = await util.load(ids[0].url);
-
-  // Sample
-  // 0: "Fajr\t\t\n\t\t\t\t\n\t\t\t\t\t\t\n\t\t\t\t\t\n\t\t\n\t\t\t\t\n\t\t\t\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\n\t\t\t\t\n\t\t\t06:15"
-  // 1: "Dhuhur\t\t\n\t\t\t\t\n\t\t\t\t\t\t\n\t\t\t\t\t\n\t\t\n\t\t\t\t\n\t\t\t\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\n\t\t\t\t\n\t\t\t01:30"
-  // 2: "Asr\t\t\n\t\t\t\t\n\t\t\t\t\t\t\n\t\t\t\t\t\n\t\t\n\t\t\t\t\n\t\t\t\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\n\t\t\t\t\n\t\t\t04:00"
-  // 3: "IshA\t\t\n\t\t\t\t\n\t\t\t\t\t\t\n\t\t\t\t\t\n\t\t\n\t\t\t\t\n\t\t\t\n\t\t\t\t\t\t\t\n\t\t\t\t\t\t\n\t\t\t\t\n\t\t\t07:30"
-  const a = util
-    .mapToText($, "section")
-    .filter((t) =>
-      t.match(/^\s*(fajr|dhuhur|asr|isha|el joomoa)\s+\d+\s*:\s*\d+/i),
-    )
-    .map((t) => t.match(/\d+\s*:\s*\d+$/g)?.[0]);
-  a.splice(3, 0, "sunset"); // add maghrib
-
-  util.setTimes(ids[0], a);
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/IL/masjid-dar-al-hadeeth-chicago",
   ids,
-  run,
+  run: createPrayersConnectRun(ids, {
+    fallbackJumaTimes: ["check website"],
+    mosqueId: 84051255,
+  }),
 };

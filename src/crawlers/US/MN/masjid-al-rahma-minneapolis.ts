@@ -1,5 +1,5 @@
+import { createPrayersConnectRun } from "../../../prayersconnect";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,20 +15,10 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const $ = await util.load(ids[0].url);
-
-  $('.namaz:contains("Sunrise")').remove();
-
-  const a = util.mapToText($, ".namaz span");
-
-  util.setTimes(ids[0], a);
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/MN/masjid-al-rahma-minneapolis",
   ids,
-  run,
+  run: createPrayersConnectRun(ids, {
+    mosqueId: 84012870,
+  }),
 };
