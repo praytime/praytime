@@ -1,5 +1,5 @@
+import { createPrayersConnectRun } from "../../../prayersconnect";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,19 +15,11 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const $ = await util.load(ids[0].url);
-
-  const a = util.mapToText($, "span[id$=Jamaat]");
-
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], ["check website"]);
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/WI/masjid-al-noor-islamic-society-of-central-wisconsin-marshfield",
   ids,
-  run,
+  run: createPrayersConnectRun(ids, {
+    fallbackJumaTimes: ["check website"],
+    mosqueId: 84095948,
+  }),
 };

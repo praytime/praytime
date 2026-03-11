@@ -1,5 +1,5 @@
+import { createPrayersConnectRun } from "../../../prayersconnect";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,29 +15,11 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const $ = await util.load(ids[0].url);
-
-  const a = util.mapToText($, ".begins");
-  a.splice(1, 1); // remove sunrise
-
-  util.setIqamaTimes(ids[0], a);
-
-  // start with .dptTimetable, search up to containing section tag,
-  // and search for h3 tags under that
-  const j = util
-    .mapToText($, "h3", $(".dptTimetable").closest("section"))
-    .filter(util.matchTimeAmPm) // filter out header columns
-    .map(util.matchTimeAmPmG) // convert to array of juma times
-    .pop(); // return last element which is array of juma times
-
-  util.setJumaTimes(ids[0], j);
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/NY/islamic-circle-of-north-america-icna-queens",
   ids,
-  run,
+  run: createPrayersConnectRun(ids, {
+    fallbackJumaTimes: ["check website", "check website"],
+    mosqueId: 84033161,
+  }),
 };
