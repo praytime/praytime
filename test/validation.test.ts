@@ -3,28 +3,10 @@ import { calculatePrayerTimes } from "@masaajid/prayer-times";
 
 import { parsePrayerValue } from "../src/timing";
 import type { MasjidRecord } from "../src/types";
-import { validateCrawlRecord } from "../src/validation";
+import { formatLocalClock, validateCrawlRecord } from "../src/validation";
 
 const addMinutes = (date: Date, minutes: number): Date =>
   new Date(date.getTime() + minutes * 60_000);
-
-const toNormalizedTime = (date: Date, timeZone: string): string => {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone,
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  }).formatToParts(date);
-  const hour = parts.find((part) => part.type === "hour")?.value;
-  const minute = parts.find((part) => part.type === "minute")?.value;
-  const period = parts.find((part) => part.type === "dayPeriod")?.value;
-
-  if (!hour || !minute || !period) {
-    throw new Error(`failed to format normalized time for ${timeZone}`);
-  }
-
-  return `${hour}:${minute}${period.toLowerCase() === "am" ? "a" : "p"}`;
-};
 
 const baseRecord = (overrides: Partial<MasjidRecord> = {}): MasjidRecord => ({
   uuid4: "00000000-0000-0000-0000-000000000000",
@@ -68,24 +50,24 @@ const buildValidRecord = (record: MasjidRecord): MasjidRecord => {
 
   return {
     ...record,
-    fajrIqama: toNormalizedTime(
+    fajrIqama: formatLocalClock(
       addMinutes(baseTimes.fajr, 20),
       record.timeZoneId,
     ),
-    zuhrIqama: toNormalizedTime(
+    zuhrIqama: formatLocalClock(
       addMinutes(baseTimes.dhuhr, 10),
       record.timeZoneId,
     ),
-    asrIqama: toNormalizedTime(
+    asrIqama: formatLocalClock(
       addMinutes(standardAsr.asr, 10),
       record.timeZoneId,
     ),
     maghribIqama: "sunset",
-    ishaIqama: toNormalizedTime(
+    ishaIqama: formatLocalClock(
       addMinutes(baseTimes.isha, 10),
       record.timeZoneId,
     ),
-    juma1: toNormalizedTime(addMinutes(baseTimes.dhuhr, 30), record.timeZoneId),
+    juma1: formatLocalClock(addMinutes(baseTimes.dhuhr, 30), record.timeZoneId),
   };
 };
 
@@ -102,11 +84,11 @@ const findAdjacentDateRecord = (): MasjidRecord => {
       const tomorrow = computeTimes(record, addMinutes(crawlTime, 1_440));
 
       const todayFajr = parsePrayerValue(
-        toNormalizedTime(today.fajr, record.timeZoneId),
+        formatLocalClock(today.fajr, record.timeZoneId),
         "fajr",
       );
       const tomorrowFajr = parsePrayerValue(
-        toNormalizedTime(tomorrow.fajr, record.timeZoneId),
+        formatLocalClock(tomorrow.fajr, record.timeZoneId),
         "fajr",
       );
 
@@ -117,7 +99,7 @@ const findAdjacentDateRecord = (): MasjidRecord => {
       ) {
         return {
           ...buildValidRecord(record),
-          fajrIqama: toNormalizedTime(
+          fajrIqama: formatLocalClock(
             addMinutes(today.fajr, -1),
             record.timeZoneId,
           ),
@@ -143,11 +125,11 @@ test("validateCrawlRecord rejects hard boundary violations", () => {
 
   const result = validateCrawlRecord({
     ...record,
-    fajrIqama: toNormalizedTime(
+    fajrIqama: formatLocalClock(
       addMinutes(baseTimes.fajr, -15),
       record.timeZoneId,
     ),
-    maghribIqama: toNormalizedTime(
+    maghribIqama: formatLocalClock(
       addMinutes(baseTimes.sunset, -10),
       record.timeZoneId,
     ),
@@ -166,7 +148,7 @@ test("validateCrawlRecord warns when asr is too early without hard failing", () 
 
   const result = validateCrawlRecord({
     ...record,
-    asrIqama: toNormalizedTime(
+    asrIqama: formatLocalClock(
       addMinutes(standardAsr.asr, -10),
       record.timeZoneId,
     ),
@@ -174,6 +156,23 @@ test("validateCrawlRecord warns when asr is too early without hard failing", () 
 
   expect(result.errors).toEqual([]);
   expect(result.warnings).toContainEqual(expect.stringContaining("asrIqama"));
+});
+
+test("validateCrawlRecord allows juma before dhuhr", () => {
+  const record = buildValidRecord(baseRecord());
+  const crawlTime = record.crawlTime as Date;
+  const baseTimes = computeTimes(record, crawlTime);
+
+  const result = validateCrawlRecord({
+    ...record,
+    juma1: formatLocalClock(
+      addMinutes(baseTimes.dhuhr, -10),
+      record.timeZoneId,
+    ),
+  });
+
+  expect(result.errors).toEqual([]);
+  expect(result.warnings).toEqual([]);
 });
 
 test("validateCrawlRecord retries adjacent local dates for rollover cases", () => {
@@ -201,7 +200,7 @@ test("validateCrawlRecord downgrades fajr envelope checks at high latitude", () 
 
   const result = validateCrawlRecord({
     ...record,
-    fajrIqama: toNormalizedTime(
+    fajrIqama: formatLocalClock(
       addMinutes(baseTimes.fajr, -10),
       record.timeZoneId,
     ),
