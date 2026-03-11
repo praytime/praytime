@@ -52,7 +52,9 @@ const toMinutes = (timeText: string): number => {
 };
 
 const parseMawaqitPayload = (html: string): MawaqitPayload => {
-  const payloadText = html.match(/var confData = (\{[\s\S]*?\});/)?.[1];
+  const payloadText = html.match(
+    /\b(?:var|let|const)\s+confData\s*=\s*(\{[\s\S]*?\});/,
+  )?.[1];
   if (!payloadText) {
     throw new Error("missing mawaqit payload");
   }

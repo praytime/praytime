@@ -1,3 +1,4 @@
+import type { Element } from "domhandler";
 import type { CrawlerIds, CrawlerRun } from "./types";
 import * as util from "./util";
 
@@ -11,6 +12,21 @@ const normalizeSpace = (text: string): string =>
 
 const uniqueTimes = (times: string[]): string[] =>
   Array.from(new Set(times.filter((time) => time.length > 0)));
+
+const extractMohidWidgetRowTime = (
+  $: Awaited<ReturnType<typeof util.load>>,
+  item: Element,
+): string => {
+  const explicitTime = normalizeSpace(
+    $(item).find(".prayer_iqama_div, .num").first().text(),
+  );
+  if (explicitTime) {
+    return explicitTime;
+  }
+
+  const rowText = normalizeSpace($(item).text());
+  return util.extractTimeAmPm(rowText) || util.extractTime(rowText);
+};
 
 export const loadMohidWidgetTimes = async (
   url: string,
@@ -31,9 +47,10 @@ export const loadMohidWidgetTimes = async (
     $("#jummah li")
       .toArray()
       .flatMap((item) => {
-        const time = normalizeSpace($(item).find(".num").first().text());
-        const label = normalizeSpace($(item).text().replace(time, ""));
-        if (!time || !jumaLabelPattern.test(label)) {
+        const rowText = normalizeSpace($(item).text());
+        const time = extractMohidWidgetRowTime($, item);
+        const label = normalizeSpace(rowText.replace(time, ""));
+        if (!time || !jumaLabelPattern.test(label || rowText)) {
           return [];
         }
 
