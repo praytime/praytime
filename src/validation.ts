@@ -137,7 +137,7 @@ const toDateAtLocalHour = (
   return new Date(guess.getTime() - offsetMinutes * 60_000);
 };
 
-const formatLocalClock = (date: Date, timeZone: string): string => {
+export const formatLocalClock = (date: Date, timeZone: string): string => {
   const parts = buildDateFormatter(timeZone, {
     hour: "numeric",
     minute: "2-digit",
@@ -443,13 +443,6 @@ const validateForLocalDate = (
       entry[1].kind === "time",
   );
   for (const [field, value] of parseableJumas) {
-    if (value.comparableMinutes <= schedule.dhuhr.comparableMinutes) {
-      pushValidationIssue(
-        errors,
-        field,
-        `(${value.normalized}) must be after dhuhr ${schedule.dhuhr.label} on ${schedule.localDate}`,
-      );
-    }
     if (value.comparableMinutes >= schedule.earliestAsr.comparableMinutes) {
       pushValidationIssue(
         errors,
