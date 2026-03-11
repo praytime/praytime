@@ -20,6 +20,5 @@ export const crawler: CrawlerModule = {
   ids,
   run: createMasjidAppRun(ids, {
     prayerUrl: "https://themasjidapp.net/41/prayers",
-    requireJuma: true,
   }),
 };

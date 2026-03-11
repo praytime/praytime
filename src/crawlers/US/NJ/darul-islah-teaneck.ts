@@ -16,7 +16,7 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const $ = await util.load(ids[0].url);
+  const $ = await util.load("https://www.darulislah.org/salah/");
   const prayers = {
     asr: "",
     fajr: "",

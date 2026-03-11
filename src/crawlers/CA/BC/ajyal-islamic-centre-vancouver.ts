@@ -21,7 +21,7 @@ const run = async () => {
     throw new Error("No masjid record configured for Ajyal Islamic Centre");
   }
 
-  await util.setAwqatIqamaTimes(masjid, "840ffdd4-a1d2-4025-8b79-46bb4b18f457");
+  await util.setAwqatIqamaTimes(masjid, "42a4f039-5e07-4241-a8ab-e067199cf5fe");
   return ids;
 };
 

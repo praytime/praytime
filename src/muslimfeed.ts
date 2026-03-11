@@ -2,8 +2,28 @@ import * as cheerio from "cheerio";
 import type { CrawlerIds, CrawlerRun } from "./types";
 import * as util from "./util";
 
-const normalizeClock = (value: string): string =>
-  util.extractTimeAmPm(value) || util.extractTime(value);
+const normalizeClock = (value: string): string => {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return "";
+  }
+
+  const compactMatch = trimmed.match(/^\d{1,2}\s*:\s*\d{2}\s*[ap]$/i);
+  if (compactMatch?.[0]) {
+    return compactMatch[0].replace(/\s+/g, "");
+  }
+
+  return util.extractTimeAmPm(trimmed) || util.extractTime(trimmed);
+};
+
+const normalizeIqamaValue = (value: string): string => {
+  const trimmed = value.trim();
+  if (/^[-\u2013\u2014]+$/.test(trimmed)) {
+    return "-";
+  }
+
+  return normalizeClock(trimmed);
+};
 
 export const createMuslimFeedRun = (
   ids: CrawlerIds,
@@ -19,11 +39,11 @@ export const createMuslimFeedRun = (
 
     const $ = cheerio.load(response.data);
     const iqamaTimes = [
-      normalizeClock($("#trFajr > td:nth-child(3)").text().trim()),
-      normalizeClock($("#trDhuhr > td:nth-child(3)").text().trim()),
-      normalizeClock($("#trAsr > td:nth-child(3)").text().trim()),
-      normalizeClock($("#trMaghrib > td:nth-child(3)").text().trim()),
-      normalizeClock($("#trIsha > td:nth-child(3)").text().trim()),
+      normalizeIqamaValue($("#trFajr > td:nth-child(3)").text()),
+      normalizeIqamaValue($("#trDhuhr > td:nth-child(3)").text()),
+      normalizeIqamaValue($("#trAsr > td:nth-child(3)").text()),
+      normalizeIqamaValue($("#trMaghrib > td:nth-child(3)").text()),
+      normalizeIqamaValue($("#trIsha > td:nth-child(3)").text()),
     ];
     if (iqamaTimes.some((value) => value.length === 0)) {
       throw new Error(`incomplete MuslimFeed iqama times for ${muslimFeedId}`);
