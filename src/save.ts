@@ -10,106 +10,19 @@ import {
   type Message,
   type Messaging,
 } from "firebase-admin/messaging";
+import {
+  hourMinutesToMinutes,
+  normalizePrayerFieldValue,
+  timeFieldConfigs,
+  toStringValue,
+} from "./timing";
 import type { CrawlOutputLine, MasjidRecord } from "./types";
 
-const timeRxG = /(\d{1,2})\s*:\s*(\d{1,2})/g;
-
-export type PrayerContext = "fajr" | "zuhr" | "asr" | "maghrib" | "isha";
-
-type TimeField =
-  | "fajrIqama"
-  | "zuhrIqama"
-  | "asrIqama"
-  | "maghribIqama"
-  | "ishaIqama"
-  | "juma1"
-  | "juma2"
-  | "juma3";
-
-type ModifiedField =
-  | "fajrIqamaModified"
-  | "zuhrIqamaModified"
-  | "asrIqamaModified"
-  | "maghribIqamaModified"
-  | "ishaIqamaModified"
-  | "juma1Modified"
-  | "juma2Modified"
-  | "juma3Modified";
-
-interface TimeFieldConfig {
-  timeField: TimeField;
-  modifiedField: ModifiedField;
-  prayer: PrayerContext;
-  diffLabel: string;
-  deletedLabel: string;
-}
-
-const timeFieldConfigs: readonly TimeFieldConfig[] = [
-  {
-    timeField: "fajrIqama",
-    modifiedField: "fajrIqamaModified",
-    prayer: "fajr",
-    diffLabel: "Fajr",
-    deletedLabel: "Fajr",
-  },
-  {
-    timeField: "zuhrIqama",
-    modifiedField: "zuhrIqamaModified",
-    prayer: "zuhr",
-    diffLabel: "Zuhr",
-    deletedLabel: "Zuhr",
-  },
-  {
-    timeField: "asrIqama",
-    modifiedField: "asrIqamaModified",
-    prayer: "asr",
-    diffLabel: "Asr",
-    deletedLabel: "Asr",
-  },
-  {
-    timeField: "maghribIqama",
-    modifiedField: "maghribIqamaModified",
-    prayer: "maghrib",
-    diffLabel: "Maghrib",
-    deletedLabel: "Maghrib",
-  },
-  {
-    timeField: "ishaIqama",
-    modifiedField: "ishaIqamaModified",
-    prayer: "isha",
-    diffLabel: "Isha",
-    deletedLabel: "Isha",
-  },
-  {
-    timeField: "juma1",
-    modifiedField: "juma1Modified",
-    prayer: "zuhr",
-    diffLabel: "Juma",
-    deletedLabel: "Juma1",
-  },
-  {
-    timeField: "juma2",
-    modifiedField: "juma2Modified",
-    prayer: "zuhr",
-    diffLabel: "Juma",
-    deletedLabel: "Juma2",
-  },
-  {
-    timeField: "juma3",
-    modifiedField: "juma3Modified",
-    prayer: "zuhr",
-    diffLabel: "Juma",
-    deletedLabel: "Juma3",
-  },
-];
-
-const htmlEscapeMap: Record<string, string> = {
-  "&": "&amp;",
-  "<": "&lt;",
-  ">": "&gt;",
-  '"': "&#34;",
-  "'": "&#39;",
-};
+export {
+  hourMinutesToMinutes,
+  normalizeTime,
+  type PrayerContext,
+} from "./timing";
 
 const stringifyError = (error: unknown): string => {
   if (error instanceof Error) {
@@ -117,12 +30,6 @@ const stringifyError = (error: unknown): string => {
   }
   return String(error);
 };
-
-const escapeHtml = (value: string): string =>
-  value.replace(/[&<>"']/g, (match) => htmlEscapeMap[match] ?? match);
-
-const toStringValue = (value: unknown): string =>
-  typeof value === "string" ? value : "";
 
 const toDate = (value: unknown): Date | undefined => {
   if (value instanceof Date) {
@@ -205,112 +112,17 @@ export type PrayerEventRecord = MasjidRecord & {
   juma3Modified?: Date;
 };
 
-export const normalizeTime = (
-  value: string | undefined,
-  prayer: PrayerContext,
-): string[] => {
-  const text = value ?? "";
-  const result: string[] = [];
-
-  for (const match of text.matchAll(timeRxG)) {
-    const hourText = match[1];
-    const minuteText = match[2];
-    if (!hourText || !minuteText) {
-      continue;
-    }
-
-    let hour = Number.parseInt(hourText, 10);
-    const minute = Number.parseInt(minuteText, 10);
-
-    if (!Number.isFinite(hour) || !Number.isFinite(minute)) {
-      continue;
-    }
-
-    if (hour > 12) {
-      hour -= 12;
-    }
-
-    let meridiem: "a" | "p" = "p";
-    switch (prayer) {
-      case "fajr":
-        meridiem = "a";
-        break;
-      case "zuhr":
-        meridiem = hour === 10 || hour === 11 ? "a" : "p";
-        break;
-      case "asr":
-      case "maghrib":
-        meridiem = "p";
-        break;
-      case "isha":
-        meridiem = hour === 12 || hour === 1 ? "a" : "p";
-        break;
-    }
-
-    result.push(`${hour}:${String(minute).padStart(2, "0")}${meridiem}`);
-  }
-
-  return result;
-};
-
 export const normalizePrayerTimes = (
   record: PrayerEventRecord,
 ): PrayerEventRecord => {
   for (const field of timeFieldConfigs) {
-    const existingValue = record[field.timeField];
-    const normalized = normalizeTime(
-      toStringValue(existingValue),
+    record[field.timeField] = normalizePrayerFieldValue(
+      record[field.timeField],
       field.prayer,
     );
-
-    if (normalized.length === 1) {
-      record[field.timeField] = normalized[0];
-      continue;
-    }
-
-    if (typeof existingValue === "string") {
-      record[field.timeField] = escapeHtml(existingValue);
-    }
   }
 
   return record;
-};
-
-export const hourMinutesToMinutes = (value: string): number => {
-  const match = /^(\d+):(\d+)([ap])$/.exec(value);
-  if (!match) {
-    throw new Error("invalid time");
-  }
-
-  const hourText = match[1];
-  const minuteText = match[2];
-  const meridiem = match[3];
-  if (!hourText || !minuteText || !meridiem) {
-    throw new Error("invalid time");
-  }
-
-  let hour = Number.parseInt(hourText, 10);
-  const minute = Number.parseInt(minuteText, 10);
-  if (
-    !Number.isInteger(hour) ||
-    !Number.isInteger(minute) ||
-    hour < 0 ||
-    hour > 12 ||
-    minute < 0 ||
-    minute > 59 ||
-    (meridiem !== "a" && meridiem !== "p")
-  ) {
-    throw new Error("invalid time");
-  }
-
-  if (hour === 12) {
-    hour = 0;
-  }
-  if (meridiem === "p") {
-    hour += 12;
-  }
-
-  return hour * 60 + minute;
 };
 
 export const compareToPrevious = (
@@ -358,12 +170,17 @@ export type SaveLineResult =
     }
   | {
       outcome: "skipped";
-      reason: "crawl_error";
+      reason: "crawl_error" | "validation_error";
     }
   | {
       outcome: "error";
       error: string;
     };
+
+const getValidationErrorText = (line: CrawlOutputLine): string => {
+  const validationErrors = line.validationErrors ?? [];
+  return validationErrors.join("; ").trim();
+};
 
 export class PraytimeSaver {
   private readonly db: Firestore;
@@ -441,13 +258,38 @@ export class PraytimeSaver {
 
   async saveLine(line: CrawlOutputLine): Promise<SaveLineResult> {
     const prefix = this.prefix(line);
+    const crawlError = line.crawlError?.trim() ?? "";
+    const validationErrorText = getValidationErrorText(line);
 
-    if (line.error.length > 0) {
+    if (crawlError.length > 0) {
       this.log(prefix, `ERROR crawl error: ${line.error}`);
       return {
         outcome: "skipped",
         reason: "crawl_error",
       };
+    }
+
+    if (validationErrorText.length > 0 && !this.force) {
+      this.log(prefix, `ERROR validation error: ${validationErrorText}`);
+      return {
+        outcome: "skipped",
+        reason: "validation_error",
+      };
+    }
+
+    if (line.error.length > 0 && validationErrorText.length === 0) {
+      this.log(prefix, `ERROR crawl error: ${line.error}`);
+      return {
+        outcome: "skipped",
+        reason: "crawl_error",
+      };
+    }
+
+    if (validationErrorText.length > 0 && this.force) {
+      this.log(
+        prefix,
+        `forcing save despite validation error: ${validationErrorText}`,
+      );
     }
 
     const record = line.result as PrayerEventRecord;

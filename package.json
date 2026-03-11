@@ -28,6 +28,7 @@
     "check": "bun run typecheck && bun run lint && bun run cpd && bun run test"
   },
   "dependencies": {
+    "@masaajid/prayer-times": "^1.0.1",
     "cheerio": "^1.2.0",
     "csv-parse": "^6.1.0",
     "firebase-admin": "^13.7.0",

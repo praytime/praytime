@@ -115,3 +115,41 @@ test("runCrawlers suppresses output for env-skipped puppeteer crawlers", async (
     },
   ]);
 });
+
+test("runCrawlers always appends validation errors to line.error", async () => {
+  const crawler: CrawlerModule = {
+    name: "US/GA/validation",
+    ids: [
+      {
+        ...sampleRecord,
+        geo: {
+          latitude: 40.7128,
+          longitude: -74.006,
+        },
+        crawlTime: new Date("2026-03-11T18:00:00.000Z"),
+        maghribIqama: "1:00p",
+      },
+    ],
+  };
+
+  const lines: CrawlOutputLine[] = [];
+  const originalError = console.error;
+  console.error = () => {};
+
+  try {
+    await runCrawlers([crawler], {
+      emitJson: false,
+      onOutput: (line) => {
+        lines.push(line);
+      },
+    });
+  } finally {
+    console.error = originalError;
+  }
+
+  expect(lines).toHaveLength(1);
+  expect(lines[0]?.error).toContain("validation:");
+  expect(lines[0]?.error).toContain("maghribIqama");
+  expect(lines[0]?.validationErrors).toBeDefined();
+  expect(lines[0]?.validationErrors?.[0]).toContain("maghribIqama");
+});

@@ -18,7 +18,7 @@ Options:
   --dump                    Dump static crawler metadata and exit
   --run-report              Print local SQLite crawler run report table and exit
   --save                    Save crawler output to Firestore and send FCM changes
-  --force                   Ignore deletions and force save (requires --save)
+  --force                   Ignore deletions and bypass validation save blocks (requires --save)
   --verbose                 Verbose save logging (requires --save)
   --skip-static             Skip static crawlers (no run function)
   --skip-ppt                Skip puppeteer crawlers entirely
