@@ -40,116 +40,167 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 
-// prayer time:
-// {
-//   "Masjid": "HOMEWOOD",
-//   "Month": 12,
-//   "StartDay": 11,
-//   "EndDay": 20,
-//   "Fajr": "6:00",
-//   "Duhr": "1:05",
-//   "Asr": "3:30",
-//   "Maghrib": "4:50",
-//   "Isha": "8:30",
-//   "Notes": "",
-//   "Day": 14
-// }
-// juma time:
-// https://beta.aleemstudio.com/api/mobile/GetNearestJumuahScheduleV3/a8aea7e2-b39b-4b54-b791-63aa9fb2446a
-// {
-// "12/17/2021": [
-//   {
-//     "masjid": "WESTSIDE",
-//     "Time": "01:00",
-//     "Khateeb": "Tariq  Mango",
-//     "SortOrder": 50,
-//     "Confirmed": 1
-//   },
-//   {
-//     "masjid": "UAB Hospital",
-//     "Time": "01:15",
-//     "Khateeb": "Nasim Uddin",
-//     "SortOrder": 70,
-//     "Confirmed": 1
-//   },
-//   {
-//     "masjid": "HCIC",
-//     "Time": "01:00",
-//     "Khateeb": "",
-//     "SortOrder": "10",
-//     "Confirmed": 0
-//   },
-//   {
-//     "masjid": "HOMEWOOD",
-//     "Time": "01:00",
-//     "Khateeb": "",
-//     "SortOrder": "30",
-//     "Confirmed": 0
-//   },
-//   {
-//     "masjid": "Sterne Library",
-//     "Time": "01:15",
-//     "Khateeb": "",
-//     "SortOrder": "60",
-//     "Confirmed": 0
-//   },
-//   {
-//     "masjid": "Jasper",
-//     "Time": "01:00",
-//     "Khateeb": "",
-//     "SortOrder": "90",
-//     "Confirmed": 0
-//   }
-// ]
-// }
+type BisIqamahResponse = {
+  data?: Array<{
+    masjid?: {
+      nickname?: string;
+    };
+    prayer_times?: Record<string, string>;
+  }>;
+  success?: boolean;
+};
+
+type BisJummahResponse = {
+  data?: {
+    prayer_details?: Array<{
+      masjid?: {
+        nickname?: string;
+      };
+      time?: string;
+    }>;
+  };
+  success?: boolean;
+};
+
+const parseBisClockMinutes = (value: string | undefined): number => {
+  const match = value?.match(/^(\d{2}):(\d{2})/);
+  if (!match) {
+    return Number.NaN;
+  }
+
+  return (
+    Number.parseInt(match[1] ?? "", 10) * 60 +
+    Number.parseInt(match[2] ?? "", 10)
+  );
+};
+
+const formatBisMinutes = (minutes: number): string => {
+  const normalizedMinutes = ((minutes % (24 * 60)) + 24 * 60) % (24 * 60);
+  const hours = Math.floor(normalizedMinutes / 60);
+  const minuteValue = `${normalizedMinutes % 60}`.padStart(2, "0");
+  const suffix = hours >= 12 ? "PM" : "AM";
+  const normalizedHours = ((hours + 11) % 12) + 1;
+  return `${normalizedHours}:${minuteValue} ${suffix}`;
+};
+
+const normalizeBisPrayerSequence = (
+  values: Array<string | undefined>,
+): string[] => {
+  let previousMinutes = -1;
+
+  return values.map((value) => {
+    let minutes = parseBisClockMinutes(value);
+    if (Number.isNaN(minutes)) {
+      return "";
+    }
+
+    while (minutes <= previousMinutes && minutes < 24 * 60) {
+      minutes += 12 * 60;
+    }
+
+    previousMinutes = minutes;
+    return formatBisMinutes(minutes);
+  });
+};
+
+const normalizeBisJummahTimes = (values: Array<string | undefined>): string[] =>
+  values
+    .map((value) => {
+      let minutes = parseBisClockMinutes(value);
+      if (Number.isNaN(minutes)) {
+        return undefined;
+      }
+
+      if (minutes < 7 * 60) {
+        minutes += 12 * 60;
+      }
+
+      return {
+        minutes,
+        formatted: formatBisMinutes(minutes),
+      };
+    })
+    .filter(
+      (
+        value,
+      ): value is {
+        formatted: string;
+        minutes: number;
+      } => Boolean(value),
+    )
+    .sort((left, right) => left.minutes - right.minutes)
+    .map((value) => value.formatted);
+
 const run = async () => {
-  const da = await Promise.all([
-    util.loadJson(
-      util.strftime(
-        "https://aleemstudio.com/MobileDeviceSupport/GetIqamahTimings?id=HOOVER&month=%m&day=%d",
-        ids[0],
-      ),
+  const [hoover, homewood, westside] = ids;
+  if (!hoover || !homewood || !westside) {
+    throw new Error("missing BIS masjid records");
+  }
+
+  const [iqamahResponse, jummahResponse] = await Promise.all([
+    util.loadJson<BisIqamahResponse>(
+      `https://www.bisweb.org/wp-json/bis/v1/iqamahs?date=${util.strftime("%Y-%m-%d", hoover)}`,
     ),
-    util.loadJson(
-      util.strftime(
-        "https://aleemstudio.com/MobileDeviceSupport/GetIqamahTimings?id=HOMEWOOD&month=%m&day=%d",
-        ids[1],
-      ),
-    ),
-    util.loadJson(
-      util.strftime(
-        "https://aleemstudio.com/MobileDeviceSupport/GetIqamahTimings?id=WESTSIDE&month=%m&day=%d",
-        ids[2],
-      ),
-    ),
-    util.loadJson(
-      "https://beta.aleemstudio.com/api/mobile/GetNearestJumuahScheduleV3/a8aea7e2-b39b-4b54-b791-63aa9fb2446a",
+    util.loadJson<BisJummahResponse>(
+      "https://www.bisweb.org/wp-json/bis/v1/jummahs",
     ),
   ]);
 
-  da.slice(0, 3).forEach((d, i) => {
-    const record = d as {
-      Fajr: string;
-      Duhr: string;
-      Asr: string;
-      Maghrib: string;
-      Isha: string;
-    };
-    util.setIqamaTimes(ids[i], [
-      record.Fajr,
-      record.Duhr,
-      record.Asr,
-      record.Maghrib,
-      record.Isha,
-    ]);
-  });
+  if (!iqamahResponse.success || !Array.isArray(iqamahResponse.data)) {
+    throw new Error("missing BIS iqamah response");
+  }
+  if (
+    !jummahResponse.success ||
+    !Array.isArray(jummahResponse.data?.prayer_details)
+  ) {
+    throw new Error("missing BIS jummah response");
+  }
 
-  ["HCIC", "HOMEWOOD", "WESTSIDE"].forEach((name, i) => {
-    const currentJumas = Object.values(
-      da[3] as Record<string, { masjid: string; Time: string }>,
+  const iqamahByMasjid = new Map<string, string[]>();
+  for (const entry of iqamahResponse.data) {
+    const nickname = entry.masjid?.nickname?.trim();
+    if (!nickname) {
+      continue;
+    }
+
+    const prayerTimes = entry.prayer_times;
+    iqamahByMasjid.set(
+      nickname,
+      normalizeBisPrayerSequence([
+        prayerTimes?.fajr,
+        prayerTimes?.dhur,
+        prayerTimes?.asr,
+        prayerTimes?.maghrib,
+        prayerTimes?.isha,
+      ]),
     );
-    const juma = currentJumas.find(({ masjid }) => masjid === name);
-    util.setJumaTimes(ids[i], [juma?.Time]);
+  }
+
+  const jummahByMasjid = new Map<string, Array<string | undefined>>();
+  for (const detail of jummahResponse.data.prayer_details) {
+    const nickname = detail.masjid?.nickname?.trim();
+    if (!nickname || !detail.time) {
+      continue;
+    }
+
+    jummahByMasjid.set(nickname, [
+      ...(jummahByMasjid.get(nickname) ?? []),
+      detail.time,
+    ]);
+  }
+
+  [
+    { nickname: "HCIC", record: hoover },
+    { nickname: "Homewood", record: homewood },
+    { nickname: "FIC", record: westside },
+  ].forEach(({ nickname, record }) => {
+    util.setIqamaTimes(record, [...(iqamahByMasjid.get(nickname) ?? [])]);
+    util.setJumaTimes(
+      record,
+      normalizeBisJummahTimes(
+        Array.from(new Set(jummahByMasjid.get(nickname) ?? [])),
+      ),
+    );
   });
 
   return ids;

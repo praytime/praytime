@@ -1,5 +1,5 @@
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
+import { createWnyMuslimsRun } from "../../../wnymuslims";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,17 +15,11 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const $ = await util.load(ids[0].url);
-
-  const a = util.mapToText($, 'p:contains("Magreeb") > strong');
-
-  util.setTimes(ids[0], a);
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/NY/central-park-jame-masjid-buffalo",
   ids,
-  run,
+  run: createWnyMuslimsRun(ids, {
+    cardTitle: "Central Park Jame Masjid",
+    addressText: "97 Rodney Ave",
+  }),
 };

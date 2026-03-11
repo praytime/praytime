@@ -1,5 +1,5 @@
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
+import { createWnyMuslimsRun } from "../../../wnymuslims";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,19 +15,13 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const $ = await util.load(ids[0].url);
-
-  const a = util.mapToText($, ".pr-tm-bx span:last-child");
-  const j = util.mapToText($, ".pr-tm-bx:last-child span");
-
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], j.slice(0, 1));
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/NY/lovejoy-masjid-buffalo",
   ids,
-  run,
+  run: createWnyMuslimsRun(ids, {
+    cardTitle: "Lovejoy Masjid",
+    addressText: "1107 East Lovejoy Street",
+    jumaTimes: ["check website"],
+    normalizeIqamaSequence: true,
+  }),
 };

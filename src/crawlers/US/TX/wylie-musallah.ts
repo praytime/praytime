@@ -1,4 +1,3 @@
-import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
@@ -6,7 +5,7 @@ const ids: CrawlerModule["ids"] = [
   {
     uuid4: "f9144d4a-8ece-459c-81e1-62b7d7642074",
     name: "Wylie Musallah",
-    url: "http://www.wyliemusallah.org/",
+    url: "https://icwtx.org/",
     timeZoneId: "America/Chicago",
     address: "3990 Lakeway Dr, St Paul, TX 75098, USA",
     geo: {
@@ -17,42 +16,42 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const response = await util.get("http://www.wyliemusallah.org/");
-  const $ = cheerio.load(response.data);
+  const response = await util.get(ids[0].url ?? "");
+  const cards = [
+    ...String(response.data).matchAll(
+      /<div class="inner-wrap prayer-card">[\s\S]*?<p class="prayer-card-title">([^<]+)<\/p>[\s\S]*?<p class="prayer-card-time">\s*([^<]+?)\s*<\/p>(?:[\s\S]*?<p class="prayer-card-title">Iqamah<\/p>[\s\S]*?<p class="prayer-card-time">\s*([^<]+?)\s*<\/p>)?/g,
+    ),
+  ];
 
-  // having multiple elements w/same id is invalid. So instead of
-  // #pt have to use div[id=pt] to match all the elements, then
-  // use jQuery eq to select the right one.
-  ids[0].fajrIqama = $("div[id=pt]")
-    .eq(0)
-    .find("table > tbody > tr > td:nth-child(3)")
-    .text()
-    .trim();
-  ids[0].zuhrIqama = $("div[id=pt]")
-    .eq(1)
-    .find("table > tbody > tr > td:nth-child(3)")
-    .text()
-    .trim();
-  ids[0].asrIqama = $("div[id=pt]")
-    .eq(2)
-    .find("table > tbody > tr > td:nth-child(3)")
-    .text()
-    .trim();
-  ids[0].maghribIqama = $("div[id=pt]")
-    .eq(3)
-    .find("table > tbody > tr > td:nth-child(3)")
-    .text()
-    .trim();
-  ids[0].ishaIqama = $("div[id=pt]")
-    .eq(4)
-    .find("table > tbody > tr > td:nth-child(3)")
-    .text()
-    .trim();
-  ids[0].juma1 = $("div[id=pt]")
-    .eq(5)
-    .find("table > tbody > tr > td:nth-child(3)")
-    .text()
-    .trim();
+  const iqamaByPrayer = new Map<util.StandardPrayerKey, string>();
+  const jumaTimes: string[] = [];
+  for (const card of cards) {
+    const label = card[1]?.trim() ?? "";
+    const primaryTime = util.extractTimeAmPm(card[2]);
+    const iqamaTime = util.extractTimeAmPm(card[3]) || primaryTime;
+    if (!iqamaTime) {
+      continue;
+    }
+
+    const prayerKey = util.getStandardPrayerKey(label);
+    if (prayerKey) {
+      iqamaByPrayer.set(prayerKey, iqamaTime);
+      continue;
+    }
+
+    if (/jummah/i.test(label)) {
+      jumaTimes.push(iqamaTime);
+    }
+  }
+
+  util.setIqamaTimes(
+    ids[0],
+    util.requireStandardPrayerTimes(
+      iqamaByPrayer,
+      "incomplete Islamic Center of Wylie iqama times",
+    ),
+  );
+  util.setJumaTimes(ids[0], jumaTimes);
 
   return ids;
 };

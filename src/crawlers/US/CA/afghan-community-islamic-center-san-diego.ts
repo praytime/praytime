@@ -5,7 +5,7 @@ const ids: CrawlerModule["ids"] = [
   {
     uuid4: "1f34f77c-bf42-4832-a371-3566b33e7889",
     name: "Afghan Community Islamic Center",
-    url: "http://acicmasjidtawheed.com/",
+    url: "http://www.acicmasjidtawheed.com/",
     timeZoneId: "America/Los_Angeles",
     address: "3333 Sandrock Rd, San Diego, CA 92123, USA",
     placeId: "ChIJ52-wp2JV2YARuI8QpOnaCIY",
@@ -15,12 +15,122 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
+
+type UmmahsoftResponse = {
+  iqamaTimes?: Array<{
+    asr?: unknown;
+    asr_iqama?: unknown;
+    asr_iqama_time?: unknown;
+    dhuhr?: unknown;
+    fajr_iqama?: unknown;
+    fajr_iqama_time?: unknown;
+    iqama_date?: {
+      date?: unknown;
+    };
+    isha?: unknown;
+    isha_iqama?: unknown;
+    isha_iqama_time?: unknown;
+    maghrib?: unknown;
+    maghrib_iqama?: unknown;
+    magrib_iqama_time?: unknown;
+    zuhr_iqama?: unknown;
+    zuhr_iqama_time?: unknown;
+  }>;
+  masjidInfo?: {
+    asr_iqama_time?: unknown;
+    fajr_iqama_time?: unknown;
+    isha_iqama_time?: unknown;
+    jumma1_azan?: unknown;
+    jumma1_iqama?: unknown;
+    zuhr_iqama_time?: unknown;
+  };
+  prayerTimes?: Array<{
+    date?: {
+      date?: unknown;
+    };
+    maghrib_iqama_time?: unknown;
+    magrib_iqama_time?: unknown;
+  }>;
+};
+
+const firstTime = (...values: unknown[]): string => {
+  for (const value of values) {
+    if (typeof value !== "string") {
+      continue;
+    }
+
+    const trimmed = value.trim();
+    if (trimmed) {
+      return trimmed;
+    }
+  }
+
+  return "";
+};
+
 const run = async () => {
-  const $ = await util.load(ids[0].url);
+  const record = ids[0];
+  if (!record) {
+    throw new Error("missing masjid record");
+  }
 
-  const a = util.mapToText($, "td:first-child").filter(util.matchTimeAmPm);
+  const year = util.strftime("%Y", record);
+  const month = Number.parseInt(util.strftime("%m", record), 10);
+  const today = util.strftime("%Y-%m-%d", record);
+  const response = await util.loadJson<UmmahsoftResponse>(
+    `https://ummahsoft.org/salahtime/api/masjidi/v1/index.php/masjids/3478/iqamahandprayertimes/${year}/${month}`,
+  );
 
-  util.setTimes(ids[0], a);
+  const todayIqama = response.iqamaTimes?.find((value) =>
+    `${value.iqama_date?.date ?? ""}`.startsWith(today),
+  );
+  const todayPrayerTimes = response.prayerTimes?.find((value) =>
+    `${value.date?.date ?? ""}`.startsWith(today),
+  );
+  const masjidInfo = response.masjidInfo;
+
+  const iqamaTimes = [
+    firstTime(
+      todayIqama?.fajr_iqama,
+      todayIqama?.fajr_iqama_time,
+      masjidInfo?.fajr_iqama_time,
+    ),
+    firstTime(
+      todayIqama?.dhuhr,
+      todayIqama?.zuhr_iqama,
+      todayIqama?.zuhr_iqama_time,
+      masjidInfo?.zuhr_iqama_time,
+    ),
+    firstTime(
+      todayIqama?.asr,
+      todayIqama?.asr_iqama,
+      todayIqama?.asr_iqama_time,
+      masjidInfo?.asr_iqama_time,
+    ),
+    firstTime(
+      todayIqama?.maghrib,
+      todayIqama?.maghrib_iqama,
+      todayIqama?.magrib_iqama_time,
+      todayPrayerTimes?.maghrib_iqama_time,
+      todayPrayerTimes?.magrib_iqama_time,
+    ),
+    firstTime(
+      todayIqama?.isha,
+      todayIqama?.isha_iqama,
+      todayIqama?.isha_iqama_time,
+      masjidInfo?.isha_iqama_time,
+    ),
+  ];
+  if (iqamaTimes.some((value) => !value)) {
+    throw new Error("incomplete ACIC iqama times");
+  }
+
+  util.setIqamaTimes(record, iqamaTimes);
+
+  const jumaTime = firstTime(masjidInfo?.jumma1_iqama, masjidInfo?.jumma1_azan);
+  if (jumaTime) {
+    util.setJumaTimes(record, [jumaTime]);
+  }
 
   return ids;
 };
