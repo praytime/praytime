@@ -6,7 +6,9 @@ import {
   normalizePrayerTimes,
   normalizeTime,
   type PrayerEventRecord,
+  PraytimeSaver,
 } from "../src/save";
+import type { CrawlOutputLine } from "../src/types";
 
 const baseRecord = (
   overrides: Partial<PrayerEventRecord> = {},
@@ -21,6 +23,33 @@ const baseRecord = (
   },
   ...overrides,
 });
+
+const createSaverFixtures = () => {
+  let savedRecord: PrayerEventRecord | null = null;
+  const firestore = {
+    collection: () => ({
+      doc: () => ({
+        get: async () => ({
+          exists: false,
+          data: () => undefined,
+        }),
+        set: async (payload: PrayerEventRecord) => {
+          savedRecord = payload;
+        },
+      }),
+    }),
+    terminate: async () => {},
+  };
+  const messaging = {
+    send: async () => "mock-message-id",
+  };
+
+  return {
+    firestore,
+    getSavedRecord: () => savedRecord,
+    messaging,
+  };
+};
 
 test("normalizeTime keeps Go-compatible prayer meridiem behavior", () => {
   expect(normalizeTime("01:00", "zuhr")).toEqual(["1:00p"]);
@@ -120,4 +149,65 @@ test("compareToPrevious with force keeps previous modified timestamps", () => {
   expect(current.fajrIqamaModified?.toISOString()).toBe(
     previousFajrModified.toISOString(),
   );
+});
+
+test("PraytimeSaver blocks validation errors without force", async () => {
+  const { firestore, getSavedRecord, messaging } = createSaverFixtures();
+  const saver = new PraytimeSaver({
+    firestore: firestore as never,
+    messaging: messaging as never,
+  });
+  const line: CrawlOutputLine = {
+    source: "US/IL/sample",
+    error: "validation: maghribIqama must be after sunset",
+    validationErrors: ["maghribIqama must be after sunset"],
+    result: baseRecord({
+      maghribIqama: "1:00p",
+    }),
+  };
+  const originalError = console.error;
+  console.error = () => {};
+
+  try {
+    const result = await saver.saveLine(line);
+    expect(result).toEqual({
+      outcome: "skipped",
+      reason: "validation_error",
+    });
+    expect(getSavedRecord()).toBeNull();
+  } finally {
+    console.error = originalError;
+    await saver.close();
+  }
+});
+
+test("PraytimeSaver force-saves validation errors", async () => {
+  const { firestore, getSavedRecord, messaging } = createSaverFixtures();
+  const saver = new PraytimeSaver({
+    force: true,
+    firestore: firestore as never,
+    messaging: messaging as never,
+  });
+  const line: CrawlOutputLine = {
+    source: "US/IL/sample",
+    error: "validation: maghribIqama must be after sunset",
+    validationErrors: ["maghribIqama must be after sunset"],
+    result: baseRecord({
+      maghribIqama: "1:00p",
+    }),
+  };
+  const originalError = console.error;
+  console.error = () => {};
+
+  try {
+    const result = await saver.saveLine(line);
+    expect(result).toEqual({
+      outcome: "saved",
+      updated: false,
+    });
+    expect(getSavedRecord()?.uuid4).toBe(line.result.uuid4);
+  } finally {
+    console.error = originalError;
+    await saver.close();
+  }
 });

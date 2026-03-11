@@ -8,6 +8,7 @@ import type {
   RunnerOptions,
 } from "./types";
 import * as util from "./util";
+import { validateCrawlRecord } from "./validation";
 
 const stringifyError = (error: unknown): string => {
   if (error instanceof Error) {
@@ -41,10 +42,44 @@ const withTimeout = async <T>(
 const enrichRecord = (record: MasjidRecord): MasjidRecord => {
   const { latitude, longitude } = record.geo;
 
-  record.crawlTime = new Date();
+  record.crawlTime ??= new Date();
   record.geohash = geohashForLocation([latitude, longitude]);
 
   return record;
+};
+
+const appendError = (existing: string, next: string): string => {
+  const current = existing.trim();
+  const incoming = next.trim();
+
+  if (incoming.length === 0) {
+    return current;
+  }
+  if (current.length === 0) {
+    return incoming;
+  }
+  if (current.includes(incoming)) {
+    return current;
+  }
+
+  return `${current} | ${incoming}`;
+};
+
+const logValidationIssues = (
+  source: string,
+  record: MasjidRecord,
+  level: "error" | "warning",
+  issues: string[],
+): void => {
+  if (issues.length === 0) {
+    return;
+  }
+
+  const uuidPrefix =
+    typeof record.uuid4 === "string" ? record.uuid4.slice(0, 8) : "unknown";
+  for (const issue of issues) {
+    console.error("%s[%s] validation %s: %s", source, uuidPrefix, level, issue);
+  }
 };
 
 export const dumpCrawlerMetadata = (crawlers: CrawlerModule[]): DumpRecord[] =>
@@ -122,11 +157,39 @@ export const runCrawlers = async (
 
       if (shouldEmitResults) {
         for (const result of crawlResults) {
+          const enrichedResult = enrichRecord(result);
           const output: CrawlOutputLine = {
-            result: enrichRecord(result),
+            crawlError,
+            result: enrichedResult,
             error: crawlError,
             source: crawler.name,
           };
+
+          if (output.error.length === 0) {
+            const validation = validateCrawlRecord(enrichedResult);
+            output.validationWarnings = validation.warnings;
+
+            logValidationIssues(
+              crawler.name,
+              enrichedResult,
+              "warning",
+              validation.warnings,
+            );
+
+            if (validation.errors.length > 0) {
+              output.validationErrors = validation.errors;
+              logValidationIssues(
+                crawler.name,
+                enrichedResult,
+                "error",
+                validation.errors,
+              );
+              output.error = appendError(
+                output.error,
+                `validation: ${validation.errors.join("; ")}`,
+              );
+            }
+          }
 
           if (onOutput) {
             try {

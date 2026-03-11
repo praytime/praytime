@@ -52,9 +52,12 @@ export interface CrawlerRegistryEntry {
 }
 
 export interface CrawlOutputLine {
+  crawlError?: string;
   result: MasjidRecord;
   error: string;
   source: string;
+  validationErrors?: string[];
+  validationWarnings?: string[];
 }
 
 export type CrawlOutputHandler = (
