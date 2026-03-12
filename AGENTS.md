@@ -46,8 +46,20 @@ For more information, read the Bun API docs in `node_modules/bun-types/docs/**.m
 ## Crawler Contract
 Each crawler module should export:
 - `ids`: array of masjid records with `uuid4`, `name`, `timeZoneId`, `geo.latitude`, `geo.longitude` (and usually `url`, `address`, `placeId`).
-- Optional `run`: async function that mutates `ids` with current times and returns `ids`.
+- Optional `run`: async function that mutates `ids` with current times and returns `ids`. Crawlers without `run` are 'static'.
 - Optional `puppeteer = true`: marks browser-based crawler.
+
+### Non-Static Crawler Requirements
+A non-static crawler's main purpose is to return accurate and up-to-date iqama prayer timings, sourced from the masjid website or APIs the masjid website uses.
+- Prefer using APIs if available, then use page sources.
+- If a browser is required to obtain prayer times, use puppeteer.
+- If the masjid publishes a calendar in PDF or image format, use OCR tools to try and extract times.
+- If a masjid website references some other means of getting prayer times (e.g. whatsapp), then return 'check website' in place of timings.
+- If a masjid website just doesn't publish iqama times, then it should be a static crawler.
+- If for some reason prayer times are published on the website but not programatically accessible, e.g. due to OCR limitations, then 'check website' may be returned so users know that times are available.
+- Under no other circumstances should 'check website' be returned in place of prayer timings, rather an error should be returned so that crawler can be re-evaluated.
+- Transient errors (fetch timeouts, http errors, etc) should also be surfaced so that the crawler can be retried later or re-evaluated.
+- Crawlers should be fail-fast, do not use fallbacks.
 
 ## Runtime Flow
 1. Run crawlers with Bun:
@@ -57,7 +69,7 @@ Each crawler module should export:
    - `bun run . --save [...]`
 
 ## Crawler History
-Crawler runtime history is saved in .run/praytime.sqlite. `bun run report` to see a current status of each crawler.
+Crawler runtime history is saved in .run/praytime.sqlite. `bun run report` to see the current status of each crawler.
 
 ## Environment Variables
 - `PUPPETEER_DISABLED`: skip browser crawlers.
@@ -72,7 +84,7 @@ Crawler runtime history is saved in .run/praytime.sqlite. `bun run report` to se
 - `.env` is loaded by shell scripts via `script/common.sh`.
 
 ## Crawler Parse/Type Error Playbook
-When a crawler fails with `TypeError`, selector errors, or schema mismatch:
+When a crawler fails with `TypeError`, selector errors, schema mismatch, or save error:
 
 1. Reproduce and isolate
 - Re-run only failing crawlers first (not the whole tree).
@@ -97,15 +109,15 @@ When a crawler fails with `TypeError`, selector errors, or schema mismatch:
 - Only accept plausible clock times (valid hour/minute ranges).
 - Do not overwrite already-good values with lower-confidence fallback values.
 - Do not silently convert parser failures into success; if required fields still fail validation, throw.
+- Only return 'check website' in place of timings if a masjid website references some other means of getting prayer times (e.g. whatsapp), or if times are not programtically extractable due to technology limitations (e.g. OCR).
 
 5. Preserve crawl stability
 - Parsing/schema failures are fail-closed: throw and mark crawler failed for investigation.
-- Use placeholders only when they are intentional (`check website`, `-`, `--`), not accidental parse artifacts.
 - Keep `crawlError` meaningful; never clear parse/schema errors unless contract validation passes.
 - Network/transient failures can use retries; parser/schema failures should not be retried blindly.
 
 6. Validate before finishing
-- Re-run the previously failing crawler set and confirm parse/type errors are gone.
+- Re-run the previously failing crawler set and confirm parse/type errors are gone. Use the `--save` option to confirm no prayers have been deleted.
 - Spot-check output values for malformed times (`46:1`, `1:0`, etc.).
 - Confirm no syntax/load errors for modified crawler modules.
 - Validate output contract per crawler: required fields present, valid time format/ranges, no malformed values.
