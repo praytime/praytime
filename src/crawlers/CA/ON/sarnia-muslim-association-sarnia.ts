@@ -20,16 +20,16 @@ const run = async () => {
   if (!id) {
     throw new Error("Missing crawler metadata");
   }
-  const $ = await util.load(id.url);
+  const prayerTimes = await util.loadAddinIqama("725", id.timeZoneId);
 
-  const a = util.mapToText($, "figure tr:last-child td").filter(util.matchTime);
-  if (a.length === 6) {
-    // No juma2 - fill in with placeholder
-    a[6] = "-";
-    a[7] = "-";
-  }
-
-  util.setTimes(id, a);
+  util.setIqamaTimes(id, [
+    prayerTimes.fajr,
+    prayerTimes.zuhr,
+    prayerTimes.asr,
+    prayerTimes.maghrib,
+    prayerTimes.isha,
+  ]);
+  util.setJumaTimes(id, prayerTimes.jumah);
 
   return ids;
 };

@@ -20,19 +20,30 @@ const run = async () => {
   const response = await util.get("http://orlandparkprayercenter.org/");
   const $ = cheerio.load(response.data);
 
-  ids[0].fajrIqama = $(".dptTimetable tr:nth-child(4) td").eq(0).text();
-  ids[0].zuhrIqama = $(".dptTimetable tr:nth-child(6) td").eq(0).text();
-  ids[0].asrIqama = $(".dptTimetable tr:nth-child(7) td").eq(0).text();
-  ids[0].maghribIqama = $(".dptTimetable tr:nth-child(8) td").eq(0).text();
-  ids[0].ishaIqama = $(".dptTimetable tr:nth-child(9) td").eq(0).text();
-  ids[0].juma1 = $("table.dptTimetable th")
-    .eq(0)
-    .text()
-    .match(/\d{1,2}:\d{2}/g)?.[0];
-  ids[0].juma2 = $("table.dptTimetable th")
-    .eq(0)
-    .text()
-    .match(/\d{1,2}:\d{2}/g)?.[1];
+  const rows = $(".dptTimetable tr")
+    .toArray()
+    .map((row) =>
+      $(row)
+        .find("th, td")
+        .toArray()
+        .map((cell) => $(cell).text().trim())
+        .filter(Boolean),
+    );
+  const findRow = (pattern: RegExp): string[] =>
+    rows.find((cells) => pattern.test(cells[0] ?? "")) ?? [];
+  const iqama = (pattern: RegExp): string => {
+    const row = findRow(pattern);
+    return util.extractTimeAmPm(row.at(-1));
+  };
+
+  util.setIqamaTimes(ids[0], [
+    iqama(/^fajr$/i),
+    iqama(/^duh(?:r|ur)$/i),
+    iqama(/^asr$/i),
+    iqama(/^maghrib$/i),
+    iqama(/^isha$/i),
+  ]);
+  util.setJumaTimes(ids[0], util.matchTimeAmPmG(findRow(/^jumu/i).join(" ")));
 
   return ids;
 };
