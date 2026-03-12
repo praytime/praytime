@@ -1,4 +1,4 @@
-import { createSelectorRun } from "../../../selectors";
+import { createMasjidalRun } from "../../../masjidal";
 import type { CrawlerModule } from "../../../types";
 
 const ids: CrawlerModule["ids"] = [
@@ -18,8 +18,5 @@ const ids: CrawlerModule["ids"] = [
 export const crawler: CrawlerModule = {
   name: "US/MI/mmi-westland",
   ids,
-  run: createSelectorRun(ids, {
-    iqama: { selector: ".jamah" },
-    jumaDefault: ["check website"],
-  }),
+  run: createMasjidalRun(ids, "ZyLjkzAQ", { jumaCount: 1 }),
 };

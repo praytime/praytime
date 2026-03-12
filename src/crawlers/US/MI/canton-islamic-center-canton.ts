@@ -1,5 +1,5 @@
+import { createMasjidalRun } from "../../../masjidal";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,19 +15,8 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const $ = await util.load(ids[0].url);
-
-  const a = util.mapToText($, "[id$=Jamaat]");
-
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], ["check website"]);
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/MI/canton-islamic-center-canton",
   ids,
-  run,
+  run: createMasjidalRun(ids, "8K9qpNKp", { jumaCount: 1 }),
 };

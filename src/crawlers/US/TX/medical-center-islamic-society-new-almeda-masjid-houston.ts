@@ -19,10 +19,18 @@ const run = async () => {
   const $ = await util.load(ids[0].url);
 
   const a = util.mapToText($, ".dpt_jamah");
-  const j = ["check website"];
+  const jumaText =
+    util.toText($, 'h2:contains("Friday Khutbah")').replace(/\s+/g, " ") ||
+    util.toText($, ".jummahPrayer").replace(/\s+/g, " ");
+  const j = [...(util.matchTimeAmPmG(jumaText) ?? [])]
+    .map((value) => util.extractTimeAmPm(value))
+    .filter((value): value is string => Boolean(value))
+    .slice(0, 1);
 
   util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], j);
+  if (j.length > 0) {
+    util.setJumaTimes(ids[0], j);
+  }
 
   return ids;
 };

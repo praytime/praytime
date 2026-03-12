@@ -21,15 +21,19 @@ const run = async () => {
   const $ = cheerio.load(response.data);
 
   const iqamaTimes = $("span.dpt_jamah");
+  const jumaTimes = util
+    .mapToText($, "h2.elementor-heading-title")
+    .filter((text) => /\d{1,2}:\d{2}\s*p\.?m\.?\s+to/i.test(text))
+    .map((text) => util.extractTimeAmPm(text))
+    .filter((value): value is string => Boolean(value))
+    .slice(0, 3);
 
   ids[0].fajrIqama = iqamaTimes.eq(0).text().trim();
   ids[0].zuhrIqama = iqamaTimes.eq(1).text().trim();
   ids[0].asrIqama = iqamaTimes.eq(2).text().trim();
   ids[0].maghribIqama = iqamaTimes.eq(3).text().trim();
   ids[0].ishaIqama = iqamaTimes.eq(4).text().trim();
-
-  ids[0].juma1 = "check website";
-  ids[0].juma2 = "check website";
+  util.setJumaTimes(ids[0], jumaTimes);
 
   return ids;
 };

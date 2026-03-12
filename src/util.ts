@@ -208,7 +208,13 @@ const normalizeMasjidalTime = (value: unknown): string => {
   if (typeof value !== "string") {
     return "";
   }
-  return value.trim();
+
+  const normalized = value.trim();
+  if (!normalized || /^-+$/.test(normalized) || /^n\/?a$/i.test(normalized)) {
+    return "";
+  }
+
+  return normalized;
 };
 
 export const loadMasjidalIqama = async (

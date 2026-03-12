@@ -1,5 +1,5 @@
-import { createCheckWebsiteRun } from "../../../checkwebsite";
 import type { CrawlerModule } from "../../../types";
+import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,8 +15,24 @@ const ids: CrawlerModule["ids"] = [
     timeZoneId: "America/Chicago",
   },
 ];
+const CHECK_WEBSITE_TIMES = [
+  "check website",
+  "check website",
+  "check website",
+  "check website",
+  "check website",
+  "check website",
+  "check website",
+];
+
+const run = async () => {
+  // MIC currently publishes prayer times as uploaded calendar images only.
+  util.setTimes(ids[0], CHECK_WEBSITE_TIMES);
+  return ids;
+};
+
 export const crawler: CrawlerModule = {
   name: "US/TX/mesquite-islamic-center",
   ids,
-  run: createCheckWebsiteRun(ids),
+  run,
 };

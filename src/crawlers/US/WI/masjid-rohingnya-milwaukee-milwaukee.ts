@@ -19,7 +19,7 @@ export const crawler: CrawlerModule = {
   name: "US/WI/masjid-rohingnya-milwaukee-milwaukee",
   ids,
   run: createPrayersConnectRun(ids, {
-    fallbackJumaTimes: ["check website"],
+    loadJuma: true,
     mosqueId: 84062793,
   }),
 };

@@ -43,9 +43,7 @@ const run = async () => {
   ]);
 
   const second = ids[1];
-  if (second) {
-    second.juma1 = "check website";
-  }
+  void second;
 
   return ids;
 };

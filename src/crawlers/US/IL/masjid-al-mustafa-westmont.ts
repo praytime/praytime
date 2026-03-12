@@ -29,7 +29,6 @@ const run = async () => {
   ids[0].asrIqama = t?.[2];
   ids[0].maghribIqama = maghrib?.[1];
   ids[0].ishaIqama = t?.[3];
-  ids[0].juma1 = "check website";
 
   return ids;
 };

@@ -72,7 +72,7 @@ const run = async () => {
   const maghrib = extractClock(readPrayerCards(cards, /maghrib/i));
   const isha = extractClock(readPrayerCards(cards, /isha/i));
 
-  if (!fajr || !zuhr || !asr || !isha) {
+  if (!fajr || !zuhr || !asr || !maghrib || !isha) {
     throw new Error("unexpected prayer-time cards: missing iqama times");
   }
 
@@ -82,13 +82,7 @@ const run = async () => {
     .filter((value): value is string => Boolean(value))
     .slice(0, 3);
 
-  util.setIqamaTimes(ids[0], [
-    fajr,
-    zuhr,
-    asr,
-    maghrib || "check website",
-    isha,
-  ]);
+  util.setIqamaTimes(ids[0], [fajr, zuhr, asr, maghrib, isha]);
   util.setJumaTimes(ids[0], jumaTimes);
 
   return ids;

@@ -19,7 +19,7 @@ export const crawler: CrawlerModule = {
   name: "US/IL/masjid-dar-al-hadeeth-chicago",
   ids,
   run: createPrayersConnectRun(ids, {
-    fallbackJumaTimes: ["check website"],
+    loadJuma: true,
     mosqueId: 84051255,
   }),
 };

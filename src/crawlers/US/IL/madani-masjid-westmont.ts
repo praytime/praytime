@@ -13,7 +13,6 @@ const ids: CrawlerModule["ids"] = [
       latitude: 41.797492,
       longitude: -87.977081,
     },
-    juma1: "check website",
   },
 ];
 const run = async () => {
