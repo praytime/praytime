@@ -331,7 +331,7 @@ const validateForLocalDate = (
 
   const zuhr = parsePrayerValue(record.zuhrIqama, "zuhr");
   if (isParseableTime(zuhr)) {
-    if (zuhr.comparableMinutes <= schedule.dhuhr.comparableMinutes) {
+    if (zuhr.comparableMinutes < schedule.dhuhr.comparableMinutes) {
       pushValidationIssue(
         errors,
         "zuhrIqama",

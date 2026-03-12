@@ -175,6 +175,19 @@ test("validateCrawlRecord allows juma before dhuhr", () => {
   expect(result.warnings).toEqual([]);
 });
 
+test("validateCrawlRecord allows zuhr exactly at the rounded dhuhr minute", () => {
+  const record = buildValidRecord(baseRecord());
+  const crawlTime = record.crawlTime as Date;
+  const baseTimes = computeTimes(record, crawlTime);
+
+  const result = validateCrawlRecord({
+    ...record,
+    zuhrIqama: formatLocalClock(baseTimes.dhuhr, record.timeZoneId),
+  });
+
+  expect(result.errors).toEqual([]);
+});
+
 test("validateCrawlRecord retries adjacent local dates for rollover cases", () => {
   const result = validateCrawlRecord(findAdjacentDateRecord());
 

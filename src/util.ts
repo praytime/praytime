@@ -808,6 +808,89 @@ export const loadAwqatIqama = async (
   };
 };
 
+const ADDIN_API_KEY =
+  "WVeh6FdhekwxiEiaxhKGsvy7sOh9V4Y6rWDt2vyoFvvMAFQ2eqxYBePjW1EXEAOL8jr6j0cddjcCJRZRAtrobKmXDy7BCEqi";
+
+type AddinPrayerEntry = {
+  prayerIqamah?: unknown;
+  prayerName?: unknown;
+};
+
+type AddinPrayerDayResponse = {
+  data?: {
+    prayerOfDay?: {
+      singlePrayers?: unknown;
+    };
+  };
+};
+
+const normalizeAddinClock = (value: unknown): string =>
+  normalizeLooseClock(value);
+
+export const loadAddinIqama = async (
+  masjidId: string,
+  timeZoneId: string,
+): Promise<{
+  asr: string;
+  fajr: string;
+  isha: string;
+  jumah: string[];
+  maghrib: string;
+  zuhr: string;
+}> => {
+  if (!masjidId.trim()) {
+    throw new Error("missing ad-din masjid id");
+  }
+
+  const prayerDate = strftime("%F", { timeZoneId });
+  const response = await loadJson<AddinPrayerDayResponse>(
+    `https://portal.ad-din.ca/v1/masjid/Prayer/GetPrayerTimesOfDay?masjidId=${encodeURIComponent(masjidId)}&day=${encodeURIComponent(prayerDate)}&time=12:00:00`,
+    {
+      fetch: {
+        headers: {
+          "ADDIN-API-KEY": ADDIN_API_KEY,
+        },
+      },
+    },
+  );
+
+  const entries = Array.isArray(response.data?.prayerOfDay?.singlePrayers)
+    ? (response.data?.prayerOfDay?.singlePrayers as AddinPrayerEntry[])
+    : [];
+  if (entries.length === 0) {
+    throw new Error(`missing ad-din prayer times for ${masjidId}`);
+  }
+
+  const findPrayer = (name: string): string =>
+    normalizeAddinClock(
+      entries.find((entry) => entry.prayerName === name)?.prayerIqamah,
+    );
+
+  const fajr = findPrayer("Fajr");
+  const zuhr = findPrayer("Dhuhr");
+  const asr = findPrayer("Asr");
+  const maghrib = findPrayer("Maghrib");
+  const isha = findPrayer("Isha");
+  const jumah = entries
+    .filter((entry) => typeof entry.prayerName === "string")
+    .filter((entry) => String(entry.prayerName).startsWith("Jumah"))
+    .map((entry) => normalizeAddinClock(entry.prayerIqamah))
+    .filter((value): value is string => value.length > 0);
+
+  if (!fajr || !zuhr || !asr || !maghrib || !isha) {
+    throw new Error(`incomplete ad-din iqama for ${masjidId}`);
+  }
+
+  return {
+    asr,
+    fajr,
+    isha,
+    jumah,
+    maghrib,
+    zuhr,
+  };
+};
+
 export const setAwqatIqamaTimes = async (
   record: MasjidRecord | undefined,
   organizationId: string,
@@ -855,7 +938,7 @@ export const getStandardPrayerKey = (text: string): StandardPrayerKey | "" => {
   if (value.startsWith("asr") || value.startsWith("asar")) {
     return "asr";
   }
-  if (value.startsWith("maghrib")) {
+  if (value.startsWith("maghrib") || value.startsWith("magrib")) {
     return "maghrib";
   }
   if (value.startsWith("isha")) {
@@ -1038,6 +1121,187 @@ export const normalizeLooseClock = (value: unknown): string => {
 
   const trimmed = value.trim();
   return extractTimeAmPm(trimmed) || extractTime(trimmed) || trimmed;
+};
+
+type EmbeddedPrayerTimes = {
+  iqamaTimes: string[];
+  jumaTimes: string[];
+};
+
+const EMBEDDED_PRAYER_LABEL_RX =
+  /(?:\b(1st|2nd|3rd|4th)\s+)?\b(Fajr|Dhuhr|Duhr|Zuhr|Asr|Maghrib|Magrib|Isha|Jumu['’]?ah|Jummah|Jumah)(?:\s+Prayer)?\b\s*:?\s*/gi;
+
+const uniqueNormalizedTimes = (times: string[]): string[] =>
+  Array.from(
+    new Set(
+      times.map((value) => normalizeLooseClock(value)).filter((value) => value),
+    ),
+  );
+
+const normalizePrayerSourceText = (value: string): string =>
+  value
+    .replace(/&#0*39;|&apos;/gi, "'")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/[’]/g, "'")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const parseJsonAssignment = (
+  html: string,
+  variableName: string,
+): Record<string, unknown> | null => {
+  const match = html.match(
+    new RegExp(
+      String.raw`(?:let|const|var)\s+${variableName}\s*=\s*JSON\.parse\('([^']+)'\)`,
+    ),
+  );
+  if (!match?.[1]) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(match[1]) as unknown;
+    return parsed && typeof parsed === "object"
+      ? (parsed as Record<string, unknown>)
+      : null;
+  } catch {
+    return null;
+  }
+};
+
+const parseEmbeddedPrayerJson = (html: string): EmbeddedPrayerTimes | null => {
+  const prayerTimes = parseJsonAssignment(html, "prayerTimes");
+  if (!prayerTimes) {
+    return null;
+  }
+
+  const iqamaByPrayer = new Map<StandardPrayerKey, string>([
+    ["fajr", normalizeLooseClock(prayerTimes.fajr_i ?? prayerTimes.fajrIqama)],
+    [
+      "zuhr",
+      normalizeLooseClock(
+        prayerTimes.dahur_i ??
+          prayerTimes.dhuhr_i ??
+          prayerTimes.zuhr_i ??
+          prayerTimes.zuhrIqama,
+      ),
+    ],
+    ["asr", normalizeLooseClock(prayerTimes.asar_i ?? prayerTimes.asr_i)],
+    [
+      "maghrib",
+      normalizeLooseClock(prayerTimes.magrib_i ?? prayerTimes.maghrib_i),
+    ],
+    ["isha", normalizeLooseClock(prayerTimes.isha_i ?? prayerTimes.ishaIqama)],
+  ]);
+
+  let iqamaTimes: string[];
+  try {
+    iqamaTimes = requireStandardPrayerTimes(
+      iqamaByPrayer,
+      "incomplete embedded prayer JSON",
+    );
+  } catch {
+    return null;
+  }
+
+  const jummahTimes =
+    parseJsonAssignment(html, "jummahTimes") ??
+    parseJsonAssignment(html, "jumahTimes");
+  const jumaTimes = uniqueNormalizedTimes([
+    normalizeLooseClock(jummahTimes?.adhan_time1 ?? jummahTimes?.iqama_time1),
+    normalizeLooseClock(jummahTimes?.adhan_time2 ?? jummahTimes?.iqama_time2),
+    normalizeLooseClock(jummahTimes?.adhan_time3 ?? jummahTimes?.iqama_time3),
+  ]);
+
+  return {
+    iqamaTimes,
+    jumaTimes,
+  };
+};
+
+const parseLabeledPrayerSource = (text: string): EmbeddedPrayerTimes | null => {
+  const normalized = normalizePrayerSourceText(text);
+  const matches = [...normalized.matchAll(EMBEDDED_PRAYER_LABEL_RX)];
+  if (matches.length === 0) {
+    return null;
+  }
+
+  const iqamaByPrayer = new Map<StandardPrayerKey, string>();
+  const jumaTimes: string[] = [];
+
+  for (const [index, match] of matches.entries()) {
+    const labelText = match[2] ?? "";
+    if (!labelText) {
+      continue;
+    }
+
+    const sectionStart = (match.index ?? 0) + match[0].length;
+    const sectionEnd = matches[index + 1]?.index ?? normalized.length;
+    const section = normalized.slice(sectionStart, sectionEnd).trim();
+    const times = uniqueNormalizedTimes(extractMatchedTimes(section));
+    if (times.length === 0) {
+      continue;
+    }
+
+    const prayerKey = getStandardPrayerKey(labelText);
+    if (prayerKey && !iqamaByPrayer.has(prayerKey)) {
+      const iqama = times.at(-1);
+      if (iqama) {
+        iqamaByPrayer.set(prayerKey, iqama);
+      }
+      continue;
+    }
+
+    if (/jumu|jumma|jumah/i.test(labelText)) {
+      const firstTime = times[0];
+      if (firstTime) {
+        jumaTimes.push(firstTime);
+      }
+    }
+  }
+
+  let iqamaTimes: string[];
+  try {
+    iqamaTimes = requireStandardPrayerTimes(
+      iqamaByPrayer,
+      "incomplete labeled prayer source",
+    );
+  } catch {
+    return null;
+  }
+
+  return {
+    iqamaTimes,
+    jumaTimes: uniqueNormalizedTimes(jumaTimes),
+  };
+};
+
+export const extractEmbeddedPrayerTimesFromHtml = (
+  $: cheerio.CheerioAPI,
+  html: string,
+): EmbeddedPrayerTimes | null => {
+  const jsonTimes = parseEmbeddedPrayerJson(html);
+  if (jsonTimes) {
+    return jsonTimes;
+  }
+
+  const sources = [
+    ...$(
+      'meta[name="description"], meta[property="og:description"], meta[name="twitter:description"]',
+    )
+      .toArray()
+      .map((value) => $(value).attr("content") ?? ""),
+    ...[...html.matchAll(/<!--([\s\S]*?)-->/g)].map((match) => match[1] ?? ""),
+  ];
+
+  for (const source of sources) {
+    const parsed = parseLabeledPrayerSource(source);
+    if (parsed) {
+      return parsed;
+    }
+  }
+
+  return null;
 };
 
 export const setTrailingJumaTimes = (

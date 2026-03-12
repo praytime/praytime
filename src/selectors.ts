@@ -79,18 +79,30 @@ export const createSelectorRun = (
 ): CrawlerRun => {
   return async () => {
     const $ = await util.load(options.url ?? ids[0]?.url ?? "");
-    const iqamaTimes = parseSelectorValues($, options.iqama);
+    const embeddedTimes = util.extractEmbeddedPrayerTimesFromHtml($, $.html());
+    let iqamaTimes = parseSelectorValues($, options.iqama);
 
     if ((options.mode ?? "setIqamaTimes") === "setTimes" && !options.juma) {
+      if (iqamaTimes.length < 5 && embeddedTimes) {
+        iqamaTimes = [...embeddedTimes.iqamaTimes, ...embeddedTimes.jumaTimes];
+      }
+
       util.setTimes(ids[0], iqamaTimes);
       return ids;
     }
 
+    if (iqamaTimes.length < 5 && embeddedTimes) {
+      iqamaTimes = embeddedTimes.iqamaTimes;
+    }
+
     util.setIqamaTimes(ids[0], iqamaTimes);
 
-    const jumaTimes = options.juma
+    let jumaTimes = options.juma
       ? parseSelectorValues($, options.juma)
       : (options.jumaDefault ?? []);
+    if (jumaTimes.length === 0 && embeddedTimes?.jumaTimes.length) {
+      jumaTimes = embeddedTimes.jumaTimes;
+    }
 
     util.setJumaTimes(
       ids[0],
