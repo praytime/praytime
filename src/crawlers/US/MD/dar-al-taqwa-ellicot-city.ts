@@ -1,5 +1,5 @@
+import { createMasjidalRun } from "../../../masjidal";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,15 +15,8 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  // The linked Mohid widget currently renders PM prayers as AM values.
-  util.setCheckWebsiteTimes(ids[0]);
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/MD/dar-al-taqwa-ellicot-city",
   ids,
-  run,
+  run: createMasjidalRun(ids, "QL0BzpdZ", { jumaCount: 2 }),
 };
