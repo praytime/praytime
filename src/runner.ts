@@ -1,4 +1,5 @@
 import { geohashForLocation } from "geofire-common";
+import { replaceInvalidFieldsWithCheckWebsite } from "./sanitize";
 import type {
   CrawlerModule,
   CrawlerSkipReason,
@@ -166,7 +167,15 @@ export const runCrawlers = async (
           };
 
           if (output.error.length === 0) {
+            const sanitizedFields =
+              replaceInvalidFieldsWithCheckWebsite(enrichedResult);
             const validation = validateCrawlRecord(enrichedResult);
+            if (sanitizedFields.length > 0) {
+              validation.warnings = [
+                ...validation.warnings,
+                `replaced invalid fields with check website: ${sanitizedFields.join(", ")}`,
+              ];
+            }
             output.validationWarnings = validation.warnings;
 
             logValidationIssues(

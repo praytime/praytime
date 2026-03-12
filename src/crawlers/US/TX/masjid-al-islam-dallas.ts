@@ -57,16 +57,8 @@ const ids: CrawlerModule["ids"] = [
 //   "status_description": "Success."
 // }
 const run = async () => {
-  const response = await util.get(
-    "https://muslimsalat.com/Dallas%2C+TX/daily.json?key=1b2297a8451063cfc67ad03aade14c4b",
-  );
-
-  ids[0].fajrIqama = response.data.items[0].fajr;
-  ids[0].zuhrIqama = response.data.items[0].dhuhr;
-  ids[0].asrIqama = response.data.items[0].asr;
-  ids[0].maghribIqama = response.data.items[0].maghrib;
-  ids[0].ishaIqama = response.data.items[0].isha;
-  ids[0].juma1 = "check website";
+  // The public prayer API exposes generic city prayer starts, not masjid iqama.
+  util.setCheckWebsiteTimes(ids[0]);
 
   return ids;
 };

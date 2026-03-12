@@ -6,6 +6,9 @@ import type { MasjidRecord } from "./types";
 
 const us = timezone(timezoneAmerica);
 
+export const normalizeSpace = (text: string): string =>
+  text.replace(/\s+/g, " ").trim();
+
 export const parsePositiveInt = (value: unknown, fallback: number): number => {
   const n = Number(value);
   return Number.isFinite(n) && n > 0 ? n : fallback;

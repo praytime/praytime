@@ -116,7 +116,7 @@ test("runCrawlers suppresses output for env-skipped puppeteer crawlers", async (
   ]);
 });
 
-test("runCrawlers always appends validation errors to line.error", async () => {
+test("runCrawlers downgrades invalid fields to check website before emitting", async () => {
   const crawler: CrawlerModule = {
     name: "US/GA/validation",
     ids: [
@@ -148,8 +148,10 @@ test("runCrawlers always appends validation errors to line.error", async () => {
   }
 
   expect(lines).toHaveLength(1);
-  expect(lines[0]?.error).toContain("validation:");
-  expect(lines[0]?.error).toContain("maghribIqama");
-  expect(lines[0]?.validationErrors).toBeDefined();
-  expect(lines[0]?.validationErrors?.[0]).toContain("maghribIqama");
+  expect(lines[0]?.error).toBe("");
+  expect(lines[0]?.validationErrors).toBeUndefined();
+  expect(lines[0]?.result.maghribIqama).toBe("check website");
+  expect(lines[0]?.validationWarnings).toContainEqual(
+    expect.stringContaining("replaced invalid fields with check website"),
+  );
 });

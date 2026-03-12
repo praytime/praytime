@@ -16,13 +16,8 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const $ = await util.load(
-    "https://us.mohid.co/md/columbia1/dat/masjid/widget/api/index/?m=prayertimings",
-  );
-
-  const a = util.mapToText($, ".prayer_iqama_div").filter(util.matchTime);
-
-  util.setTimes(ids[0], a);
+  // The linked Mohid widget currently renders PM prayers as AM values.
+  util.setCheckWebsiteTimes(ids[0]);
 
   return ids;
 };

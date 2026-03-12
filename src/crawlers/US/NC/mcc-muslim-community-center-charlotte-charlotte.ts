@@ -16,9 +16,17 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const $ = await util.load(
-    "https://ummahsoft.org/salahtime/masjid-embed/widget_prayer.php?masjid_id=51010",
-  );
+  let $: Awaited<ReturnType<typeof util.load>>;
+  try {
+    $ = await util.load(
+      "https://ummahsoft.org/salahtime/masjid-embed/widget_prayer.php?masjid_id=51010",
+      { timeoutMs: 5_000 },
+    );
+  } catch {
+    // The third-party widget intermittently times out and rate-limits.
+    util.setCheckWebsiteTimes(ids[0]);
+    return ids;
+  }
 
   const a = util.mapToText($, ".prayer-timing td:last-child");
   a.splice(0, 3); // remove first 3 elements

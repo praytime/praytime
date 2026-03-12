@@ -1,5 +1,5 @@
-import { createSelectorRun } from "../../../selectors";
 import type { CrawlerModule } from "../../../types";
+import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -16,11 +16,56 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 
+const normalizeSpace = (text: string): string =>
+  text.replace(/\s+/g, " ").trim();
+
+const run = async () => {
+  const $ = await util.load(ids[0].url ?? "");
+  const today = $("#prayerSchedule #today");
+  if (!today.length) {
+    throw new Error("missing Al-Farooq prayer schedule");
+  }
+
+  const iqamaByPrayer = new Map<string, string>();
+  today.find("tbody tr").each((_, row) => {
+    const cells = $(row)
+      .find("td")
+      .toArray()
+      .map((cell) => normalizeSpace($(cell).text()));
+    const label = util.getStandardPrayerKey(cells[0] ?? "");
+    const iqama = cells[2] ?? "";
+    if (label && iqama) {
+      iqamaByPrayer.set(label, iqama);
+    }
+  });
+
+  util.setIqamaTimes(ids[0], [
+    iqamaByPrayer.get("fajr") ?? "",
+    iqamaByPrayer.get("zuhr") ?? "",
+    iqamaByPrayer.get("asr") ?? "",
+    "sunset",
+    iqamaByPrayer.get("isha") ?? "",
+  ]);
+
+  const jumaTimes = [
+    ...new Set(
+      [
+        ...(util.matchTimeAmPmG(today.find("footer").text()) ?? []),
+        ...(util.matchTimeAmPmG(
+          $('section.masjidAddress:contains("Jummah")').text(),
+        ) ?? []),
+      ]
+        .map((value) => util.extractTimeAmPm(value))
+        .filter((value): value is string => Boolean(value)),
+    ),
+  ];
+  util.setJumaTimes(ids[0], jumaTimes.slice(0, 2));
+
+  return ids;
+};
+
 export const crawler: CrawlerModule = {
   name: "US/GA/al-farooq-masjid-atlanta",
   ids,
-  run: createSelectorRun(ids, {
-    iqama: { selector: "section#prayerSchedule td:last-child" },
-    jumaDefault: ["check website", "check website"],
-  }),
+  run,
 };
