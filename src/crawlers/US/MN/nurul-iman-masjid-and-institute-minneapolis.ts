@@ -17,12 +17,30 @@ const ids: CrawlerModule["ids"] = [
 ];
 const run = async () => {
   const $ = await util.load(ids[0].url);
+  const rows = $("#prayer_times_table tr")
+    .toArray()
+    .map((row) =>
+      util
+        .mapToText($, "td", row)
+        .map(util.normalizeSpace)
+        .filter((value) => value.length > 0),
+    )
+    .filter((cells) => cells.length > 0);
 
-  const a = util
-    .mapToText($, "#prayer_times td:last-child")
-    .filter(util.matchTimeAmPm);
+  const byPrayer = new Map(
+    rows
+      .filter((cells) => cells.length >= 2)
+      .map((cells) => [cells[0]?.toLowerCase() ?? "", cells.slice(1)]),
+  );
 
-  util.setTimes(ids[0], a);
+  util.setIqamaTimes(ids[0], [
+    byPrayer.get("fajr")?.[1],
+    byPrayer.get("dhuhr")?.[1],
+    byPrayer.get("asr")?.[1],
+    byPrayer.get("maghrib")?.[1],
+    byPrayer.get("isha")?.[1],
+  ]);
+  util.setJumaTimes(ids[0], [byPrayer.get("jum'a")?.[0]]);
 
   return ids;
 };

@@ -19,15 +19,32 @@ const run = async () => {
   const $ = await util.load(ids[0].url);
 
   const pt = $('span:contains("Jamaat Prayer Times")').closest("table");
+  const rows: string[][] = [];
+  for (const row of pt.find("tr").toArray()) {
+    const cells = util
+      .mapToText($, "td", row)
+      .map(util.normalizeSpace)
+      .filter((value) => value.length > 0);
+    if (cells.length >= 2) {
+      rows.push(cells);
+    }
+  }
 
-  const a = util.mapToText($, "td:last-child", pt).filter(util.matchTimeAmPm);
+  const byLabel = new Map(
+    rows.map((cells) => [cells[0]?.toLowerCase() ?? "", cells[1] ?? ""]),
+  );
 
-  a.splice(3, 0, "-"); // insert maghrib
-
-  const j = util.mapToText($, 'td:contains("Khutbah") + td', pt);
-
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], j);
+  util.setIqamaTimes(ids[0], [
+    byLabel.get("fajr"),
+    byLabel.get("zuhr"),
+    byLabel.get("asr"),
+    byLabel.get("maghrib"),
+    byLabel.get("isha"),
+  ]);
+  util.setJumaTimes(ids[0], [
+    byLabel.get("friday salat 1st"),
+    byLabel.get("friday salat 2nd"),
+  ]);
 
   return ids;
 };

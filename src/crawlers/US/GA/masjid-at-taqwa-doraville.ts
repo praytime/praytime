@@ -17,13 +17,38 @@ const ids: CrawlerModule["ids"] = [
 ];
 const run = async () => {
   const $ = await util.load(ids[0].url);
+  const html = $.html();
+  const prayerSection = html.match(
+    /Salath Timings[\s\S]*?Recent Accouncements/i,
+  )?.[0];
+  if (!prayerSection) {
+    throw new Error("missing Salath Timings section");
+  }
 
-  const a = util.mapToText($, 'tr:contains("Salath") ~ tr td:last-child');
-  a.splice(1, 1); // remove sunrise
-  const j = a.slice(-1).flatMap(util.matchTimeAmPmG);
+  const parseIqama = (label: string): string => {
+    const match = prayerSection.match(
+      new RegExp(
+        String.raw`<td>\s*${label}\s*<\/td>\s*<td>([^<]+)<\/td>\s*<td>([^<]+)<\/td>`,
+        "i",
+      ),
+    );
+    return util.normalizeSpace(match?.[2] ?? "");
+  };
 
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], j);
+  const jumaTimes = util.extractMatchedTimes(
+    prayerSection.match(
+      /<td>\s*Jumu'?ah\s*<\/td>[\s\S]*?<td[^>]*colspan=['"]2['"][^>]*>([\s\S]*?)<\/td>/i,
+    )?.[1],
+  );
+
+  util.setIqamaTimes(ids[0], [
+    parseIqama("Fajr"),
+    parseIqama("Dhuhr"),
+    parseIqama("Asr"),
+    parseIqama("Maghrib"),
+    parseIqama("Isha"),
+  ]);
+  util.setJumaTimes(ids[0], jumaTimes);
 
   return ids;
 };

@@ -1,6 +1,12 @@
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
+const normalizeSpace = (text: string): string =>
+  text
+    .replace(/[\u200B-\u200D\uFEFF]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
 const ids: CrawlerModule["ids"] = [
   {
     uuid4: "5a582b3a-5217-4802-8810-a247b8484a6e",
@@ -17,17 +23,47 @@ const ids: CrawlerModule["ids"] = [
 ];
 const run = async () => {
   const $ = await util.load(ids[0].url);
+  const html = $.html();
 
-  const a = util
-    .mapToText($, "h5 > span")
-    .filter(util.matchTimeAmPm)
-    .map(util.extractTimeAmPm);
-  // juma comes first
-  const j = [a.shift()];
-  a.splice(3, 0, "-"); // add maghrib back in
+  const iqamaSection = normalizeSpace(
+    $("h5")
+      .toArray()
+      .map((heading) => $(heading).text())
+      .find(
+        (text) => text.includes("Iqama Times") && text.includes("Fajr -"),
+      ) ?? "",
+  );
+  if (!iqamaSection) {
+    throw new Error("missing Iqama Times section");
+  }
 
-  util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], j);
+  const prayerMatches = Array.from(
+    iqamaSection.matchAll(
+      /(Fajr|Dhuhr|Asr|Maghrib|Isha)\s*-\s*([\s\S]*?)(?=(?:Fajr|Dhuhr|Asr|Maghrib|Isha)\s*-|$)/gi,
+    ),
+  );
+  const byPrayer = new Map(
+    prayerMatches.map((match) => [
+      (match[1] ?? "").toLowerCase(),
+      normalizeSpace(match[2] ?? ""),
+    ]),
+  );
+
+  const jumaTime = util.extractTimeAmPm(
+    html.match(/Fridays\s*([0-9:\sAPMapm]+)/i)?.[1],
+  );
+  if (!jumaTime) {
+    throw new Error("missing Friday prayer time");
+  }
+
+  util.setIqamaTimes(ids[0], [
+    byPrayer.get("fajr"),
+    byPrayer.get("dhuhr"),
+    byPrayer.get("asr"),
+    byPrayer.get("maghrib"),
+    byPrayer.get("isha"),
+  ]);
+  util.setJumaTimes(ids[0], [jumaTime]);
 
   return ids;
 };

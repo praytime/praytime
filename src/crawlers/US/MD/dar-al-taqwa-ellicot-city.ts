@@ -1,5 +1,5 @@
+import { createMasjidalRun } from "../../../masjidal";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,20 +15,8 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const $ = await util.load(
-    "https://us.mohid.co/md/columbia1/dat/masjid/widget/api/index/?m=prayertimings",
-  );
-
-  const a = util.mapToText($, ".prayer_iqama_div").filter(util.matchTime);
-
-  util.setTimes(ids[0], a);
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/MD/dar-al-taqwa-ellicot-city",
   ids,
-  run,
+  run: createMasjidalRun(ids, "QL0BzpdZ", { jumaCount: 2 }),
 };

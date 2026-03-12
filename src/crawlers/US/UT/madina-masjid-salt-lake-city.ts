@@ -21,5 +21,8 @@ const ids: CrawlerModule["ids"] = [
 export const crawler: CrawlerModule = {
   name: "US/UT/madina-masjid-salt-lake-city",
   ids,
-  run: createMohidWidgetRun(ids, PRAYER_WIDGET_URL),
+  run: createMohidWidgetRun(ids, PRAYER_WIDGET_URL, {
+    jumaLabelPattern: /friday iqama/i,
+    jumaLimit: 1,
+  }),
 };

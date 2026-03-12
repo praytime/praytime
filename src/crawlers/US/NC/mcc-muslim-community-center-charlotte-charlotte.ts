@@ -1,5 +1,5 @@
+import { createMasjidalRun } from "../../../masjidal";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,24 +15,8 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const $ = await util.load(
-    "https://ummahsoft.org/salahtime/masjid-embed/widget_prayer.php?masjid_id=51010",
-  );
-
-  const a = util.mapToText($, ".prayer-timing td:last-child");
-  a.splice(0, 3); // remove first 3 elements
-  a.splice(1, 1); // remove sunrise
-  util.setIqamaTimes(ids[0], a);
-
-  const j = util.mapToText($, 'td:first-child:contains("Jumu") + td');
-  util.setJumaTimes(ids[0], j);
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/NC/mcc-muslim-community-center-charlotte-charlotte",
   ids,
-  run,
+  run: createMasjidalRun(ids, "xdyqvadX", { jumaCount: 2 }),
 };
