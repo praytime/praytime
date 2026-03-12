@@ -1,6 +1,8 @@
-import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
+
+const CHICAGO_MOSQUE_PRAYER_RX =
+  /\\"name\\":\\"([^\\"]+)\\",\\"adhanTime\\":\\"[^\\"]*\\",\\"iqamahTime\\":\\"([^\\"]+)\\"/g;
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -17,58 +19,29 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const response = await util.get("http://chicagomosque.org/");
-  const $ = cheerio.load(response.data);
+  const { data: html } = await util.get<string>(ids[0].url);
+  const prayers = new Map<util.StandardPrayerKey, string>();
 
-  ids[0].fajrIqama = $(
-    "#ctl00_ModulePanel > div:nth-child(1) > div:nth-child(3) > div:nth-child(3)",
-  )
-    .text()
-    .trim();
-  ids[0].zuhrIqama = $(
-    "#ctl00_ModulePanel > div:nth-child(1) > div:nth-child(4) > div:nth-child(3)",
-  )
-    .text()
-    .trim();
-  ids[0].asrIqama = $(
-    "#ctl00_ModulePanel > div:nth-child(1) > div:nth-child(5) > div:nth-child(3)",
-  )
-    .text()
-    .trim();
-  ids[0].maghribIqama = $(
-    "#ctl00_ModulePanel > div:nth-child(1) > div:nth-child(6) > div:nth-child(3)",
-  )
-    .text()
-    .trim();
-  ids[0].ishaIqama = $(
-    "#ctl00_ModulePanel > div:nth-child(1) > div:nth-child(7) > div:nth-child(3)",
-  )
-    .text()
-    .trim();
-  ids[0].juma1 = "check website";
+  for (const match of html.matchAll(CHICAGO_MOSQUE_PRAYER_RX)) {
+    const prayerKey = util.getStandardPrayerKey(match[1] ?? "");
+    const iqama = util.extractTimeAmPm(match[2] ?? "");
+    if (!prayerKey || !iqama || prayers.has(prayerKey)) {
+      continue;
+    }
+
+    prayers.set(prayerKey, iqama);
+  }
+
+  util.setIqamaTimes(
+    ids[0],
+    util.requireStandardPrayerTimes(
+      prayers,
+      "failed to parse Chicago Mosque iqama times",
+    ),
+  );
 
   return ids;
 };
-
-// exports.apifySettings = {
-//   startUrls: [ { 'value': 'http://chicagomosque.org/' } ],
-//   pageFunction: function pageFunction (context) {
-//     const $ = context.jQuery
-//     const result = {
-//       ids: [
-//         {
-//           fajrIqama: $('#ctl00_ModulePanel > div:nth-child(1) > div:nth-child(3) > div:nth-child(3)').text().trim(),
-//           zuhrIqama: $('#ctl00_ModulePanel > div:nth-child(1) > div:nth-child(4) > div:nth-child(3)').text().trim(),
-//           asrIqama: $('#ctl00_ModulePanel > div:nth-child(1) > div:nth-child(5) > div:nth-child(3)').text().trim(),
-//           maghribIqama: $('#ctl00_ModulePanel > div:nth-child(1) > div:nth-child(6) > div:nth-child(3)').text().trim(),
-//           ishaIqama: $('#ctl00_ModulePanel > div:nth-child(1) > div:nth-child(7) > div:nth-child(3)').text().trim(),
-//           juma1: 'check website'
-//         }
-//       ]
-//     }
-//     return result
-//   }.toString()
-// }
 
 export const crawler: CrawlerModule = {
   name: "US/IL/chicago-mosque",

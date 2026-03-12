@@ -19,7 +19,7 @@ export const crawler: CrawlerModule = {
   name: "US/WI/masjid-al-noor-islamic-society-of-central-wisconsin-marshfield",
   ids,
   run: createPrayersConnectRun(ids, {
-    fallbackJumaTimes: ["check website"],
+    loadJuma: true,
     mosqueId: 84095948,
   }),
 };

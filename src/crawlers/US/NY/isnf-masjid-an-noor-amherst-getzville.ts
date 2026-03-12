@@ -1,5 +1,5 @@
+import { createMasjidalRun } from "../../../masjidal";
 import type { CrawlerModule } from "../../../types";
-import { createWnyMuslimsRun } from "../../../wnymuslims";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -33,15 +33,11 @@ const run = async () => {
     throw new Error("missing ISNF masjid records");
   }
 
-  await createWnyMuslimsRun([amherst], {
-    cardTitle: "Masjid An-Nur",
-    addressText: "745 Heim Road",
-    jumaTimes: ["check website"],
+  await createMasjidalRun([amherst] as CrawlerModule["ids"], "1XAlZzKb", {
+    jumaMode: "setJumaTimes",
   })();
-  await createWnyMuslimsRun([buffalo], {
-    cardTitle: "Masjid At-Taqwa",
-    addressText: "40 Parker Avenue",
-    jumaTimes: ["check website"],
+  await createMasjidalRun([buffalo] as CrawlerModule["ids"], "p8KXgNdM", {
+    jumaMode: "setJumaTimes",
   })();
 
   return ids;

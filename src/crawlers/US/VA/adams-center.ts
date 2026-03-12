@@ -32,7 +32,7 @@ const ids: CrawlerModule["ids"] = [
   {
     uuid4: "31651405-d226-4c53-a0f3-d81d0efc7371",
     name: "Gainesville Juma - Wyndham Garden Manassas",
-    url: "https://www.adamscenter.org/jumah-registration",
+    url: "https://www.adamscenter.org/jumuah/",
     address: "10800 Vandor Ln, Manassas, VA 20109, USA",
     timeZoneId: "America/New_York",
     placeId: "ChIJz4XyACddtokRbyIZi_PWDzs",
@@ -93,7 +93,7 @@ const ids: CrawlerModule["ids"] = [
   {
     uuid4: "cfd101b2-913f-4ace-9a74-244b2c7767b7",
     name: "ADAMS Tysons Juma - Marriot",
-    url: "https://www.adamscenter.org/jumah-registration",
+    url: "https://www.adamscenter.org/jumuah/",
     address: "8028 Leesburg Pike, Tysons, VA 22182, USA",
     timeZoneId: "America/New_York",
     placeId: "ChIJJ7WUjeZKtokRwadFeHcDM40",
@@ -105,7 +105,7 @@ const ids: CrawlerModule["ids"] = [
   {
     uuid4: "1f9de882-0c5c-4de2-a1aa-904119aa752b",
     name: "ADAMS Reston Juma - NVHC",
-    url: "https://www.adamscenter.org/jumah-registration",
+    url: "https://www.adamscenter.org/jumuah/",
     address: "1441 Wiehle Ave, Reston, VA 20190, USA",
     timeZoneId: "America/New_York",
     placeId: "ChIJZcMNtTI2tokR-D3IxC5NQic",
@@ -153,7 +153,7 @@ const ids: CrawlerModule["ids"] = [
   {
     uuid4: "5f90da3a-133e-467f-88d0-8b503cb0c77e",
     name: "Muslim Community Center of Leesburg Juma - Clarion Hotel & Conference Center Leesburg",
-    url: "https://www.adamscenter.org/jumah-registration",
+    url: "https://www.adamscenter.org/jumuah/",
     timeZoneId: "America/New_York",
     address: "1500 E Market St, Leesburg, VA 20176, USA",
     placeId: "ChIJbTLDLLA9tokRVRlngeslQ7E",
@@ -163,22 +163,165 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
+
+const ADAMS_IQAMA_WIDGET_URL =
+  "https://www-adamscenter-org.filesusr.com/html/a49bbb_018741b5b83d5042e9cf79cb18576f7b.html";
+const ADAMS_JUMUAH_URL = "https://www.adamscenter.org/jumuah/";
+const MCLEAN_PRAYER_URL = "https://themasjidapp.org/40/prayers";
+const ADAMS_JUMUAH_LABELS = [
+  "Sterling Jumu'ah",
+  "Ashburn Jumu'ah",
+  "Ashburn Satellite Jumu'ah",
+  "Fairfax Jumu'ah",
+  "Sully Jumu'ah",
+  "Sully Satellite Jumu'ah",
+  "Gainesville Satellite Jumu'ah",
+  "Gainesville Jumu'ah",
+  "Reston Jumu'ah",
+  "Leesburg Satellite Jumu'ah",
+  "Leesburg Jumu'ah",
+  "Crescent Islamic Center Jumu'ah",
+  "Tysons Jumu'ah partnership with McLean Islamic Center",
+] as const;
+
+type AdamsMasjidAppEvent = {
+  isJuma?: unknown;
+  locationDesc?: unknown;
+  order?: unknown;
+  timeDesc?: unknown;
+};
+
+type AdamsMasjidAppPayload = {
+  props?: {
+    pageProps?: {
+      masjid?: {
+        events?: unknown;
+      };
+    };
+  };
+};
+
+const normalizeSpace = (text: string): string =>
+  text.replace(/[’]/g, "'").replace(/\s+/g, " ").trim();
+
+const uniqueTimes = (times: string[]): string[] => Array.from(new Set(times));
+
+const extractAdamsJumaSection = (
+  text: string,
+  label: (typeof ADAMS_JUMUAH_LABELS)[number],
+): string => {
+  const start = text.indexOf(label);
+  if (start === -1) {
+    throw new Error(`missing ADAMS Jumu'ah section: ${label}`);
+  }
+
+  const labelIndex = ADAMS_JUMUAH_LABELS.indexOf(label);
+  const tail = text.slice(start + label.length);
+  let end = tail.length;
+  for (const nextLabel of ADAMS_JUMUAH_LABELS.slice(labelIndex + 1)) {
+    const index = tail.indexOf(nextLabel);
+    if (index >= 0 && index < end) {
+      end = index;
+    }
+  }
+
+  return normalizeSpace(tail.slice(0, end));
+};
+
+const extractAdamsJumaTimes = (
+  text: string,
+  label: (typeof ADAMS_JUMUAH_LABELS)[number],
+): string[] => {
+  const section = extractAdamsJumaSection(text, label);
+  const times = uniqueTimes(
+    (util.matchTimeAmPmG(section) ?? util.matchTimeG(section) ?? [])
+      .map((value) => util.extractTimeAmPm(value) || util.extractTime(value))
+      .filter(Boolean),
+  );
+  if (times.length === 0) {
+    throw new Error(`missing ADAMS Jumu'ah times for ${label}`);
+  }
+  return times;
+};
+
+const loadAdamsJumaTimes = async () => {
+  const $ = await util.load(ADAMS_JUMUAH_URL);
+  const bodyText = normalizeSpace($("body").text());
+
+  return {
+    ashburn: extractAdamsJumaTimes(bodyText, "Ashburn Jumu'ah"),
+    fairfax: extractAdamsJumaTimes(bodyText, "Fairfax Jumu'ah"),
+    gainesville: extractAdamsJumaTimes(
+      bodyText,
+      "Gainesville Satellite Jumu'ah",
+    ),
+    leesburg: extractAdamsJumaTimes(bodyText, "Leesburg Jumu'ah"),
+    leesburgSatellite: extractAdamsJumaTimes(
+      bodyText,
+      "Leesburg Satellite Jumu'ah",
+    ),
+    reston: extractAdamsJumaTimes(bodyText, "Reston Jumu'ah"),
+    sterling: extractAdamsJumaTimes(bodyText, "Sterling Jumu'ah"),
+    sully: extractAdamsJumaTimes(bodyText, "Sully Jumu'ah"),
+  };
+};
+
+const loadTysonsJumaTimes = async (): Promise<string[]> => {
+  const $ = await util.load(MCLEAN_PRAYER_URL);
+  const nextDataText = $("#__NEXT_DATA__").text().trim();
+  if (!nextDataText) {
+    throw new Error("missing McLean Islamic Center prayer data");
+  }
+
+  const nextData = JSON.parse(nextDataText) as AdamsMasjidAppPayload;
+  const events = Array.isArray(nextData.props?.pageProps?.masjid?.events)
+    ? (nextData.props?.pageProps?.masjid?.events as AdamsMasjidAppEvent[])
+    : [];
+
+  const times = uniqueTimes(
+    events
+      .filter(
+        (event) =>
+          event.isJuma === true &&
+          typeof event.locationDesc === "string" &&
+          event.locationDesc.includes("Tysons Corner Marriot") &&
+          typeof event.timeDesc === "string",
+      )
+      .sort((a, b) => {
+        const left =
+          typeof a.order === "number" ? a.order : Number.MAX_SAFE_INTEGER;
+        const right =
+          typeof b.order === "number" ? b.order : Number.MAX_SAFE_INTEGER;
+        return left - right;
+      })
+      .map((event) => util.extractTimeAmPm(event.timeDesc as string))
+      .filter(Boolean),
+  );
+
+  if (times.length === 0) {
+    throw new Error("missing ADAMS Tysons Jumu'ah times");
+  }
+
+  return times;
+};
+
 const run = async () => {
   const browser = await puppeteer.launch();
   try {
     const page = await browser.newPage();
+    const framePromise = util.waitForFrame(page, "masjidbox.com");
+    const adamsJumaTimesPromise = loadAdamsJumaTimes();
+    const tysonsJumaTimesPromise = loadTysonsJumaTimes();
 
-    // ignore return from page.goto
-    const [frame] = await Promise.all([
-      util.waitForFrame(page, "masjidbox.com"),
-      // networkidle0: all tcp connections idle for at least 500 ms
-      page.goto(
-        "https://www-adamscenter-org.filesusr.com/html/a49bbb_018741b5b83d5042e9cf79cb18576f7b.html",
-        { waitUntil: "networkidle0" },
-      ),
+    await page.goto(ADAMS_IQAMA_WIDGET_URL, { waitUntil: "networkidle0" });
+
+    const [frame, adamsJumaTimes, tysonsJumaTimes] = await Promise.all([
+      framePromise,
+      adamsJumaTimesPromise,
+      tysonsJumaTimesPromise,
     ]);
 
-    const t = await frame.$$eval("div.iqamah div.time", (divs) =>
+    const iqamaTimes = await frame.$$eval("div.iqamah div.time", (divs) =>
       divs.map((div) => {
         const text = div.textContent ?? "";
         const p = text.match(/(\d{1,2})(\d{2}\w+)/);
@@ -186,14 +329,41 @@ const run = async () => {
         if (p) {
           return `${p[1]}:${p[2]}`;
         }
-        return "check website";
+        return "";
       }),
     );
-    ids.forEach((r) => {
-      if (!/Juma/.test(r.name)) {
-        util.setIqamaTimes(r, t);
+
+    if (iqamaTimes.length < 5 || iqamaTimes.some((time) => time.length === 0)) {
+      throw new Error("failed to parse ADAMS daily iqama times");
+    }
+
+    const jumaTimesByName = new Map<string, string[]>([
+      ["ADAMS Ashburn", adamsJumaTimes.ashburn],
+      ["ADAMS Fairfax", adamsJumaTimes.fairfax],
+      [
+        "Gainesville Juma - Wyndham Garden Manassas",
+        adamsJumaTimes.gainesville,
+      ],
+      ["ADAMS Sterling", adamsJumaTimes.sterling],
+      ["ADAMS Sully", adamsJumaTimes.sully],
+      ["ADAMS Tysons Juma - Marriot", tysonsJumaTimes],
+      ["ADAMS Reston Juma - NVHC", adamsJumaTimes.reston],
+      ["Muslim Community Center of Leesburg", adamsJumaTimes.leesburg],
+      [
+        "Muslim Community Center of Leesburg Juma - Clarion Hotel & Conference Center Leesburg",
+        adamsJumaTimes.leesburgSatellite,
+      ],
+    ]);
+
+    ids.forEach((record) => {
+      if (!/Juma/.test(record.name)) {
+        util.setIqamaTimes(record, iqamaTimes);
       }
-      r.juma1 = "check website";
+
+      const jumaTimes = jumaTimesByName.get(record.name);
+      if (jumaTimes?.length) {
+        util.setJumaTimes(record, jumaTimes.slice(0, 3));
+      }
     });
   } finally {
     await browser.close();

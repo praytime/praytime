@@ -81,10 +81,14 @@ export const createSelectorRun = (
     const $ = await util.load(options.url ?? ids[0]?.url ?? "");
     const embeddedTimes = util.extractEmbeddedPrayerTimesFromHtml($, $.html());
     let iqamaTimes = parseSelectorValues($, options.iqama);
+    const sourceUrl = options.url ?? ids[0]?.url ?? "";
 
     if ((options.mode ?? "setIqamaTimes") === "setTimes" && !options.juma) {
       if (iqamaTimes.length < 5 && embeddedTimes) {
         iqamaTimes = [...embeddedTimes.iqamaTimes, ...embeddedTimes.jumaTimes];
+      }
+      if (iqamaTimes.length < 5) {
+        throw new Error(`failed to parse selector times from ${sourceUrl}`);
       }
 
       util.setTimes(ids[0], iqamaTimes);
@@ -93,6 +97,9 @@ export const createSelectorRun = (
 
     if (iqamaTimes.length < 5 && embeddedTimes) {
       iqamaTimes = embeddedTimes.iqamaTimes;
+    }
+    if (iqamaTimes.length < 5) {
+      throw new Error(`failed to parse selector iqama times from ${sourceUrl}`);
     }
 
     util.setIqamaTimes(ids[0], iqamaTimes);

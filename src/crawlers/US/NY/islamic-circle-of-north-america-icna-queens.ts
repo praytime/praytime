@@ -19,7 +19,7 @@ export const crawler: CrawlerModule = {
   name: "US/NY/islamic-circle-of-north-america-icna-queens",
   ids,
   run: createPrayersConnectRun(ids, {
-    fallbackJumaTimes: ["check website", "check website"],
+    loadJuma: true,
     mosqueId: 84033161,
   }),
 };

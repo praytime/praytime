@@ -14,11 +14,10 @@ export const createAwqatPageRun = (
     const iqamaTimes = util.mapToText($, ".prayer_entry:last-child");
     const jumaTimes = util.mapToText($, ".prayer_entry:nth-child(2)").slice(5);
 
-    if (iqamaTimes.length >= 5) {
-      util.setIqamaTimes(ids[0], iqamaTimes);
-    } else {
-      util.setCheckWebsiteTimes(ids[0]);
+    if (iqamaTimes.length < 5) {
+      throw new Error(`failed to parse awqat iqama timings from ${url}`);
     }
+    util.setIqamaTimes(ids[0], iqamaTimes);
 
     if (jumaTimes.length > 0) {
       util.setJumaTimes(ids[0], jumaTimes);

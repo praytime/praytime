@@ -1,6 +1,5 @@
-import * as cheerio from "cheerio";
+import { createMasjidalRun } from "../../../masjidal";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -17,42 +16,8 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 
-// dup: https://www.google.com/maps/search/?api=1&query=none&query_place_id=ChIJKQCczbeTD4gRot0ZuNceH-o
-const run = async () => {
-  const response = await util.get("http://www.ifnonline.com/");
-  const $ = cheerio.load(response.data);
-
-  ids[0].fajrIqama = $("div.salah-times > div:nth-child(2) > p:nth-child(1)")
-    .text()
-    .trim();
-  ids[0].zuhrIqama = "check website"; // $('div.salah-times > div:nth-child(2) > p:nth-child(2)').text().trim()
-  ids[0].asrIqama = $(
-    "div.salah-times > div:nth-child(2) > p:nth-last-child(3)",
-  )
-    .text()
-    .trim();
-  ids[0].maghribIqama = $(
-    "div.salah-times > div:nth-child(2) > p:nth-last-child(2)",
-  )
-    .text()
-    .trim();
-  ids[0].ishaIqama = $(
-    "div.salah-times > div:nth-child(2) > p:nth-last-child(1)",
-  )
-    .text()
-    .trim();
-  ids[0].juma1 = $("div.salah-times > div:nth-child(5) > p:nth-child(1)")
-    .text()
-    .trim();
-  ids[0].juma2 = $("div.salah-times > div:nth-child(5) > p:nth-child(5)")
-    .text()
-    .trim();
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/IL/ifn-libertyville",
   ids,
-  run,
+  run: createMasjidalRun(ids, "6adJxLkx", { jumaCount: 2 }),
 };

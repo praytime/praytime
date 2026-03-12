@@ -1,5 +1,5 @@
+import { createMasjidalRun } from "../../../masjidal";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,26 +15,8 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const $ = await util.load(ids[0].url);
-
-  $('tr:contains("Sunrise")').remove();
-
-  const a = util.mapToText($, ".dptTimetable td:last-child");
-
-  if (util.isJumaToday(ids[0])) {
-    util.setJumaTimes(ids[0], [a[1]]);
-  } else {
-    util.setJumaTimes(ids[0], ["check website"]);
-  }
-
-  util.setIqamaTimes(ids[0], a);
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/NY/masjid-isa-ibn-maryam-syracuse",
   ids,
-  run,
+  run: createMasjidalRun(ids, "VKpe7OLP", { jumaMode: "none" }),
 };

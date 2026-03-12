@@ -66,7 +66,6 @@ const run = async () => {
   }
 
   util.setIqamaTimes(ids[0], iqamaTimes);
-  util.setJumaTimes(ids[0], ["check website"]);
 
   return ids;
 };

@@ -1,4 +1,5 @@
 import type { CrawlerModule } from "../../../types";
+import * as util from "../../../util";
 
 // const axios = require('axios')
 // const cheerio = require('cheerio')
@@ -18,15 +19,17 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  // const response = await axios.get('http://lightofislammasjid.org/')
-  // const $ = cheerio.load(response.data)
+  const $ = await util.load(ids[0].url);
+  const iqamaTimes = util.mapToText(
+    $,
+    '.dptTimetable tr:contains("Iqamah") td',
+  );
 
-  ids[0].fajrIqama = "check website";
-  ids[0].zuhrIqama = "check website";
-  ids[0].asrIqama = "check website";
-  ids[0].maghribIqama = "check website";
-  ids[0].ishaIqama = "check website";
-  ids[0].juma1 = "check website";
+  if (iqamaTimes.length < 5) {
+    throw new Error("failed to parse Light of Islam iqama timings");
+  }
+
+  util.setIqamaTimes(ids[0], iqamaTimes);
 
   return ids;
 };

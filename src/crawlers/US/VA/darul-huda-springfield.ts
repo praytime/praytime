@@ -1,5 +1,5 @@
-import { createCheckWebsiteRun } from "../../../checkwebsite";
 import type { CrawlerModule } from "../../../types";
+import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,8 +15,115 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
+
+const normalizeSpace = (text: string): string =>
+  text.replace(/[’]/g, "'").replace(/\s+/g, " ").trim();
+
+const extractSection = (
+  text: string,
+  label: string,
+  nextLabels: string[],
+): string => {
+  const start = text.indexOf(label);
+  if (start === -1) {
+    throw new Error(`missing Darul Huda section: ${label}`);
+  }
+
+  const tail = text.slice(start + label.length);
+  const end = nextLabels
+    .map((nextLabel) => tail.indexOf(nextLabel))
+    .filter((index) => index >= 0)
+    .sort((a, b) => a - b)[0];
+
+  return normalizeSpace(tail.slice(0, end ?? tail.length));
+};
+
+const extractPrayerValue = (
+  section: string,
+  label: string,
+  nextLabels: string[],
+): string => extractSection(section, label, nextLabels);
+
+const run = async () => {
+  const $ = await util.load(ids[0].url);
+  const bodyText = normalizeSpace($("body").text());
+
+  const jumaLabels = ["1st Jummah", "2nd Jummah"];
+  const jumaTimes = jumaLabels.map((label, index) => {
+    const section = extractSection(
+      bodyText,
+      label,
+      jumaLabels.slice(index + 1),
+    );
+    const iqamahMatch = section.match(/Iqamah\s*-\s*([0-9:\sapm.]+)/i);
+    const iqamah = util.extractTimeAmPm(iqamahMatch?.[1]);
+    if (!iqamah) {
+      throw new Error(`failed to parse Darul Huda ${label} iqamah time`);
+    }
+    return iqamah;
+  });
+
+  if (jumaTimes.length !== 2) {
+    throw new Error("failed to parse Darul Huda Juma times");
+  }
+
+  const dailySection = extractSection(bodyText, "PRAYER TIMINGS", [
+    "1st Jummah",
+  ]);
+  const fajrRaw = extractPrayerValue(dailySection, "Fajr", [
+    "Dhuhr",
+    "Asr",
+    "Maghrib",
+    "Isha",
+  ]);
+  const dhuhrRaw = extractPrayerValue(dailySection, "Dhuhr", [
+    "Asr",
+    "Maghrib",
+    "Isha",
+  ]);
+  const asrRaw = extractPrayerValue(dailySection, "Asr", ["Maghrib", "Isha"]);
+  const maghribRaw = extractPrayerValue(dailySection, "Maghrib", ["Isha"]);
+  const ishaRaw = extractPrayerValue(dailySection, "Isha", []);
+
+  const unsupportedValues: string[] = [];
+  const fajr = util.extractTimeAmPm(fajrRaw);
+  if (!fajr || /p\.?m/i.test(fajr)) {
+    unsupportedValues.push(`Fajr=${fajrRaw}`);
+  }
+
+  const dhuhr = util.extractTimeAmPm(dhuhrRaw);
+  if (!dhuhr) {
+    unsupportedValues.push(`Dhuhr=${dhuhrRaw}`);
+  }
+
+  const asr = util.extractTimeAmPm(asrRaw);
+  if (!asr) {
+    unsupportedValues.push(`Asr=${asrRaw}`);
+  }
+
+  const maghrib = util.extractTimeAmPm(maghribRaw);
+  if (!maghrib) {
+    unsupportedValues.push(`Maghrib=${maghribRaw}`);
+  }
+
+  const isha = util.extractTimeAmPm(ishaRaw);
+  if (!isha) {
+    unsupportedValues.push(`Isha=${ishaRaw}`);
+  }
+
+  if (unsupportedValues.length > 0) {
+    throw new Error(
+      `unsupported Darul Huda daily iqama values: ${unsupportedValues.join("; ")}`,
+    );
+  }
+
+  util.setIqamaTimes(ids[0], [fajr, dhuhr, asr, maghrib, isha]);
+  util.setJumaTimes(ids[0], jumaTimes);
+  return ids;
+};
+
 export const crawler: CrawlerModule = {
   name: "US/VA/darul-huda-springfield",
   ids,
-  run: createCheckWebsiteRun(ids),
+  run,
 };

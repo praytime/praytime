@@ -35,7 +35,6 @@ const run = async () => {
     .filter(util.matchTimeAmPm);
 
   util.setIqamaTimes(ids[0], a);
-  util.setJumaTimes(ids[0], ["check website"]);
 
   return ids;
 };

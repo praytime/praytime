@@ -26,13 +26,7 @@ const icsdIqamaValue = (label: string, value: string): string => {
   if (parsed) {
     return parsed;
   }
-  if (label === "fajr") {
-    return "check website";
-  }
-  if (label === "maghrib") {
-    return "-";
-  }
-  return "";
+  throw new Error(`unsupported ICSD ${label} iqama value: ${value}`);
 };
 
 const run = async () => {
@@ -59,13 +53,11 @@ const run = async () => {
         continue;
       }
 
-      const value = icsdIqamaValue(prayerKey, valueParts.join(":").trim());
-      if (!value) {
-        continue;
-      }
-
       if (!prayers.has(prayerKey)) {
-        prayers.set(prayerKey, value);
+        prayers.set(
+          prayerKey,
+          icsdIqamaValue(prayerKey, valueParts.join(":").trim()),
+        );
       }
       continue;
     }

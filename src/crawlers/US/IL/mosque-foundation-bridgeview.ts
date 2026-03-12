@@ -20,7 +20,7 @@ export const crawler: CrawlerModule = {
   name: "US/IL/mosque-foundation-bridgeview",
   ids,
   run: createPrayersConnectRun(ids, {
+    loadJuma: true,
     mosqueId: 84070713,
-    supplementalJumaTimes: ["check website"],
   }),
 };

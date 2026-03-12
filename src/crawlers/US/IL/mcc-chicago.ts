@@ -47,17 +47,12 @@ const run = async () => {
     ids[0],
     util.mapToText($, "ul.time-list div.time-r").slice(1),
   );
-  util.setJumaTimes(ids[0], ["check website"]);
 
   // mcc
   util.setIqamaTimes(
     ids[1],
     util.mapToText($, "ul.time-list div.time-l").slice(1),
   );
-  util.setJumaTimes(ids[1], ["check website", "check website"]);
-
-  // ohare
-  util.setJumaTimes(ids[2], ["check website"]);
 
   return ids;
 };

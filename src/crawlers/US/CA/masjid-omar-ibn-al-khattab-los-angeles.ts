@@ -5,7 +5,7 @@ const ids: CrawlerModule["ids"] = [
   {
     uuid4: "b051bf9f-c64e-4a72-a725-a1970ea81e73",
     name: "Masjid Omar ibn Al-Khattab",
-    url: "http://omarfoundation.com/",
+    url: "https://omarfoundation.com/",
     timeZoneId: "America/Los_Angeles",
     address: "1025 W Exposition Blvd, Los Angeles, CA 90007, USA",
     placeId: "ChIJ2TILPvzHwoARHAcQW0V8D-s",
@@ -20,6 +20,5 @@ export const crawler: CrawlerModule = {
   ids,
   run: createSelectorRun(ids, {
     iqama: { selector: ".jamah" },
-    jumaDefault: ["check website"],
   }),
 };

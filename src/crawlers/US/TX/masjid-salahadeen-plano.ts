@@ -20,16 +20,24 @@ const run = async () => {
   const response = await util.get("http://masjidsalahadeen.org/");
   const $ = cheerio.load(response.data);
 
-  ids[0].fajrIqama = $("td:contains(Fajr) + td").text().trim();
-  ids[0].zuhrIqama = $("td:contains(Dhuhr) + td").text().trim();
-  ids[0].asrIqama = $("td:contains(Asr) + td").text().trim();
-  ids[0].maghribIqama = $("td:contains(Maghrib) + td").text().trim();
-  ids[0].ishaIqama = $("td:contains(Isha) + td").text().trim();
-  ids[0].juma1 =
+  const iqamaTimes = [
+    $("td:contains(Fajr) + td").text().trim(),
+    $("td:contains(Dhuhr) + td").text().trim(),
+    $("td:contains(Asr) + td").text().trim(),
+    $("td:contains(Maghrib) + td").text().trim(),
+    $("td:contains(Isha) + td").text().trim(),
+  ];
+  const juma1 =
     $("td:contains(Khutba) + td")
       .text()
       .match(/\d{1,2}:\d{2}/)?.[0] ?? "";
-  ids[0].juma2 = "check website";
+
+  if (iqamaTimes.some((value) => value.length === 0) || !juma1) {
+    throw new Error("failed to parse Masjid Salahadeen prayer times");
+  }
+
+  util.setIqamaTimes(ids[0], iqamaTimes);
+  ids[0].juma1 = juma1;
 
   return ids;
 };

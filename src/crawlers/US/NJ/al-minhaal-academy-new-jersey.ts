@@ -1,5 +1,4 @@
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,13 +14,7 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  util.setCheckWebsiteTimes(ids[0]);
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/NJ/al-minhaal-academy-new-jersey",
   ids,
-  run,
 };

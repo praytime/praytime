@@ -2,6 +2,8 @@ import * as cheerio from "cheerio";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
+const MASJIDAL_ID = "nL1J28Aa";
+
 const ids: CrawlerModule["ids"] = [
   {
     uuid4: "67c64bec-d370-48ec-8c01-78f3d7cc2494",
@@ -28,20 +30,42 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const response = await util.get("https://darussalaam.org/");
-  const $ = cheerio.load(response.data);
 
-  ids[0].fajrIqama = $(".dptTimetable tr:nth-child(3) td:last-child").text();
-  ids[0].zuhrIqama = $(".dptTimetable tr:nth-child(5) td:last-child").text();
-  ids[0].asrIqama = $(".dptTimetable tr:nth-child(6) td:last-child").text();
-  ids[0].maghribIqama = $(".dptTimetable tr:nth-child(7) td:last-child").text();
-  ids[0].ishaIqama = $(".dptTimetable tr:nth-child(8) td:last-child").text();
-  ids[0].juma1 = "check website";
+const extractOffSiteJumaTimes = ($: cheerio.CheerioAPI): string[] => {
+  const notice =
+    util
+      .mapToText($, "p")
+      .find((text) => /jumu.?ah is being prayed at/i.test(text)) ?? "";
+  const times = [...(util.matchTimeAmPmG(notice) ?? [])]
+    .map((value) => util.extractTimeAmPm(value))
+    .filter((value): value is string => Boolean(value));
+
+  if (times.length < 2) {
+    throw new Error("failed to parse Dar-us-Salaam off-site juma times");
+  }
+
+  return times.slice(0, 2);
+};
+
+const run = async () => {
+  const [htmlResponse, iqama] = await Promise.all([
+    util.get<string>(ids[0].url),
+    util.loadMasjidalIqama(MASJIDAL_ID),
+  ]);
+  const html = htmlResponse.data;
+  const $ = cheerio.load(html);
+
+  util.setIqamaTimes(ids[0], [
+    iqama.fajr,
+    iqama.zuhr,
+    iqama.asr,
+    iqama.maghrib,
+    iqama.isha,
+  ]);
 
   const second = ids[1];
   if (second) {
-    second.juma1 = "check website";
+    util.setJumaTimes(second, extractOffSiteJumaTimes($));
   }
 
   return ids;
