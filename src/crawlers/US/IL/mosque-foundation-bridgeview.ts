@@ -1,5 +1,8 @@
-import { createPrayersConnectRun } from "../../../prayersconnect";
 import type { CrawlerModule } from "../../../types";
+import * as util from "../../../util";
+
+const normalizePrayerLabel = (value: string): string =>
+  util.normalizeSpace(value).toLowerCase();
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -16,11 +19,52 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 
+const run = async () => {
+  const $ = await util.load(ids[0].url);
+  const prayerRows = $("#timetable tr").toArray();
+  const iqamaByPrayer = new Map<string, string>();
+  const jumaTimes: string[] = [];
+
+  for (const row of prayerRows) {
+    const label = normalizePrayerLabel(
+      $(row).find(".prayer-name").first().text(),
+    );
+    if (!label) {
+      continue;
+    }
+
+    if (label.includes("friday")) {
+      const jumaTime = util.extractTimeAmPm($(row).text());
+      if (jumaTime) {
+        jumaTimes.push(jumaTime);
+      }
+      continue;
+    }
+
+    const iqama = util.extractTimeAmPm(
+      $(row).find(".iqama-time").first().text(),
+    );
+    if (!iqama) {
+      continue;
+    }
+
+    iqamaByPrayer.set(label, iqama);
+  }
+
+  util.setIqamaTimes(ids[0], [
+    iqamaByPrayer.get("fajr"),
+    iqamaByPrayer.get("dhuhr") ?? iqamaByPrayer.get("zuhr"),
+    iqamaByPrayer.get("asr"),
+    iqamaByPrayer.get("maghrib"),
+    iqamaByPrayer.get("isha"),
+  ]);
+  util.setJumaTimes(ids[0], jumaTimes);
+
+  return ids;
+};
+
 export const crawler: CrawlerModule = {
   name: "US/IL/mosque-foundation-bridgeview",
   ids,
-  run: createPrayersConnectRun(ids, {
-    loadJuma: true,
-    mosqueId: 84070713,
-  }),
+  run,
 };

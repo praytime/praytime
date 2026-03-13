@@ -179,31 +179,12 @@ const normalizeClock = (value: unknown): string => {
   return util.extractTimeAmPm(value) || util.extractTime(value);
 };
 
-const normalizeIsoClock = (value: unknown, timeZoneId: string): string => {
-  if (typeof value !== "string") {
-    return "";
-  }
-
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return normalizeClock(value);
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    hour: "numeric",
-    hour12: true,
-    minute: "2-digit",
-    timeZone: timeZoneId,
-  }).format(parsed);
-};
-
-const findIqamahEntry = (
+const findOptionalIqamahEntry = (
   entries: unknown,
   mosqueId: number,
-  prayerKey: string,
-): PrayersConnectIqamahEntry => {
+): PrayersConnectIqamahEntry | undefined => {
   if (!Array.isArray(entries)) {
-    throw new Error(`missing prayers connect ${prayerKey} schedule`);
+    return undefined;
   }
 
   const match = entries.find(
@@ -211,13 +192,41 @@ const findIqamahEntry = (
       toMosqueId((entry as PrayersConnectIqamahEntry)?.id) === mosqueId,
   );
   if (!match || typeof match !== "object") {
-    throw new Error(
-      `missing prayers connect ${prayerKey} entry for mosque ${mosqueId}`,
-    );
+    return undefined;
   }
 
   return match as PrayersConnectIqamahEntry;
 };
+
+const findIqamahEntry = (
+  entries: unknown,
+  mosqueId: number,
+  prayerKey: string,
+): PrayersConnectIqamahEntry => {
+  const optionalMatch = findOptionalIqamahEntry(entries, mosqueId);
+  if (optionalMatch) {
+    return optionalMatch;
+  }
+
+  if (!Array.isArray(entries)) {
+    throw new Error(`missing prayers connect ${prayerKey} schedule`);
+  }
+
+  throw new Error(
+    `missing prayers connect ${prayerKey} entry for mosque ${mosqueId}`,
+  );
+};
+
+const fridayJumaTimesFromSchedules = (
+  schedules: Record<string, PrayersConnectIqamahBucket>,
+  mosqueId: number,
+): string[] =>
+  Object.entries(schedules)
+    .filter(([key]) => /^jummah\d+$/i.test(key))
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([, bucket]) => findOptionalIqamahEntry(bucket?.iqamah, mosqueId))
+    .map((entry) => normalizeClock(entry?.iqamah_human))
+    .filter((value): value is string => value.length > 0);
 
 export const loadPrayersConnectPrayerTimes = async (
   record: MasjidRecord,
@@ -247,11 +256,25 @@ export const loadPrayersConnectPrayerTimes = async (
 
   const prayerTimes = new Map<string, string>();
   for (const prayerKey of PRAYER_KEYS) {
-    const entry = findIqamahEntry(
-      schedules[prayerKey]?.iqamah,
-      input.mosqueId,
-      prayerKey,
-    );
+    if (prayerKey === "dhuhr" && util.isJumaToday(record)) {
+      const dhuhrEntry = findOptionalIqamahEntry(
+        schedules.dhuhr?.iqamah,
+        input.mosqueId,
+      );
+      if (!dhuhrEntry) {
+        prayerTimes.set(prayerKey, "Juma");
+        continue;
+      }
+    }
+
+    const entry =
+      prayerKey === "dhuhr"
+        ? findIqamahEntry(schedules.dhuhr?.iqamah, input.mosqueId, prayerKey)
+        : findIqamahEntry(
+            schedules[prayerKey]?.iqamah,
+            input.mosqueId,
+            prayerKey,
+          );
     const time = normalizeClock(entry.iqamah_human);
     if (!time) {
       throw new Error(
@@ -262,8 +285,10 @@ export const loadPrayersConnectPrayerTimes = async (
     prayerTimes.set(prayerKey, time);
   }
 
-  const juma: string[] = [];
-  if (input.loadJuma) {
+  const juma = util.isJumaToday(record)
+    ? fridayJumaTimesFromSchedules(schedules, input.mosqueId)
+    : [];
+  if (input.loadJuma && juma.length === 0) {
     const jumuahResponse = await util.get<string>(
       prayersConnectAreaUrl("jumuah", record),
     );
@@ -285,9 +310,10 @@ export const loadPrayersConnectPrayerTimes = async (
           continue;
         }
 
-        const time = normalizeIsoClock(
+        const time = util.normalizeIsoClock(
           (entry as PrayersConnectJumuahEntry).iqamah,
           record.timeZoneId,
+          normalizeClock,
         );
         const key = time.replace(/\s+/g, "").toLowerCase();
         if (!time || seen.has(key)) {
