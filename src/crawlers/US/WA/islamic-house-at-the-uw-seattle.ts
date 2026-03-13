@@ -1,4 +1,4 @@
-import { createSelectorRun } from "../../../selectors";
+import { createMasjidalRun } from "../../../masjidal";
 import type { CrawlerModule } from "../../../types";
 
 const ids: CrawlerModule["ids"] = [
@@ -18,11 +18,8 @@ const ids: CrawlerModule["ids"] = [
 export const crawler: CrawlerModule = {
   name: "US/WA/islamic-house-at-the-uw-seattle",
   ids,
-  run: createSelectorRun(ids, {
-    iqama: { limit: 5, selector: ".jamah" },
-    juma: {
-      parser: "extractTimeAmPm",
-      selector: 'h2:contains("Jummah")',
-    },
+  run: createMasjidalRun(ids, "RKxwXOdO", {
+    jumaCount: 1,
+    jumaMode: "setJumaTimes",
   }),
 };

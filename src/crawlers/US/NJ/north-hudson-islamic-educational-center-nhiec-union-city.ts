@@ -1,4 +1,4 @@
-import { createSelectorRun } from "../../../selectors";
+import { createMohidWidgetRun } from "../../../mohid";
 import type { CrawlerModule } from "../../../types";
 
 const ids: CrawlerModule["ids"] = [
@@ -18,11 +18,8 @@ const ids: CrawlerModule["ids"] = [
 export const crawler: CrawlerModule = {
   name: "US/NJ/north-hudson-islamic-educational-center-nhiec-union-city",
   ids,
-  run: createSelectorRun(ids, {
-    iqama: { selector: ".masjidnow-salah-time-iqamah" },
-    juma: {
-      parser: "matchTimeAmPmG",
-      selector: ".masjidnow-extra-info",
-    },
-  }),
+  run: createMohidWidgetRun(
+    ids,
+    "https://us.mohid.co/nj/njrgn/northhudsonislamiced/masjid/widget/api/index/?m=prayertimings",
+  ),
 };
