@@ -1,3 +1,7 @@
+import {
+  extractSunsetOffsetMinutes,
+  sunsetOffsetClock,
+} from "../../../suntime";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
@@ -10,6 +14,13 @@ const parseIsomIqama = (html: string, label: string): string => {
   const parsed = util.extractTimeAmPm(value) || util.extractTime(value);
 
   if (!parsed) {
+    if (/^maghrib$/i.test(label)) {
+      const offsetMinutes = extractSunsetOffsetMinutes(value);
+      if (offsetMinutes !== null) {
+        return sunsetOffsetClock(ids[0], offsetMinutes);
+      }
+    }
+
     throw new Error(`unsupported ISOM ${label} iqama value: ${value}`);
   }
 

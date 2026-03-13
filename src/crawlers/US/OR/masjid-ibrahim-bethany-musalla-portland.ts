@@ -1,4 +1,4 @@
-import { createSelectorRun } from "../../../selectors";
+import { createMawaqitMobileRun } from "../../../mawaqit";
 import type { CrawlerModule } from "../../../types";
 
 const ids: CrawlerModule["ids"] = [
@@ -18,11 +18,8 @@ const ids: CrawlerModule["ids"] = [
 export const crawler: CrawlerModule = {
   name: "US/OR/masjid-ibrahim-bethany-musalla-portland",
   ids,
-  run: createSelectorRun(ids, {
-    iqama: { limit: 5, selector: ".jamah" },
-    juma: {
-      parser: "matchTimeAmPmG",
-      selector: 'b:contains("Jumah")',
-    },
-  }),
+  run: createMawaqitMobileRun(
+    ids,
+    "bethany-musalla-portland-97229-united-states",
+  ),
 };

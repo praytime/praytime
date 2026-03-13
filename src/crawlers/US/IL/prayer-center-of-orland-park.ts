@@ -31,19 +31,24 @@ const run = async () => {
     );
   const findRow = (pattern: RegExp): string[] =>
     rows.find((cells) => pattern.test(cells[0] ?? "")) ?? [];
+  const isFriday = util.isJumaToday(ids[0]);
   const iqama = (pattern: RegExp): string => {
     const row = findRow(pattern);
     return util.extractTimeAmPm(row.at(-1));
   };
+  const jumaRow = findRow(/^jumu/i);
+  const jumaTimes =
+    util.matchTimeAmPmG(jumaRow.at(-1) ?? "") ??
+    util.matchTimeAmPmG(findRow(/khutbah/i).join(" "));
 
   util.setIqamaTimes(ids[0], [
     iqama(/^fajr$/i),
-    iqama(/^duh(?:r|ur)$/i),
+    isFriday ? "Juma" : iqama(/^duh(?:r|ur)$/i),
     iqama(/^asr$/i),
     iqama(/^maghrib$/i),
     iqama(/^isha$/i),
   ]);
-  util.setJumaTimes(ids[0], util.matchTimeAmPmG(findRow(/^jumu/i).join(" ")));
+  util.setJumaTimes(ids[0], jumaTimes);
 
   return ids;
 };
