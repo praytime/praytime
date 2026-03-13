@@ -1132,6 +1132,28 @@ export const normalizeLooseClock = (value: unknown): string => {
   return extractTimeAmPm(trimmed) || extractTime(trimmed) || trimmed;
 };
 
+export const normalizeIsoClock = (
+  value: unknown,
+  timeZoneId: string,
+  fallback: (value: string) => string,
+): string => {
+  if (typeof value !== "string") {
+    return "";
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return fallback(value);
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    hour: "numeric",
+    hour12: true,
+    minute: "2-digit",
+    timeZone: timeZoneId,
+  }).format(parsed);
+};
+
 type EmbeddedPrayerTimes = {
   iqamaTimes: string[];
   jumaTimes: string[];

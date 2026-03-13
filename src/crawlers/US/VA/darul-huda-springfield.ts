@@ -1,3 +1,7 @@
+import {
+  extractSunsetOffsetMinutes,
+  sunsetOffsetClock,
+} from "../../../suntime";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
@@ -44,6 +48,29 @@ const extractPrayerValue = (
   nextLabels: string[],
 ): string => extractSection(section, label, nextLabels);
 
+const parseDailyIqama = (
+  value: string,
+  prayer: "asr" | "dhuhr" | "fajr" | "isha" | "maghrib",
+): string => {
+  const cleaned = normalizeSpace(value);
+  const parsed = util.extractTimeAmPm(cleaned);
+  if (parsed) {
+    if (prayer === "fajr" && /p\.?m/i.test(cleaned)) {
+      return parsed.replace(/PM$/i, "AM");
+    }
+    return parsed;
+  }
+
+  if (prayer === "maghrib") {
+    const offsetMinutes = extractSunsetOffsetMinutes(cleaned);
+    if (offsetMinutes !== null) {
+      return sunsetOffsetClock(ids[0], offsetMinutes);
+    }
+  }
+
+  return "";
+};
+
 const run = async () => {
   const $ = await util.load(ids[0].url);
   const bodyText = normalizeSpace($("body").text());
@@ -86,27 +113,27 @@ const run = async () => {
   const ishaRaw = extractPrayerValue(dailySection, "Isha", []);
 
   const unsupportedValues: string[] = [];
-  const fajr = util.extractTimeAmPm(fajrRaw);
-  if (!fajr || /p\.?m/i.test(fajr)) {
+  const fajr = parseDailyIqama(fajrRaw, "fajr");
+  if (!fajr) {
     unsupportedValues.push(`Fajr=${fajrRaw}`);
   }
 
-  const dhuhr = util.extractTimeAmPm(dhuhrRaw);
+  const dhuhr = parseDailyIqama(dhuhrRaw, "dhuhr");
   if (!dhuhr) {
     unsupportedValues.push(`Dhuhr=${dhuhrRaw}`);
   }
 
-  const asr = util.extractTimeAmPm(asrRaw);
+  const asr = parseDailyIqama(asrRaw, "asr");
   if (!asr) {
     unsupportedValues.push(`Asr=${asrRaw}`);
   }
 
-  const maghrib = util.extractTimeAmPm(maghribRaw);
+  const maghrib = parseDailyIqama(maghribRaw, "maghrib");
   if (!maghrib) {
     unsupportedValues.push(`Maghrib=${maghribRaw}`);
   }
 
-  const isha = util.extractTimeAmPm(ishaRaw);
+  const isha = parseDailyIqama(ishaRaw, "isha");
   if (!isha) {
     unsupportedValues.push(`Isha=${ishaRaw}`);
   }

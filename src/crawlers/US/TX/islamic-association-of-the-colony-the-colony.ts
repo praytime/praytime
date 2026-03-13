@@ -1,3 +1,7 @@
+import {
+  extractSunsetOffsetMinutes,
+  sunsetOffsetClock,
+} from "../../../suntime";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
@@ -28,10 +32,24 @@ const readPrayerCards = (cards: PrayerCard[], pattern: RegExp): string => {
   return match?.text ?? "";
 };
 
-const extractClock = (text: string): string => {
+const extractClock = (
+  text: string,
+  prayer: "asr" | "fajr" | "isha" | "maghrib" | "zuhr",
+): string => {
   const cleaned = normalizeText(text);
   const extracted = util.extractTimeAmPm(cleaned) || util.extractTime(cleaned);
-  return normalizeClock(extracted);
+  if (extracted) {
+    return normalizeClock(extracted);
+  }
+
+  if (prayer === "maghrib") {
+    const offsetMinutes = extractSunsetOffsetMinutes(cleaned);
+    if (offsetMinutes !== null) {
+      return sunsetOffsetClock(ids[0], offsetMinutes);
+    }
+  }
+
+  return "";
 };
 
 const ids: CrawlerModule["ids"] = [
@@ -66,11 +84,14 @@ const run = async () => {
     throw new Error("unexpected prayer-time cards: none found");
   }
 
-  const fajr = extractClock(readPrayerCards(cards, /fajr/i));
-  const zuhr = extractClock(readPrayerCards(cards, /duhur|dhuhr|zuhr/i));
-  const asr = extractClock(readPrayerCards(cards, /asar|asr/i));
-  const maghrib = extractClock(readPrayerCards(cards, /maghrib/i));
-  const isha = extractClock(readPrayerCards(cards, /isha/i));
+  const fajr = extractClock(readPrayerCards(cards, /fajr/i), "fajr");
+  const zuhr = extractClock(
+    readPrayerCards(cards, /duhur|dhuhr|zuhr/i),
+    "zuhr",
+  );
+  const asr = extractClock(readPrayerCards(cards, /asar|asr/i), "asr");
+  const maghrib = extractClock(readPrayerCards(cards, /maghrib/i), "maghrib");
+  const isha = extractClock(readPrayerCards(cards, /isha/i), "isha");
 
   if (!fajr || !zuhr || !asr || !maghrib || !isha) {
     throw new Error("unexpected prayer-time cards: missing iqama times");

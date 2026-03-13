@@ -1,4 +1,3 @@
-import { createSelectorRun } from "../../../selectors";
 import type { CrawlerModule } from "../../../types";
 
 const ids: CrawlerModule["ids"] = [
@@ -18,11 +17,4 @@ const ids: CrawlerModule["ids"] = [
 export const crawler: CrawlerModule = {
   name: "US/NY/masjid-al-aman-brooklyn",
   ids,
-  run: createSelectorRun(ids, {
-    iqama: {
-      removeIndexes: [1],
-      selector: ".dptTimetable td:last-child",
-    },
-    mode: "setTimes",
-  }),
 };
