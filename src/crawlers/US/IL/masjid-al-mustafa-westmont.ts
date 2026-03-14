@@ -1,4 +1,8 @@
 import * as cheerio from "cheerio";
+import {
+  extractSunsetOffsetMinutes,
+  sunsetOffsetClock,
+} from "../../../suntime";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
@@ -16,19 +20,59 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
+
+const normalizeLine = (value: string): string =>
+  value.replace(/\s+/g, " ").trim();
+
 const run = async () => {
   const response = await util.get("https://masjidalmustafa.weebly.com");
   const $ = cheerio.load(response.data);
 
-  const target = $("div.paragraph:contains('Fajr:')");
-  const t = target.text().match(/(\d{1,2}:\d{2})/g);
-  const maghrib = target.text().match(/Maghrib:\s+([\d\w\s]+)Isha/);
+  const target = $("div.paragraph")
+    .toArray()
+    .find((element) => /Fajr:/i.test($(element).text()));
+  if (!target) {
+    throw new Error("missing Masjid Al-Mustafa iqama text");
+  }
 
-  ids[0].fajrIqama = t?.[0];
-  ids[0].zuhrIqama = t?.[1];
-  ids[0].asrIqama = t?.[2];
-  ids[0].maghribIqama = maghrib?.[1];
-  ids[0].ishaIqama = t?.[3];
+  const text = normalizeLine($(target).text());
+  const matches = text.match(/\d{1,2}:\d{2}\s*[ap]\.?m\.?/gi) ?? [];
+  const maghribValue =
+    /Maghrib:\s*(.+?)\s*Isha:/i.exec(text)?.[1]?.trim() ?? "";
+  const maghribOffsetMinutes = extractSunsetOffsetMinutes(maghribValue);
+  if (matches.length < 4 || maghribOffsetMinutes === null) {
+    throw new Error(`failed to parse Masjid Al-Mustafa iqama block: ${text}`);
+  }
+
+  const fridayHeading = $("h2")
+    .toArray()
+    .find((element) => /Friday Prayer/i.test($(element).text()));
+  if (!fridayHeading) {
+    throw new Error("missing Masjid Al-Mustafa Friday Prayer section");
+  }
+
+  const fridayText = normalizeLine(
+    $(fridayHeading).nextUntil("h2", "div.paragraph").text(),
+  );
+  const jumaTimes = [
+    ...fridayText.matchAll(/Start:\s*(\d{1,2}:\d{2}\s*[ap]\.?m\.?)/gi),
+  ]
+    .map((match) => util.extractTimeAmPm(match[1] ?? ""))
+    .filter(Boolean);
+  if (jumaTimes.length === 0) {
+    throw new Error(
+      `failed to parse Masjid Al-Mustafa Friday Prayer times: ${fridayText}`,
+    );
+  }
+
+  util.setIqamaTimes(ids[0], [
+    matches[0] ?? "",
+    matches[1] ?? "",
+    matches[2] ?? "",
+    sunsetOffsetClock(ids[0], maghribOffsetMinutes),
+    matches[3] ?? "",
+  ]);
+  util.setJumaTimes(ids[0], jumaTimes);
 
   return ids;
 };
