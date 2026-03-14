@@ -463,17 +463,21 @@ const validateForLocalDate = (
   }
 
   if (parseableJumas.length >= 2) {
-    const jumaMinutes = parseableJumas.map(
-      ([, value]) => value.comparableMinutes,
-    );
-    for (let index = 1; index < jumaMinutes.length; index += 1) {
-      const previous = jumaMinutes[index - 1];
-      const current = jumaMinutes[index];
-      if (previous === undefined || current === undefined) {
+    for (let index = 1; index < parseableJumas.length; index += 1) {
+      const previous = parseableJumas[index - 1];
+      const current = parseableJumas[index];
+      if (!previous || !current) {
         continue;
       }
-      if (current < previous) {
-        warnings.push("juma times are not in ascending order");
+
+      const [previousField, previousValue] = previous;
+      const [currentField, currentValue] = current;
+      if (currentValue.comparableMinutes <= previousValue.comparableMinutes) {
+        pushValidationIssue(
+          errors,
+          currentField,
+          `(${currentValue.normalized}) must be later than ${previousField} (${previousValue.normalized})`,
+        );
         break;
       }
     }
