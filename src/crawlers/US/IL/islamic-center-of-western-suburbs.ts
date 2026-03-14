@@ -28,41 +28,87 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
+
+const normalizeText = (value: string): string =>
+  value.replace(/\s+/g, " ").trim();
+
+const parseIqamaTime = (
+  $: cheerio.CheerioAPI,
+  label: string,
+  description: string,
+): string => {
+  const parsed = util.extractTimeAmPm(
+    normalizeText($(`thead:contains('${label}') + thead`).text()),
+  );
+  if (!parsed) {
+    throw new Error(`missing ICWS ${description} iqama time`);
+  }
+
+  return parsed;
+};
+
+const findJumaSectionText = (
+  $: cheerio.CheerioAPI,
+  titlePattern: RegExp,
+): string => {
+  const heading = $("h2")
+    .toArray()
+    .find((element) => titlePattern.test(normalizeText($(element).text())));
+  if (!heading) {
+    throw new Error(`missing ICWS Juma section for ${titlePattern}`);
+  }
+
+  const sectionText = normalizeText(
+    $(heading).closest(".wpb_row").next(".wpb_row").text(),
+  );
+  if (!sectionText) {
+    throw new Error(`missing ICWS Juma timings for ${titlePattern}`);
+  }
+
+  return sectionText;
+};
+
+const parseKhutbahTimes = (sectionText: string): string[] => {
+  const times = [
+    ...sectionText.matchAll(
+      /Khutbah(?:\s+\d+)?\s*\.\s*(\d{1,2}:\d{2}\s*[ap]\.?m\.?)/gi,
+    ),
+  ]
+    .map((match) => util.extractTimeAmPm(match[1] ?? ""))
+    .filter(Boolean);
+  if (times.length === 0) {
+    throw new Error(`missing ICWS khutbah times in section: ${sectionText}`);
+  }
+
+  return times;
+};
+
 const run = async () => {
   const response = await util.get("https://www.icwsmasjid.org/");
   const $ = cheerio.load(response.data);
 
-  ids[0].fajrIqama = $("thead:contains('FAJR') + thead")
-    .text()
-    .trim()
-    .match(/\d{1,2}:\d{1,2}/)?.[0];
-  ids[0].zuhrIqama = $("thead:contains('DHUR') + thead")
-    .text()
-    .trim()
-    .match(/\d{1,2}:\d{1,2}/)?.[0];
-  ids[0].asrIqama = $("thead:contains('ASR') + thead")
-    .text()
-    .trim()
-    .match(/\d{1,2}:\d{1,2}/)?.[0];
-  ids[0].maghribIqama = $("thead:contains('MAGHRIB') + thead")
-    .text()
-    .trim()
-    .match(/\d{1,2}:\d{1,2}/)?.[0];
-  ids[0].ishaIqama = $("thead:contains('ISHA') + thead")
-    .text()
-    .trim()
-    .match(/\d{1,2}:\d{1,2}/)?.[0];
+  util.setIqamaTimes(ids[0], [
+    parseIqamaTime($, "FAJR", "Fajr"),
+    parseIqamaTime($, "DHUR", "Zuhr"),
+    parseIqamaTime($, "ASR", "Asr"),
+    parseIqamaTime($, "MAGHRIB", "Maghrib"),
+    parseIqamaTime($, "ISHA", "Isha"),
+  ]);
+  util.setJumaTimes(
+    ids[0],
+    parseKhutbahTimes(
+      findJumaSectionText($, /Jumaah Timings . West Chicago Location/i),
+    ).slice(0, 1),
+  );
 
   const second = ids[1];
   if (second) {
-    second.juma1 = $("h3:contains('Khutbah 1') + div")
-      .text()
-      .trim()
-      .match(/\d{1,2}:\d{1,2}/)?.[0];
-    second.juma2 = $("h3:contains('Khutbah 2') + div")
-      .text()
-      .trim()
-      .match(/\d{1,2}:\d{1,2}/)?.[0];
+    util.setJumaTimes(
+      second,
+      parseKhutbahTimes(
+        findJumaSectionText($, /Jumaah Timings . Bartlett Location/i),
+      ),
+    );
   }
 
   return ids;
