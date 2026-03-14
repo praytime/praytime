@@ -32,8 +32,8 @@ const toPrayerKey = (text: string): PrayerKey | "" => {
 const ids: CrawlerModule["ids"] = [
   {
     uuid4: "87ee5daa-3203-43a4-93c2-1a96ad28c620",
-    name: "Faizan e Madinah Chicago-West Ridge",
-    url: "https://www.dawateislamiusa.org/centers",
+    name: "Faizan-e-Madinah Chicago",
+    url: PRAYER_PAGE_URL,
     timeZoneId: "America/Chicago",
     address: "6821 N Western Ave, Chicago, IL 60645, USA",
     placeId: "ChIJ-Y2n0b_RD4gRMGks0fAD4ho",
