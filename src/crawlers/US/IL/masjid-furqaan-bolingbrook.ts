@@ -21,6 +21,6 @@ export const crawler: CrawlerModule = {
   run: createDptTimetableRun(ids, ids[0].url, {
     errorContext: "Masjid Furqaan Bolingbrook homepage",
     jumaSelector: ".dsJumuah, .dsJumuah-vertical",
-    jumaTextFallbackSelector: "h1,h2,h3,h4,h5,p,span,td",
+    jumaTextFallbackSelector: 'h1:contains("Jumu\'ah Khutba")',
   }),
 };
