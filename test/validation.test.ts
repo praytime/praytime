@@ -71,6 +71,16 @@ const buildValidRecord = (record: MasjidRecord): MasjidRecord => {
   };
 };
 
+const buildJumaValidationContext = () => {
+  const record = buildValidRecord(baseRecord());
+  const crawlTime = record.crawlTime as Date;
+
+  return {
+    baseTimes: computeTimes(record, crawlTime),
+    record,
+  };
+};
+
 const findAdjacentDateRecord = (): MasjidRecord => {
   for (let month = 1; month <= 12; month += 1) {
     for (let day = 1; day <= 27; day += 1) {
@@ -159,9 +169,7 @@ test("validateCrawlRecord warns when asr is too early without hard failing", () 
 });
 
 test("validateCrawlRecord allows juma before dhuhr", () => {
-  const record = buildValidRecord(baseRecord());
-  const crawlTime = record.crawlTime as Date;
-  const baseTimes = computeTimes(record, crawlTime);
+  const { record, baseTimes } = buildJumaValidationContext();
 
   const result = validateCrawlRecord({
     ...record,
@@ -173,6 +181,20 @@ test("validateCrawlRecord allows juma before dhuhr", () => {
 
   expect(result.errors).toEqual([]);
   expect(result.warnings).toEqual([]);
+});
+
+test("validateCrawlRecord rejects non-ascending juma order", () => {
+  const { record, baseTimes } = buildJumaValidationContext();
+
+  const result = validateCrawlRecord({
+    ...record,
+    juma1: formatLocalClock(addMinutes(baseTimes.dhuhr, 30), record.timeZoneId),
+    juma2: formatLocalClock(addMinutes(baseTimes.dhuhr, 20), record.timeZoneId),
+  });
+
+  expect(result.errors).toContainEqual(
+    expect.stringMatching(/juma2 \(.+\) must be later than juma1 \(.+\)/),
+  );
 });
 
 test("validateCrawlRecord allows zuhr exactly at the rounded dhuhr minute", () => {

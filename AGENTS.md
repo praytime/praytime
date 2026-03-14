@@ -60,6 +60,8 @@ A non-static crawler's main purpose is to return accurate and up-to-date iqama p
 - Under no other circumstances should 'check website' be returned in place of prayer timings, rather an error should be returned so that crawler can be re-evaluated.
 - Transient errors (fetch timeouts, http errors, etc) should also be surfaced so that the crawler can be retried later or re-evaluated.
 - Crawlers should be fail-fast, do not use fallbacks.
+- Juma timings should be im ascending order
+- If a website lists separate khutbah and iqama timings for juma, use the earlier khutbah/bayan timing.
 
 ## Runtime Flow
 1. Run crawlers with Bun:
@@ -83,7 +85,7 @@ Crawler runtime history is saved in .run/praytime.sqlite. `bun run report` to se
 - Crawler outputs are JSON lines with `{ result, error, source }`.
 - `.env` is loaded by shell scripts via `script/common.sh`.
 
-## Crawler Parse/Type Error Playbook
+## Crawler Error Playbook
 When a crawler fails with `TypeError`, selector errors, schema mismatch, or save error:
 
 1. Reproduce and isolate
@@ -125,6 +127,10 @@ When a crawler fails with `TypeError`, selector errors, schema mismatch, or save
 7. Prefer shared fixes when repeated
 - If many crawlers fail similarly, first improve shared utilities or runner-level recovery.
 - Keep crawler-specific logic for known site structures, but centralize generic fallback behavior in `lib/util.js` or `index.js`.
+
+## Crawler Sources
+
+- Do not use prayersconnect as a source, it is not authoritative
 
 ## Parser-Safe Coding Checklist
 - Guard every `.match(...)[0]` / `.split(...)[n]` / `arr[n]`.
