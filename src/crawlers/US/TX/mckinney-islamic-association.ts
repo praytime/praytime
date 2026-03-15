@@ -16,22 +16,20 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const $ = await util.load(ids[0].url);
-
-  $('tr:contains("Sunrise")').remove();
-
-  const a = util.mapToText($, "#dsPrayerTimetable td:last-child");
-
-  if (util.isJumaToday(ids[0])) {
-    const j = util.matchTimeAmPmG(a[1]);
-    util.setJumaTimes(ids[0], j);
-    a[1] = "Juma";
-  } else {
-    const j = a.slice(-1).flatMap(util.matchTimeAmPmG);
-    util.setJumaTimes(ids[0], j);
-  }
-
-  util.setIqamaTimes(ids[0], a);
+  const prayerTimes = await util.loadMasjidalIqama("wLVzDqLJ");
+  util.setIqamaTimes(ids[0], [
+    prayerTimes.fajr,
+    prayerTimes.zuhr,
+    prayerTimes.asr,
+    prayerTimes.maghrib,
+    prayerTimes.isha,
+  ]);
+  util.setJumaTimes(
+    ids[0],
+    [prayerTimes.jummah1, prayerTimes.jummah2, prayerTimes.jummah3].filter(
+      (value): value is string => Boolean(value),
+    ),
+  );
 
   return ids;
 };

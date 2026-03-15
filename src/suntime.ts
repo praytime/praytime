@@ -17,12 +17,13 @@ const formatLocalClock = (date: Date, timeZoneId: string): string =>
     timeZone: timeZoneId,
   }).format(date);
 
-export const sunsetOffsetClock = (
+const prayerOffsetClock = (
   record: Pick<MasjidRecord, "geo" | "timeZoneId">,
+  prayer: "fajr" | "sunset",
   minutesToAdd: number,
 ): string => {
   const date = buildLocalNoonDate(record.timeZoneId);
-  const sunset = calculatePrayerTimes(
+  const prayerTime = calculatePrayerTimes(
     {
       date,
       fajr: 19,
@@ -33,13 +34,23 @@ export const sunsetOffsetClock = (
       timezone: record.timeZoneId,
     },
     date,
-  ).sunset;
+  )[prayer];
 
   return formatLocalClock(
-    new Date(sunset.getTime() + minutesToAdd * 60_000),
+    new Date(prayerTime.getTime() + minutesToAdd * 60_000),
     record.timeZoneId,
   );
 };
+
+export const sunsetOffsetClock = (
+  record: Pick<MasjidRecord, "geo" | "timeZoneId">,
+  minutesToAdd: number,
+): string => prayerOffsetClock(record, "sunset", minutesToAdd);
+
+export const fajrOffsetClock = (
+  record: Pick<MasjidRecord, "geo" | "timeZoneId">,
+  minutesToAdd: number,
+): string => prayerOffsetClock(record, "fajr", minutesToAdd);
 
 export const extractSunsetOffsetMinutes = (value: string): number | null => {
   const compactMatch = value.match(/sunset\s*([+-])\s*(\d+)\s*min/i);

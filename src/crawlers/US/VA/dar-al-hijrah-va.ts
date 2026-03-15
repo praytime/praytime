@@ -104,7 +104,30 @@ const getPrayerDate = ($: CheerioAPI): string => {
   return prayerDate;
 };
 
-const loadJumahTimes = async (prayerDate: string): Promise<string[]> => {
+const parsePrayerDate = (value: string): Date => {
+  const [monthText = "", dayText = "", yearText = ""] = value.split("-");
+  const month = Number.parseInt(monthText, 10);
+  const day = Number.parseInt(dayText, 10);
+  const year = Number.parseInt(yearText, 10);
+  if (
+    !Number.isFinite(month) ||
+    !Number.isFinite(day) ||
+    !Number.isFinite(year)
+  ) {
+    throw new Error(`invalid Dar Al-Hijrah Jumu'ah date: ${value}`);
+  }
+
+  return new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+};
+
+const formatPrayerDate = (value: Date): string => {
+  const month = String(value.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(value.getUTCDate()).padStart(2, "0");
+  const year = value.getUTCFullYear();
+  return `${month}-${day}-${year}`;
+};
+
+const loadJumahTimesForDate = async (prayerDate: string): Promise<string[]> => {
   const response = await util.loadJson<HijrahJumuahResponse>(JUMUAH_AJAX_URL, {
     fetch: {
       body: new URLSearchParams({
@@ -141,6 +164,50 @@ const loadJumahTimes = async (prayerDate: string): Promise<string[]> => {
   }
 
   return times;
+};
+
+const isRegularJumahSchedule = (times: string[]): boolean => {
+  if (times.length === 0 || times.length > 4) {
+    return false;
+  }
+
+  return times.every((time) => {
+    const minutes = toMinutes(time);
+    return Number.isFinite(minutes) && minutes >= 11 * 60 && minutes <= 15 * 60;
+  });
+};
+
+const loadJumahTimes = async (prayerDate: string): Promise<string[]> => {
+  const selectedTimes = await loadJumahTimesForDate(prayerDate);
+  if (isRegularJumahSchedule(selectedTimes)) {
+    return selectedTimes;
+  }
+
+  const baseDate = parsePrayerDate(prayerDate);
+  const candidateDates: string[] = [];
+  for (let weekOffset = 1; weekOffset <= 4; weekOffset += 1) {
+    candidateDates.push(
+      formatPrayerDate(
+        new Date(baseDate.getTime() + weekOffset * 7 * 24 * 60 * 60 * 1000),
+      ),
+    );
+  }
+  for (let weekOffset = 1; weekOffset <= 4; weekOffset += 1) {
+    candidateDates.push(
+      formatPrayerDate(
+        new Date(baseDate.getTime() - weekOffset * 7 * 24 * 60 * 60 * 1000),
+      ),
+    );
+  }
+
+  for (const candidateDate of candidateDates) {
+    const candidateTimes = await loadJumahTimesForDate(candidateDate);
+    if (isRegularJumahSchedule(candidateTimes)) {
+      return candidateTimes;
+    }
+  }
+
+  return selectedTimes;
 };
 
 const run = async () => {

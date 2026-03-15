@@ -1,3 +1,4 @@
+import { fajrOffsetClock, sunsetOffsetClock } from "../../../suntime";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
@@ -22,6 +23,22 @@ const normalizeIcsdLine = (line: string): string =>
   line.replace(/\s+/g, " ").trim();
 
 const icsdIqamaValue = (label: string, value: string): string => {
+  const fajrOffset = value.match(/(\d+)\s*mins?\s*after\s*adhan/i);
+  if (label === "fajr" && fajrOffset?.[1]) {
+    const minutes = Number.parseInt(fajrOffset[1], 10);
+    if (Number.isFinite(minutes)) {
+      return fajrOffsetClock(ids[0], minutes);
+    }
+  }
+
+  const maghribOffset = value.match(/(\d+)\s*mins?\s*\/?\s*sunset/i);
+  if (label === "maghrib" && maghribOffset?.[1]) {
+    const minutes = Number.parseInt(maghribOffset[1], 10);
+    if (Number.isFinite(minutes)) {
+      return sunsetOffsetClock(ids[0], minutes);
+    }
+  }
+
   const parsed = util.extractTimeAmPm(value);
   if (parsed) {
     return parsed;

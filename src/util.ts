@@ -479,7 +479,14 @@ const extractMasjidAppClock = (value: unknown): string => {
     return "";
   }
 
-  return extractTimeAmPm(value) || extractTime(value);
+  const ampmMatch = value
+    .trim()
+    .match(/^(\d{1,2})\s*:\s*(\d{2})\s*([ap])\.?m\.?$/i);
+  if (ampmMatch?.[1] && ampmMatch[2] && ampmMatch[3]) {
+    return `${Number.parseInt(ampmMatch[1], 10)}:${ampmMatch[2]} ${ampmMatch[3].toUpperCase()}M`;
+  }
+
+  return extractTime(value);
 };
 
 const parseMasjidAppDayKey = (value: string): number =>
@@ -663,7 +670,8 @@ export const loadMasjidAppPrayerTimes = async (
     .filter((time) => time.length > 0);
   const juma: string[] = [];
   const seenJumaTimes = new Set<string>();
-  for (const time of [...eventTimes, ...table.juma]) {
+  const sourceJumaTimes = eventTimes.length > 0 ? eventTimes : table.juma;
+  for (const time of sourceJumaTimes) {
     const key = time.replace(/\s+/g, "").toLowerCase();
     if (!key || seenJumaTimes.has(key)) {
       continue;
