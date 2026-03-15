@@ -24,6 +24,6 @@ export const crawler: CrawlerModule = {
   ids,
   run: createMasjidAppRun(ids, {
     prayerUrl: PRAYER_IFRAME_URL,
-    fallbackJumaTimes: ["check website"],
+    requireJuma: true,
   }),
 };

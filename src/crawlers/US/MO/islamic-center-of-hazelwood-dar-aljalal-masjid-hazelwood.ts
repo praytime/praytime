@@ -17,16 +17,40 @@ const ids: CrawlerModule["ids"] = [
 ];
 const run = async () => {
   const $ = await util.load(ids[0].url);
+  const prayers = new Map<util.StandardPrayerKey, string>();
+  const jumaTimes: string[] = [];
 
-  if (util.isJumaToday(ids[0])) {
-    const a = util.mapToText($, ".jamah");
-    util.setIqamaTimes(ids[0], a);
-    util.setJumaTimes(ids[0], ["check website"]);
-  } else {
-    const a = util.mapToText($, ".dptTimetable td:last-child");
-    a.splice(1, 1); // remove sunrise
-    util.setJumaTimes(ids[0], util.matchTimeAmPmG(a[5]));
-    util.setIqamaTimes(ids[0], a);
+  $(".pr-tm-bx").each((_, item) => {
+    const text = util.normalizeSpace($(item).text());
+    const label = util.normalizeSpace($(item).find("h6").first().text());
+    const prayerKey = util.getStandardPrayerKey(label);
+    if (prayerKey) {
+      const iqamah = text.match(
+        /Iqamah:\s*(\d{1,2}\s*:\s*\d{2}\s*[AP]\.?M\.?)/i,
+      );
+      if (iqamah?.[1] && !prayers.has(prayerKey)) {
+        prayers.set(prayerKey, util.extractTimeAmPm(iqamah[1]));
+      }
+      return;
+    }
+
+    if (/jummah/i.test(label)) {
+      const time = util.extractTimeAmPm(text);
+      if (time) {
+        jumaTimes.push(time);
+      }
+    }
+  });
+
+  util.setIqamaTimes(
+    ids[0],
+    util.requireStandardPrayerTimes(
+      prayers,
+      "failed to parse Dar Aljalal iqama times",
+    ),
+  );
+  if (jumaTimes.length > 0) {
+    util.setJumaTimes(ids[0], jumaTimes);
   }
 
   return ids;

@@ -1,4 +1,3 @@
-import { createSelectorRun } from "../../../selectors";
 import type { CrawlerModule } from "../../../types";
 
 const ids: CrawlerModule["ids"] = [
@@ -18,7 +17,4 @@ const ids: CrawlerModule["ids"] = [
 export const crawler: CrawlerModule = {
   name: "US/CA/masjid-omar-ibn-al-khattab-los-angeles",
   ids,
-  run: createSelectorRun(ids, {
-    iqama: { selector: ".jamah" },
-  }),
 };
