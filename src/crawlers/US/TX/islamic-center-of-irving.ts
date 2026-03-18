@@ -17,31 +17,29 @@ const ids: CrawlerModule["ids"] = [
 ];
 const run = async () => {
   const $ = await util.load(ids[0].url);
-
-  const a = util.mapToText(
-    $,
-    '.dptTimetable .tableHeading:contains("Iqamah") ~ td',
-  );
-  if (util.isJumaToday(ids[0])) {
-    const j = (a[1] ?? "").split(" | ").flat().map(util.extractTimeAmPm);
-    util.setJumaTimes(ids[0], j);
-    // On Juma, zuhr is replaced
-    a[1] = "Juma";
-    util.setIqamaTimes(ids[0], a);
-  } else {
-    const jumaText =
-      util
-        .mapToText($, '.dptTimetable .tableHeading:contains("Jumuah") ~ td')
-        .shift() ?? "";
-    util.setJumaTimes(
-      ids[0],
-      jumaText
-        .split(" | ")
-        .map((t) => t.trim())
-        .map(util.extractTimeAmPm),
-    );
-    util.setIqamaTimes(ids[0], a);
+  const iqamaTimes = util
+    .mapToText($, ".dpt_jamah")
+    .map((value) => util.extractTimeAmPm(value))
+    .filter((value) => value.length > 0);
+  if (iqamaTimes.length < 5) {
+    throw new Error("failed to parse Islamic Center of Irving iqama times");
   }
+
+  const jumaTimes = $("li")
+    .toArray()
+    .flatMap((item) => {
+      const text = util.normalizeSpace($(item).text());
+      if (!/jumu/i.test(text)) {
+        return [];
+      }
+
+      const times = util.matchTimeAmPmG(text) ?? [];
+      return times[0] ? [times[0]] : [];
+    });
+  if (jumaTimes.length > 0) {
+    util.setJumaTimes(ids[0], jumaTimes);
+  }
+  util.setIqamaTimes(ids[0], iqamaTimes);
 
   return ids;
 };

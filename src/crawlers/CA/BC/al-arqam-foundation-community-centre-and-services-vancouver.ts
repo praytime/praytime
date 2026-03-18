@@ -1,7 +1,4 @@
-import { createAwqatPageRun } from "../../../awqat";
 import type { CrawlerModule } from "../../../types";
-
-const AWQAT_URL = "http://www.awqat.net/Masjids/BCAlArqam/bcalarqam.html";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -21,5 +18,4 @@ const ids: CrawlerModule["ids"] = [
 export const crawler: CrawlerModule = {
   name: "CA/BC/al-arqam-foundation-community-centre-and-services-vancouver",
   ids,
-  run: createAwqatPageRun(ids, AWQAT_URL),
 };

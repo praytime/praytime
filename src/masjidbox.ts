@@ -32,6 +32,17 @@ type MasjidBoxWidgetResponse = {
   timetable?: unknown;
 };
 
+const widgetJumuahValues = (day: MasjidBoxWidgetDay): unknown[] => {
+  if (Array.isArray(day.jumuah)) {
+    return day.jumuah;
+  }
+  if (Array.isArray(day.iqamah?.jumuah)) {
+    return day.iqamah.jumuah;
+  }
+
+  return [];
+};
+
 export const parseMasjidBoxTime = (value: string): string => {
   const extracted = util.extractTimeAmPm(value);
   if (extracted) {
@@ -132,11 +143,13 @@ export const loadMasjidBoxWidgetTimes = async (
     throw new Error("failed to parse masjidbox widget iqama timings");
   }
 
-  const jumuah = Array.isArray(currentDay.jumuah)
-    ? currentDay.jumuah
-    : Array.isArray(iqamah?.jumuah)
-      ? iqamah.jumuah
-      : [];
+  const currentDayIndex = Math.max(0, timetable.indexOf(currentDay));
+  const jumuahDay =
+    timetable
+      .slice(currentDayIndex)
+      .find((entry) => widgetJumuahValues(entry).length > 0) ??
+    timetable.find((entry) => widgetJumuahValues(entry).length > 0);
+  const jumuah = jumuahDay ? widgetJumuahValues(jumuahDay) : [];
   const jumaTimes = uniqueTimes(
     jumuah.map((value) =>
       util.normalizeIsoClock(value, timeZoneId, parseMasjidBoxTime),
