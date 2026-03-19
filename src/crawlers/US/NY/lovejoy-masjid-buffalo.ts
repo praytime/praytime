@@ -1,6 +1,4 @@
 import type { CrawlerModule } from "../../../types";
-import { validateCrawlRecord } from "../../../validation";
-import { createWnyMuslimsRun } from "../../../wnymuslims";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -16,27 +14,7 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const loadRun = createWnyMuslimsRun(ids, {
-  cardTitle: "Lovejoy Masjid",
-  addressText: "1107 East Lovejoy Street",
-  normalizeIqamaSequence: true,
-});
-
-const run = async () => {
-  await loadRun();
-
-  const validation = validateCrawlRecord(ids[0]);
-  if (validation.errors.length > 0) {
-    throw new Error(
-      `failed Lovejoy Masjid validation: ${validation.errors.join("; ")}`,
-    );
-  }
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/NY/lovejoy-masjid-buffalo",
   ids,
-  run,
 };

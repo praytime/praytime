@@ -18,7 +18,7 @@ test("extractEmbeddedPrayerTimesFromHtml parses DPT-style meta descriptions", ()
   const $ = cheerio.load(html);
 
   expect(extractEmbeddedPrayerTimesFromHtml($, html)).toEqual({
-    iqamaTimes: ["6:50 am", "2:00 pm", "6:00 pm", "7:46 pm", "9:15 pm"],
+    iqamaTimes: ["6:50 AM", "2:00 PM", "6:00 PM", "7:46 PM", "9:15 PM"],
     jumaTimes: ["02:00 PM", "03:15 PM"],
   });
 });

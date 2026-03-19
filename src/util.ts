@@ -1099,8 +1099,9 @@ export const extractTime = (text: string | undefined): string => {
 export const matchTimeG = (text: string | undefined): RegExpMatchArray | null =>
   text?.match(timeRxG) ?? null;
 
-export const timeAmPmRx = /\d{1,2}\s*:\s*\d{1,2}\s*[ap]\.?m\.?/i;
-export const timeAmPmRxG = /\d{1,2}\s*:\s*\d{1,2}\s*[ap]\.?m\.?/gi;
+export const timeAmPmRx =
+  /(\d{1,2})\s*:\s*(\d{1,2})(?::\d{1,2})?\s*([ap])\.?m\.?/i;
+export const timeAmPmRxG = /\d{1,2}\s*:\s*\d{1,2}(?::\d{1,2})?\s*[ap]\.?m\.?/gi;
 
 export const matchTimeAmPm = (
   text: string | undefined,
@@ -1108,8 +1109,12 @@ export const matchTimeAmPm = (
 
 export const extractTimeAmPm = (text: string | undefined): string => {
   const match = text?.match(timeAmPmRx);
-  if (match?.length) {
-    return match[0];
+  const hourText = match?.[1];
+  const minuteText = match?.[2];
+  const meridiem = match?.[3];
+
+  if (hourText && minuteText && meridiem) {
+    return `${hourText}:${minuteText.padStart(2, "0")} ${meridiem.toUpperCase()}M`;
   }
   return "";
 };
