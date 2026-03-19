@@ -217,3 +217,32 @@ test("PraytimeSaver force-saves validation errors", async () => {
   });
   expect(savedRecord?.uuid4).toBe(line.result.uuid4);
 });
+
+test("PraytimeSaver preserves event metadata fields like isStatic", async () => {
+  const { firestore, getSavedRecord, messaging } = createSaverFixtures();
+  const saver = new PraytimeSaver({
+    firestore: firestore as never,
+    messaging: messaging as never,
+  });
+  const line: CrawlOutputLine = {
+    source: "US/IL/static",
+    error: "",
+    result: baseRecord({
+      isStatic: true,
+    }),
+  };
+
+  try {
+    await withMutedConsoleError(async () => {
+      const result = await saver.saveLine(line);
+      expect(result).toEqual({
+        outcome: "saved",
+        updated: false,
+      });
+    });
+
+    expect(getSavedRecord()?.isStatic).toBe(true);
+  } finally {
+    await saver.close();
+  }
+});

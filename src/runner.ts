@@ -39,11 +39,15 @@ const withTimeout = async <T>(
   }
 };
 
-const enrichRecord = (record: MasjidRecord): MasjidRecord => {
+const enrichRecord = (
+  record: MasjidRecord,
+  isStatic: boolean,
+): MasjidRecord => {
   const { latitude, longitude } = record.geo;
 
   record.crawlTime ??= new Date();
   record.geohash = geohashForLocation([latitude, longitude]);
+  record.isStatic = isStatic;
 
   return record;
 };
@@ -157,7 +161,7 @@ export const runCrawlers = async (
 
       if (shouldEmitResults) {
         for (const result of crawlResults) {
-          const enrichedResult = enrichRecord(result);
+          const enrichedResult = enrichRecord(result, !crawler.run);
           const output: CrawlOutputLine = {
             crawlError,
             result: enrichedResult,

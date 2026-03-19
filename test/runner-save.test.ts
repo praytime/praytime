@@ -44,6 +44,7 @@ test("runCrawlers suppresses stdout when emitJson is false and still calls onOut
   expect(lines[0]?.error).toBe("");
   expect(lines[0]?.result.uuid4).toBe(sampleRecord.uuid4);
   expect(lines[0]?.result.geohash).toBeDefined();
+  expect(lines[0]?.result.isStatic).toBe(true);
   expect(lines[0]?.result.crawlTime).toBeInstanceOf(Date);
 });
 
