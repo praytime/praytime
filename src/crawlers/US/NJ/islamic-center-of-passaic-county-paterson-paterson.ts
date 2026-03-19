@@ -53,16 +53,15 @@ const run = async () => {
   const fridayIqamas = util
     .mapToText($, ".list.plusG li")
     .map((row) => row.replace(/\s+/g, " ").trim())
-    .filter((row) => row.startsWith("Friday Iqama"))
+    .filter((row) => /^Friday (Khutba|Iqama)/i.test(row))
     .map(util.extractTimeAmPm)
+    .filter((time, index, all) => all.indexOf(time) === index)
     .filter((time) => time.length > 0);
-  if (fridayIqamas.length < 3) {
+  if (fridayIqamas.length === 0) {
     throw new Error("failed to parse friday iqama times");
   }
 
-  util.setJumaTimes(ids[0], fridayIqamas.slice(0, 2));
-  util.setJumaTimes(ids[1], fridayIqamas.slice(0, 2));
-  util.setJumaTimes(ids[2], fridayIqamas.slice(2, 3));
+  util.setJumaTimesAll(ids, fridayIqamas);
 
   return ids;
 };

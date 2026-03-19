@@ -19,4 +19,5 @@ export const crawler: CrawlerModule = {
   name: "US/NY/masjid-as-sunnah-inc-rochester",
   ids,
   run: createFivePrayersRun(ids, "MasjidSunnah"),
+  puppeteer: true,
 };

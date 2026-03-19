@@ -80,14 +80,18 @@ const findBilalCurrentRow = async (): Promise<BilalCsvRow> => {
   const weekday = weekdayLabel(ids[0].timeZoneId).toLowerCase();
 
   for (const path of csvPaths) {
-    const row = (await loadBilalCsvRows(path)).find((candidate) => {
-      const candidateDay = Number.parseInt(candidate.Date, 10);
-      return (
-        Number.isFinite(candidateDay) &&
-        candidateDay === day &&
-        candidate.Day.trim().toLowerCase() === weekday
-      );
-    });
+    const row = (await loadBilalCsvRows(path))
+      .filter((candidate) => {
+        const candidateDay = Number.parseInt(candidate.Date, 10);
+        return (
+          Number.isFinite(candidateDay) &&
+          candidateDay === day &&
+          candidate.Day.trim().toLowerCase() === weekday
+        );
+      })
+      // Ramadan exports can wrap across a month boundary and repeat the same
+      // day number/week day combination. The later row is the current segment.
+      .at(-1);
     if (row) {
       return row;
     }

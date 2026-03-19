@@ -1,6 +1,24 @@
 import { parse } from "csv-parse/sync";
+import { findPdfDateLine, loadPdfText } from "../../../pdftext";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
+
+const RAMADAN_PDF_URL = "https://www.utahmuslims.com/s/Calander-PDF.pdf";
+
+const ramadanIqamaTimes = (line: string): string[] => {
+  const times = line.match(/\d{1,2}:\d{2}/g) ?? [];
+  if (times.length < 10) {
+    throw new Error("unexpected ISGSL Ramadan row format");
+  }
+
+  return [
+    `${times[1]} AM`,
+    `${times[4]} PM`,
+    `${times[6]} PM`,
+    "Sunset",
+    `${times[9]} PM`,
+  ];
+};
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -48,6 +66,12 @@ const run = async () => {
     throw new Error("missing masjid columns in sheet");
   }
 
+  const first = ids[0];
+  const second = ids[1];
+  if (!first || !second) {
+    throw new Error("missing crawler ids");
+  }
+
   const getColumnValue = (label: RegExp, columnIndex: number): string => {
     const row = rows.find((candidate) => {
       const firstCell = candidate[0];
@@ -77,21 +101,20 @@ const run = async () => {
     getColumnValue(/^Isha$/i, columnIndex),
   ];
 
-  const first = ids[0];
-  if (first) {
-    util.setIqamaTimes(first, timesByColumn(khadeejaIndex));
-    util.setJumaTimes(first, getJumaTimes(khadeejaIndex));
-  }
+  const pdfText = await loadPdfText(RAMADAN_PDF_URL);
+  const row = findPdfDateLine(pdfText, first, {
+    monthFormat: "%B",
+    anchored: true,
+    trailingPattern: "\\w+\\b",
+  });
+  const currentIqamaTimes = row ? ramadanIqamaTimes(row) : null;
 
-  const second = ids[1];
-  if (second) {
-    util.setIqamaTimes(second, timesByColumn(noorIndex));
-    util.setJumaTimes(second, getJumaTimes(noorIndex));
-  }
-
-  if (!first || !second) {
-    throw new Error("missing crawler ids");
-  }
+  // The live Google sheet is stale during Ramadan; the published PDF calendar
+  // is the authoritative current schedule while it covers today's date.
+  util.setIqamaTimes(first, currentIqamaTimes ?? timesByColumn(khadeejaIndex));
+  util.setJumaTimes(first, getJumaTimes(khadeejaIndex));
+  util.setIqamaTimes(second, currentIqamaTimes ?? timesByColumn(noorIndex));
+  util.setJumaTimes(second, getJumaTimes(noorIndex));
 
   return ids;
 };

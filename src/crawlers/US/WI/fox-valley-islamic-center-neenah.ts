@@ -19,4 +19,5 @@ export const crawler: CrawlerModule = {
   name: "US/WI/fox-valley-islamic-center-neenah",
   ids,
   run: createFivePrayersRun(ids, "fvis"),
+  puppeteer: true,
 };
