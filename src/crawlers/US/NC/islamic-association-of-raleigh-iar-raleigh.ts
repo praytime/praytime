@@ -20,7 +20,14 @@ const run = async () => {
 
   const a = util.mapToText($, ".prayertimes-day-info:last-child");
   a.splice(1, 1); // remove sunrise
-  const j = util.mapToText($, ".prayerschedule-title-time");
+  const j = Array.from(
+    new Set(
+      util
+        .mapToText($, ".prayerschedule-title-time")
+        .map((value) => util.normalizeSpace(value))
+        .filter((value) => value.length > 0),
+    ),
+  );
 
   util.setIqamaTimes(ids[0], a);
   util.setJumaTimes(ids[0], j);

@@ -1,5 +1,5 @@
+import { createMasjidalRun } from "../../../masjidal";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -15,21 +15,8 @@ const ids: CrawlerModule["ids"] = [
     },
   },
 ];
-const run = async () => {
-  const $ = await util.load(
-    "https://albara.ramli.net/iqamah/icdx.php?city=vancouver",
-  );
-
-  const a = util.mapToText($, ".views-table td:last-child");
-  a.splice(1, 1);
-
-  util.setTimes(ids[0], a);
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/WA/islamic-center-of-clark-county-vancouver",
   ids,
-  run,
+  run: createMasjidalRun(ids, "JdGJGRAP", { jumaMode: "setJumaTimes" }),
 };
