@@ -1,4 +1,3 @@
-import { createFivePrayersRun } from "../../../fiveprayers";
 import type { CrawlerModule } from "../../../types";
 
 const ids: CrawlerModule["ids"] = [
@@ -18,6 +17,4 @@ const ids: CrawlerModule["ids"] = [
 export const crawler: CrawlerModule = {
   name: "US/NY/masjid-as-sunnah-inc-rochester",
   ids,
-  run: createFivePrayersRun(ids, "MasjidSunnah"),
-  puppeteer: true,
 };

@@ -1,4 +1,3 @@
-import { createPrayersConnectRun } from "../../../prayersconnect";
 import type { CrawlerModule } from "../../../types";
 
 const ids: CrawlerModule["ids"] = [
@@ -18,8 +17,4 @@ const ids: CrawlerModule["ids"] = [
 export const crawler: CrawlerModule = {
   name: "US/IL/masjid-dar-al-hadeeth-chicago",
   ids,
-  run: createPrayersConnectRun(ids, {
-    loadJuma: true,
-    mosqueId: 84051255,
-  }),
 };

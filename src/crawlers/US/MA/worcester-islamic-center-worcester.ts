@@ -1,6 +1,9 @@
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
+const MASJIDAL_ID = "QKMno1LB";
+const KHUTBAH_TIME = "1:00 PM";
+
 const ids: CrawlerModule["ids"] = [
   {
     uuid4: "6d1599b5-72cc-499f-8ce9-f7a95e93f52f",
@@ -16,15 +19,15 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const $ = await util.load(
-    "https://www-wicmasjid-org.filesusr.com/html/e3b11b_a36b5b843a2eba43af53490778fa171c.html",
-  );
-
-  const a = util.mapToText($, "td:last-child").filter(util.matchTimeAmPm);
-
-  a.splice(3, 0, ""); // insert maghrib
-
-  util.setTimes(ids[0], a);
+  const iqama = await util.loadMasjidalIqama(MASJIDAL_ID);
+  util.setIqamaTimes(ids[0], [
+    iqama.fajr,
+    iqama.zuhr,
+    iqama.asr,
+    iqama.maghrib,
+    iqama.isha,
+  ]);
+  util.setJumaTimes(ids[0], [KHUTBAH_TIME]);
 
   return ids;
 };

@@ -1,3 +1,4 @@
+import { createPuppeteerRun } from "../../../ppt";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
 
@@ -19,52 +20,61 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 
-const run = async () => {
-  const $ = await util.load(ids[0].url);
-  const prayerRows = $("#timetable tr").toArray();
-  const iqamaByPrayer = new Map<string, string>();
-  const jumaTimes: string[] = [];
-
-  for (const row of prayerRows) {
-    const label = normalizePrayerLabel(
-      $(row).find(".prayer-name").first().text(),
-    );
-    if (!label) {
-      continue;
-    }
-
-    if (label.includes("friday")) {
-      const jumaTime = util.extractTimeAmPm($(row).text());
-      if (jumaTime) {
-        jumaTimes.push(jumaTime);
-      }
-      continue;
-    }
-
-    const iqama = util.extractTimeAmPm(
-      $(row).find(".iqama-time").first().text(),
-    );
-    if (!iqama) {
-      continue;
-    }
-
-    iqamaByPrayer.set(label, iqama);
-  }
-
-  util.setIqamaTimes(ids[0], [
-    iqamaByPrayer.get("fajr"),
-    iqamaByPrayer.get("dhuhr") ?? iqamaByPrayer.get("zuhr"),
-    iqamaByPrayer.get("asr"),
-    iqamaByPrayer.get("maghrib"),
-    iqamaByPrayer.get("isha"),
-  ]);
-  util.setJumaTimes(ids[0], jumaTimes);
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/IL/mosque-foundation-bridgeview",
   ids,
-  run,
+  run: createPuppeteerRun(ids, async (page) => {
+    await page.goto(ids[0].url ?? "", { waitUntil: "networkidle0" });
+
+    const prayerRows = await page.$$eval("#timetable tr", (rows) =>
+      rows.map((row) => {
+        const label = row
+          .querySelector(".prayer-name")
+          ?.textContent?.replace(/\s+/g, " ")
+          .trim();
+        const iqama = row
+          .querySelector(".iqama-time")
+          ?.textContent?.replace(/\s+/g, " ")
+          .trim();
+        const text = row.textContent?.replace(/\s+/g, " ").trim() ?? "";
+
+        return { iqama, label, text };
+      }),
+    );
+
+    const iqamaByPrayer = new Map<string, string>();
+    const jumaTimes: string[] = [];
+
+    for (const row of prayerRows) {
+      const label = normalizePrayerLabel(row.label ?? "");
+      if (!label) {
+        continue;
+      }
+
+      if (label.includes("friday")) {
+        const jumaTime = util.extractTimeAmPm(row.text);
+        if (jumaTime) {
+          jumaTimes.push(jumaTime);
+        }
+        continue;
+      }
+
+      const iqama = util.extractTimeAmPm(row.iqama);
+      if (!iqama) {
+        continue;
+      }
+
+      iqamaByPrayer.set(label, iqama);
+    }
+
+    util.setIqamaTimes(ids[0], [
+      iqamaByPrayer.get("fajr"),
+      iqamaByPrayer.get("dhuhr") ?? iqamaByPrayer.get("zuhr"),
+      iqamaByPrayer.get("asr"),
+      iqamaByPrayer.get("maghrib"),
+      iqamaByPrayer.get("isha"),
+    ]);
+    util.setJumaTimes(ids[0], jumaTimes);
+  }),
+  puppeteer: true,
 };

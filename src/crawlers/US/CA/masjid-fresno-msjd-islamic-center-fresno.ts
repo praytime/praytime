@@ -1,5 +1,21 @@
+import { sunsetOffsetClock } from "../../../suntime";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
+
+const normalizeClock = (value: string): string =>
+  util.extractTimeAmPm(value) || util.extractTime(value) || value;
+
+const maghribOffsetMinutes = (value: string): number | null => {
+  const sunsetOffset = value.match(
+    /(\d+)\s*mins?\s*after\s*(?:adhan|athan|azan)/i,
+  );
+  if (!sunsetOffset?.[1]) {
+    return null;
+  }
+
+  const minutes = Number.parseInt(sunsetOffset[1], 10);
+  return Number.isFinite(minutes) ? minutes : null;
+};
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -16,16 +32,39 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 const run = async () => {
-  const $ = await util.load(
-    "https://www-masjidfresno-org.filesusr.com/html/198b71_0719b50a4ad131b4aa29927ef6660d8e.html",
-  );
+  const $ = await util.load("https://masjidfresno.org/");
+  const rows = $(".iqama-table-section tbody tr").toArray();
+  const values = new Map<string, string>();
 
-  const a = util
-    .mapToText($, 'tr:contains("Iqama Time") ~ tr')
-    .slice(1)
-    .map(util.extractTimeAmPm);
+  for (const row of rows) {
+    const cells = $(row)
+      .find("td")
+      .toArray()
+      .map((cell) => util.normalizeSpace($(cell).text()));
+    const label = cells[0]?.toLowerCase() ?? "";
+    const value = cells[1] ?? "";
 
-  util.setTimes(ids[0], a);
+    if (!label || !value) {
+      continue;
+    }
+
+    values.set(label, value);
+  }
+
+  const maghribRaw = values.get("maghrib") ?? "";
+  const maghrib =
+    maghribOffsetMinutes(maghribRaw) !== null
+      ? sunsetOffsetClock(ids[0], maghribOffsetMinutes(maghribRaw) ?? 0)
+      : normalizeClock(maghribRaw);
+
+  util.setIqamaTimes(ids[0], [
+    normalizeClock(values.get("fajr") ?? ""),
+    normalizeClock(values.get("dhuhr") ?? ""),
+    normalizeClock(values.get("asr") ?? ""),
+    maghrib,
+    normalizeClock(values.get("isha") ?? ""),
+  ]);
+  util.setJumaTimes(ids[0], [normalizeClock(values.get("jumu'ah") ?? "")]);
 
   return ids;
 };

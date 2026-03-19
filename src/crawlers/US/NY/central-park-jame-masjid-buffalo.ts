@@ -1,5 +1,4 @@
 import type { CrawlerModule } from "../../../types";
-import { createWnyMuslimsRun } from "../../../wnymuslims";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -18,8 +17,4 @@ const ids: CrawlerModule["ids"] = [
 export const crawler: CrawlerModule = {
   name: "US/NY/central-park-jame-masjid-buffalo",
   ids,
-  run: createWnyMuslimsRun(ids, {
-    cardTitle: "Central Park Jame Masjid",
-    addressText: "97 Rodney Ave",
-  }),
 };
