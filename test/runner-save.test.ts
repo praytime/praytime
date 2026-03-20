@@ -154,3 +154,65 @@ test("runCrawlers always appends validation errors to line.error", async () => {
   expect(lines[0]?.validationErrors).toBeDefined();
   expect(lines[0]?.validationErrors?.[0]).toContain("maghribIqama");
 });
+
+test("runCrawlers continues after a crawler throws", async () => {
+  const lines: CrawlOutputLine[] = [];
+  const completions: { name: string; error: string }[] = [];
+  const originalError = console.error;
+  console.error = () => {};
+
+  try {
+    await runCrawlers(
+      [
+        {
+          name: "US/GA/throws",
+          ids: [{ ...sampleRecord }],
+          run: () => {
+            throw new Error("boom");
+          },
+        },
+        {
+          name: "US/GA/after",
+          ids: [
+            {
+              ...sampleRecord,
+              uuid4: "00000000-0000-0000-0000-000000000001",
+            },
+          ],
+        },
+      ],
+      {
+        emitJson: false,
+        onOutput: (line) => {
+          lines.push(line);
+        },
+        onCrawlerComplete: (event) => {
+          completions.push({
+            name: event.name,
+            error: event.error,
+          });
+        },
+      },
+    );
+  } finally {
+    console.error = originalError;
+  }
+
+  expect(lines).toHaveLength(2);
+  expect(lines.find((line) => line.source === "US/GA/throws")?.error).toContain(
+    "Error: boom",
+  );
+  expect(lines.find((line) => line.source === "US/GA/after")?.error).toBe("");
+  expect(completions).toEqual(
+    expect.arrayContaining([
+      {
+        name: "US/GA/throws",
+        error: "Error: boom",
+      },
+      {
+        name: "US/GA/after",
+        error: "",
+      },
+    ]),
+  );
+});
