@@ -28,6 +28,7 @@ export type MasjidRecord = MasjidRecordBase &
   MasjidRecordTimes & {
     crawlTime?: Date;
     geohash?: string;
+    isStatic?: boolean;
     [key: string]: unknown;
   };
 
