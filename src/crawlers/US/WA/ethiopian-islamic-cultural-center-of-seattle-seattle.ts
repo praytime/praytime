@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://www.google.com/maps/search/?api\u003D1\u0026query\u003DEthiopian+Islamic+Cultural+Center+of+Seattle\u0026query_place_id\u003DChIJ70xT6RJCkFQRThvSJfDufzY",
     timeZoneId: "America/Los_Angeles",
     address: "8819 Renton Ave S, Seattle, WA 98118, USA",
-    placeId: "ChIJ70xT6RJCkFQRThvSJfDufzY",
+    placeId: "ChIJ7XZT6RJCkFQR_rpz0RwCHF8",
     geo: {
       latitude: 47.5236306,
       longitude: -122.2766678,

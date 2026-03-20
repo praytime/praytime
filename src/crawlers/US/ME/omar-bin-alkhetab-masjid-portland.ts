@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://www.google.com/maps/search/?api\u003D1\u0026query\u003DOmar+Bin+Alkhetab+Masjid\u0026query_place_id\u003DChIJNTjP03GbskwRXgrKtyuXmUU",
     timeZoneId: "America/New_York",
     address: "978 Washington Ave, Portland, ME 04103, USA",
-    placeId: "ChIJNTjP03GbskwRXgrKtyuXmUU",
+    placeId: "ChIJUaI60nGbskwRbLpHi17sqEc",
     geo: {
       latitude: 43.6894038,
       longitude: -70.2756532,

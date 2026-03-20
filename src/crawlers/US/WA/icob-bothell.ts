@@ -12,7 +12,7 @@ const ids: CrawlerModule["ids"] = [
       latitude: 47.7599261,
       longitude: -122.2060476,
     },
-    placeId: "ChIJkaqOrjQPkFQRYKOm9ZbSlJU", // temp location
+    placeId: "ChIJL02Ut2sOkFQR8BsT52AA4qc", // temp location
     // ChIJk7ou2msOkFQRG1pKlmCuRpQ - closed for construction
   },
 ];

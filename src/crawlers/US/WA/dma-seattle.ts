@@ -10,7 +10,7 @@ const ids: CrawlerModule["ids"] = [
       latitude: 47.608674,
       longitude: -122.332656,
     },
-    placeId: "ChIJC12MG7RqkFQRAMA8FnMRzq0",
+    placeId: "ChIJz0GJG7RqkFQRYnh9NGSE6Sc",
     timeZoneId: "America/Los_Angeles",
   },
 ];

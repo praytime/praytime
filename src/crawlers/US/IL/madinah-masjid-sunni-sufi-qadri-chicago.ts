@@ -8,7 +8,7 @@ const ids: CrawlerModule["ids"] = [
     url: "http://www.madinahmasjid.us/",
     timeZoneId: "America/Chicago",
     address: "4850 N St Louis Ave, Chicago, IL 60625, USA",
-    placeId: "ChIJv0TyaufND4gR0lJpqXVAsJs",
+    placeId: "ChIJLUOza-fND4gRmbab0kxqjW8",
     geo: {
       latitude: 41.9700503,
       longitude: -87.7161519,

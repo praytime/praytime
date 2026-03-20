@@ -8,7 +8,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://www.facebook.com/MarpoleMusalla/",
     timeZoneId: "America/Vancouver",
     address: "8879 Selkirk St, Vancouver, BC V6P 4J6, Canada",
-    placeId: "ChIJldTKUel0hlQRLi2iYMydDlk",
+    placeId: "ChIJldTKUel0hlQRNW7EtEdrTMs",
     geo: {
       latitude: 49.20458290000001,
       longitude: -123.1336184,

@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://www.google.com/maps/search/?api\u003D1\u0026query\u003DMasjid+Tabaq\u0026query_place_id\u003DChIJX14LfiXTD4gRbB5kXau_kIs",
     timeZoneId: "America/Chicago",
     address: "1245 N Clybourn Ave, Chicago, IL 60610, USA",
-    placeId: "ChIJX14LfiXTD4gRbB5kXau_kIs",
+    placeId: "ChIJF8pWgzfTD4gRUZcDO4pWuDU",
     geo: {
       latitude: 41.9047529,
       longitude: -87.6406602,

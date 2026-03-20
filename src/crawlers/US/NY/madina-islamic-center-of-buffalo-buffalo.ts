@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://www.facebook.com/Madinah-Masjid-249053159304134/",
     timeZoneId: "America/New_York",
     address: "252 E Utica St, Buffalo, NY 14208, USA",
-    placeId: "ChIJqz9hu7AT04kROA63WHcLUxY",
+    placeId: "ChIJV386UK8T04kR2JD2K3ZHJHY",
     geo: {
       latitude: 42.9113756,
       longitude: -78.85635649999999,

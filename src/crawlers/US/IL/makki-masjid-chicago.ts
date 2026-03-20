@@ -19,7 +19,7 @@ const ids: CrawlerModule["ids"] = [
     name: "Makki Education Academy",
     url: "https://makkimasjid.com/mea/",
     address: "4926 N Kimball Ave, Chicago, IL 60625, USA",
-    placeId: "ChIJKd69y-bND4gRhnBRKC-_1Gw",
+    placeId: "ChIJGRheyebND4gRnyEqio0o5IU",
     timeZoneId: "America/Chicago",
     geo: {
       latitude: 41.97112,

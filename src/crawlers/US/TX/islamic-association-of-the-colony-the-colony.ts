@@ -59,7 +59,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://iatcus.org/prayer-time",
     timeZoneId: "America/Chicago",
     address: "5201 S Colony Blvd #535, The Colony, TX 75056, USA",
-    placeId: "ChIJy9DRp9g6TIYRjqNkxI8vCus",
+    placeId: "ChIJU-M_XAA7TIYR95WwzV0YRaY",
     geo: {
       latitude: 33.0857247,
       longitude: -96.8787624,

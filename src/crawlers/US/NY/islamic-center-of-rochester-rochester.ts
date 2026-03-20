@@ -8,7 +8,7 @@ const ids: CrawlerModule["ids"] = [
     url: "http://theicr.org/",
     timeZoneId: "America/New_York",
     address: "727 Westfall Rd, Rochester, NY 14620, USA",
-    placeId: "ChIJRRRUptRK0YkRIQ16KKbN7PI",
+    placeId: "ChIJFyKtGvFL0YkRPOn7i1Z3WKc",
     geo: {
       latitude: 43.1142939,
       longitude: -77.6019146,

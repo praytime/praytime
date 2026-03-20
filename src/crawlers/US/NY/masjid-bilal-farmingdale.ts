@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://masjidbilalnassau1.org/",
     timeZoneId: "America/New_York",
     address: "425 Fulton St, Farmingdale, NY 11735, USA",
-    placeId: "ChIJF8Z53boq6IkRXZRnUcn-HuE",
+    placeId: "ChIJA8D2emMr6IkRjGXkENWH4vo",
     geo: {
       latitude: 40.7303527,
       longitude: -73.4518504,

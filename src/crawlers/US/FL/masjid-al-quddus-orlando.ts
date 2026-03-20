@@ -8,7 +8,7 @@ const ids: CrawlerModule["ids"] = [
     url: "http://iscf.org/masjid/masijid-al-quddus/",
     timeZoneId: "America/New_York",
     address: "Orlando, FL 32805, USA",
-    placeId: "ChIJ82GcWat754gRXzkl9qQdFzg",
+    placeId: "ChIJJYEiBwB754gRSIuof5d6jtk",
     geo: {
       latitude: 28.5387389,
       longitude: -81.38914009999999,

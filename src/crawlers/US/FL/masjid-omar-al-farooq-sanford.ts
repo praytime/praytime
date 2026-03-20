@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://www.facebook.com/ICNA-Central-Florida-617669371701835/",
     timeZoneId: "America/New_York",
     address: "526 W Lake Mary Blvd, Sanford, FL 32773, USA",
-    placeId: "ChIJ6xQq8KRy54gRABWkBsl_Tg0",
+    placeId: "ChIJReZ0GNZs54gRkSNtJqNrRwk",
     geo: {
       latitude: 28.7578985,
       longitude: -81.29532929999999,

@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://bayyinah.com/",
     timeZoneId: "America/Chicago",
     address: "1701 W Euless Blvd, Euless, TX 76040, USA",
-    placeId: "ChIJR6QZxTZ-ToYR9RM2uDEQLCQ",
+    placeId: "ChIJzx8HxTZ-ToYR2xTOj4Micdk",
     geo: {
       latitude: 32.82445930000001,
       longitude: -97.1098293,

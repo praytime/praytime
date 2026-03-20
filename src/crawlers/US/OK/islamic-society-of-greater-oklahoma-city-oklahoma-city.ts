@@ -8,7 +8,7 @@ const ids: CrawlerModule["ids"] = [
     url: "http://www.isgoc.com/",
     timeZoneId: "America/Chicago",
     address: "3815 St Clair Ave, Oklahoma City, OK 73112, USA",
-    placeId: "ChIJc5MXSWgQsocRapsVj0EKdmM",
+    placeId: "ChIJF_qKp5sasocRH6etaTvM0sU",
     geo: {
       latitude: 35.5098237,
       longitude: -97.5817479,

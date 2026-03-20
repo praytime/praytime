@@ -11,7 +11,7 @@ const ids: CrawlerModule["ids"] = [
       latitude: 41.878692,
       longitude: -87.627349,
     },
-    placeId: "ChIJfdGgl6MsDogR6i2cBNvfzf8",
+    placeId: "ChIJv8L-PqwtDogR5308TMzCLRc",
     fajrIqama: "check website",
     zuhrIqama: "check website",
     asrIqama: "check website",

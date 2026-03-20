@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://muslimcenter.org/",
     timeZoneId: "America/New_York",
     address: "137-58 Geranium Ave, Queens, NY 11355, USA",
-    placeId: "ChIJt_a52mpgwokR1ZA8ZHS_wMg",
+    placeId: "ChIJr-0SaKNhwokRiA8kCZz2WBc",
     geo: {
       latitude: 40.75085,
       longitude: -73.820452,

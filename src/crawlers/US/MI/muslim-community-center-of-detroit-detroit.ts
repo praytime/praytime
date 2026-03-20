@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://www.facebook.com/Muslim-Community-Center-of-Detroit-1433032846998956/",
     timeZoneId: "America/Detroit",
     address: "13720 W McNichols Rd, Detroit, MI 48235, USA",
-    placeId: "ChIJB21UqOjLJIgRgJvh8HYHjwM",
+    placeId: "ChIJL_1bqOjLJIgROFXVvfJwhOI",
     geo: {
       latitude: 42.416839,
       longitude: -83.181495,

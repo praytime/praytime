@@ -8,7 +8,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://www.icnachicago.org/",
     address: "1S270 Summit Ave, Oakbrook Terrace, IL 60181, USA",
     timeZoneId: "America/Chicago",
-    placeId: "ChIJteURQX9NDogRhK9unKWB-IQ",
+    placeId: "ChIJ3UwZKHpNDogRUj6fNs7zmrg",
     geo: {
       latitude: 41.855525,
       longitude: -87.973164,

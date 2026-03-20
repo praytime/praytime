@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://masjid-faizan-e-madinah-plano.business.site/?m\u003Dtrue#summary",
     timeZoneId: "America/Chicago",
     address: "2109 W Parker Rd #220, Plano, TX 75023, USA",
-    placeId: "ChIJiXn862UYTIYRlU23JyHfLtY",
+    placeId: "ChIJ-YxF4xUFTIYRHMlP8zgoBco",
     geo: {
       latitude: 33.0423843,
       longitude: -96.7346017,

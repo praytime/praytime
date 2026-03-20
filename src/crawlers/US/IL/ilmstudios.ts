@@ -23,7 +23,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://www.northsidemosque.org/abu-bakr-masjid-roscoe/",
     timeZoneId: "America/Chicago",
     address: "1017 W Roscoe St, Chicago, IL 60657, USA",
-    placeId: "ChIJj4TPr63TD4gRKRjzHqw8lvY",
+    placeId: "ChIJPUy7r63TD4gRxKycZNd9Goc",
     geo: {
       latitude: 41.9434241,
       longitude: -87.65518879999999,

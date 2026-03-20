@@ -11,7 +11,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://masjidmadeena.org/",
     timeZoneId: "America/Los_Angeles",
     address: "827 164th Ave NE, Bellevue, WA 98008, USA",
-    placeId: "ChIJL-zpaLdtkFQRFoL7o_FZDZA",
+    placeId: "ChIJL-zpaLdtkFQRECFsuDUHy6o",
     geo: {
       latitude: 47.61784129999999,
       longitude: -122.1221867,

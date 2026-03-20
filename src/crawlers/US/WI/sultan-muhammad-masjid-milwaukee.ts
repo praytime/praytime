@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://www.facebook.com/Sultan-Muhammad-Islamic-Center-651855304970906/",
     timeZoneId: "America/Chicago",
     address: "323 W Wright St, Milwaukee, WI 53212, USA",
-    placeId: "ChIJR1lmTEcZBYgRQV8BtnaTiWU",
+    placeId: "ChIJzXBzTUcZBYgRUoW-481n9cI",
     geo: {
       latitude: 43.0638358,
       longitude: -87.9147096,

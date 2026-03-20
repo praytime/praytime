@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://www.google.com/maps/search/?api\u003D1\u0026query\u003DIslamic+Center+of+Plattsburgh\u0026query_place_id\u003DChIJOydFzLk4ykwRpbCD6QC1N9A",
     timeZoneId: "America/New_York",
     address: "37 Boynton Ave #4, Plattsburgh, NY 12901, USA",
-    placeId: "ChIJOydFzLk4ykwRpbCD6QC1N9A",
+    placeId: "ChIJwyZFzLk4ykwR7_HqdVJ17Cw",
     geo: {
       latitude: 44.70887399999999,
       longitude: -73.452789,

@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://www.facebook.com/Masjid-Nurul-Islam-Myanmar-Muslim-Community-associations-111541207215029/",
     timeZoneId: "America/New_York",
     address: "615 Rutger St, Utica, NY 13501, USA",
-    placeId: "ChIJ24MQzeFG2YkRFghlslXigPI",
+    placeId: "ChIJcT8FzeFG2YkR1EwhWw5ZLk4",
     geo: {
       latitude: 43.0947967,
       longitude: -75.2215282,

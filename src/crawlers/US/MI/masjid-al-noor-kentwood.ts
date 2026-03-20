@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://www.google.com/maps/search/?api\u003D1\u0026query\u003DMasjid+Al-Noor\u0026query_place_id\u003DChIJt3WC8XazGYgRniiDQmiJQX4",
     timeZoneId: "America/Detroit",
     address: "3206 Eastern Ave SE, Kentwood, MI 49508, USA",
-    placeId: "ChIJt3WC8XazGYgRniiDQmiJQX4",
+    placeId: "ChIJeWkdNgCzGYgRcFtwWOVAH9k",
     geo: {
       latitude: 42.9053607,
       longitude: -85.64622349999999,

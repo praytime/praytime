@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "http://www.dawateislamicanada.net/",
     timeZoneId: "America/Vancouver",
     address: "7062 134 St, Surrey, BC V3W 4T2, Canada",
-    placeId: "ChIJYdzrxtLbhVQRctJuc0fa3Gk",
+    placeId: "ChIJwZ4InJDbhVQR7gCrTFQZGP8",
     geo: {
       latitude: 49.130985,
       longitude: -122.850896,

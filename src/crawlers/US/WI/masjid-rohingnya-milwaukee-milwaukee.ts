@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://masjidmubarak.online/",
     timeZoneId: "America/Chicago",
     address: "1575 W Oklahoma Ave, Milwaukee, WI 53215, USA",
-    placeId: "ChIJbZr9Og8RBYgRNSPUgXylxd0",
+    placeId: "ChIJddlQLbMQBYgRXDYbAmdX1lw",
     geo: {
       latitude: 42.9881529,
       longitude: -87.9334941,

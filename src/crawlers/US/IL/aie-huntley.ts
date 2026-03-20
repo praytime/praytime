@@ -9,7 +9,7 @@ const ids: CrawlerModule["ids"] = [
     name: "Academy of Islamic Education",
     url: "https://www.aiehuntley.com/",
     address: "37W437 Huntley Rd, Dundee Township, IL 60118, USA",
-    placeId: "ChIJ01CaFpMRD4gRwo7w36W8taQ",
+    placeId: "ChIJzZFBFpMRD4gR4zD7lopJTRo",
     timeZoneId: "America/Chicago",
     geo: {
       latitude: 42.132128,
