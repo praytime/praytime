@@ -8,10 +8,10 @@ const ids: CrawlerModule["ids"] = [
     url: "http://everettmasjid.org/",
     timeZoneId: "America/Los_Angeles",
     address: "500 SE Everett Mall Way B110, Everett, WA 98208, USA",
-    placeId: "ChIJRee1XtIGkFQRy94tokxYxeM",
+    placeId: "ChIJJdJ_xpwHkFQRv9_N7kBl1I0",
     geo: {
-      latitude: 47.908234,
-      longitude: -122.2259754,
+      latitude: 47.907996,
+      longitude: -122.2258467,
     },
   },
 ];

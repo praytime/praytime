@@ -31,11 +31,11 @@ const ids: CrawlerModule["ids"] = [
     name: "Taqwa Mosque",
     url: "http://alhudamke.org/",
     timeZoneId: "America/Chicago",
-    address: "N 67th St, Milwaukee, WI 53213, USA",
-    placeId: "ChIJaztCttwaBYgRJaSgMBLjQwc",
+    address: "6644 W Fairview Ave, Milwaukee, WI 53213, USA",
+    placeId: "ChIJ_WPQydwaBYgRNQekv18e3qg",
     geo: {
-      latitude: 43.0315314,
-      longitude: -87.9960133,
+      latitude: 43.0315607,
+      longitude: -87.99590189999999,
     },
   },
 ];

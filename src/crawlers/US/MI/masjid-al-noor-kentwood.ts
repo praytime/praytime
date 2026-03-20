@@ -4,7 +4,7 @@ const ids: CrawlerModule["ids"] = [
   {
     uuid4: "7e522ce3-54c5-4c54-9334-7cca45987903",
     name: "Masjid Al-Noor",
-    url: "https://www.google.com/maps/search/?api\u003D1\u0026query\u003DMasjid+Al-Noor\u0026query_place_id\u003DChIJt3WC8XazGYgRniiDQmiJQX4",
+    url: "https://www.google.com/maps/search/?api=1&query=Masjid+Al-Noor&query_place_id=ChIJeWkdNgCzGYgRcFtwWOVAH9k",
     timeZoneId: "America/Detroit",
     address: "3206 Eastern Ave SE, Kentwood, MI 49508, USA",
     placeId: "ChIJeWkdNgCzGYgRcFtwWOVAH9k",

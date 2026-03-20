@@ -4,6 +4,7 @@ import {
   type PlaceIdRefreshTarget,
   type PlaceLookupCandidate,
   pickBestPlaceCandidate,
+  syncGoogleMapsQueryPlaceIdsInSource,
   updateSourceTextPlaceIds,
 } from "./placeids";
 import { discoverCrawlers, filterCrawlerEntries } from "./registry";
@@ -528,7 +529,10 @@ const formatResult = (
   return `${result.status.toUpperCase()}\t${label}\t${result.oldPlaceId}\t${result.newPlaceId}\t${result.via}${querySuffix}`;
 };
 
-const writeUpdates = async (results: RefreshResult[]): Promise<number> => {
+const writeUpdates = async (
+  results: RefreshResult[],
+  sourceFiles: string[],
+): Promise<number> => {
   const updatesByFile = new Map<
     string,
     Array<{ placeId: string; uuid4: string }>
@@ -551,15 +555,22 @@ const writeUpdates = async (results: RefreshResult[]): Promise<number> => {
     updatesByFile.set(sourceFile, fileUpdates);
   }
 
-  for (const [sourceFile, replacements] of updatesByFile) {
+  let writtenFiles = 0;
+
+  for (const sourceFile of sourceFiles) {
     const original = await Bun.file(sourceFile).text();
-    const nextText = updateSourceTextPlaceIds(original, replacements);
+    const replacements = updatesByFile.get(sourceFile);
+    let nextText = replacements
+      ? updateSourceTextPlaceIds(original, replacements)
+      : original;
+    nextText = syncGoogleMapsQueryPlaceIdsInSource(nextText);
     if (nextText !== original) {
       await Bun.write(sourceFile, nextText);
+      writtenFiles += 1;
     }
   }
 
-  return updatesByFile.size;
+  return writtenFiles;
 };
 
 export const main = async (argv = process.argv.slice(2)): Promise<void> => {
@@ -629,8 +640,13 @@ export const main = async (argv = process.argv.slice(2)): Promise<void> => {
   );
 
   let writtenFiles = 0;
-  if (options.write && changedResults.length > 0) {
-    writtenFiles = await writeUpdates(changedResults);
+  if (options.write) {
+    const selectedSourceFiles = [
+      ...new Set(
+        limitedTargets.map((target) => path.join(repoRoot, target.sourcePath)),
+      ),
+    ];
+    writtenFiles = await writeUpdates(changedResults, selectedSourceFiles);
   }
 
   console.log(

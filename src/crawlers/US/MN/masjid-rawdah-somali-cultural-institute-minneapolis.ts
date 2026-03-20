@@ -4,7 +4,7 @@ const ids: CrawlerModule["ids"] = [
   {
     uuid4: "8a230453-5754-4d2d-93c7-6b4ae5f095a5",
     name: "Masjid Rawdah (Somali Cultural Institute)",
-    url: "https://www.google.com/maps/search/?api\u003D1\u0026query\u003DMasjid+Rawdah+%28Somali+Cultural+Institute%29\u0026query_place_id\u003DChIJxSyQGTUts1IRr3MBMsAvafw",
+    url: "https://www.google.com/maps/search/?api=1&query=Masjid+Rawdah+%28Somali+Cultural+Institute%29&query_place_id=ChIJzyXrEDUts1IRrnSgZUZ5t8U",
     timeZoneId: "America/Chicago",
     address: "2426 E 26th St, Minneapolis, MN 55406, USA",
     placeId: "ChIJzyXrEDUts1IRrnSgZUZ5t8U",

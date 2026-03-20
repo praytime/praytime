@@ -3,6 +3,7 @@ import { expect, test } from "bun:test";
 import {
   type PlaceIdRefreshTarget,
   pickBestPlaceCandidate,
+  syncGoogleMapsQueryPlaceIdsInSource,
   updateSourceTextPlaceIds,
 } from "../src/placeids";
 
@@ -110,4 +111,24 @@ test("updateSourceTextPlaceIds rewrites only the targeted record literals", () =
   expect(updated).toContain("placeId: 'new-two'");
   expect(updated).not.toContain("old-one");
   expect(updated).not.toContain("old-two");
+});
+
+test("syncGoogleMapsQueryPlaceIdsInSource updates stale query_place_id params", () => {
+  const source = `const ids = [
+  {
+    uuid4: "first-uuid",
+    name: "First",
+    url: "https://www.google.com/maps/search/?api=1&query=First&query_place_id=old-place-id",
+    placeId: "new-place-id",
+    geo: {
+      latitude: 1,
+      longitude: 2,
+    },
+  },
+];`;
+
+  const updated = syncGoogleMapsQueryPlaceIdsInSource(source);
+
+  expect(updated).toContain("query_place_id=new-place-id");
+  expect(updated).not.toContain("query_place_id=old-place-id");
 });

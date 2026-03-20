@@ -6,11 +6,11 @@ const ids: CrawlerModule["ids"] = [
     name: "Madinah Community Center - Masjid",
     url: "https://madisonmuslims.org/new-masjid-project/",
     timeZoneId: "America/Chicago",
-    address: "6513-6501, Watts Rd, Madison, WI 53719, USA",
-    placeId: "ChIJ4xkvwxOvB4gRHJBAmu9kZDU",
+    address: "6514 Watts Rd, Madison, WI 53719, USA",
+    placeId: "ChIJUUIhTMCtB4gRzQ_OZJM0Ggc",
     geo: {
-      latitude: 43.0504738,
-      longitude: -89.49373519999999,
+      latitude: 43.0505745,
+      longitude: -89.4939637,
     },
   },
 ];

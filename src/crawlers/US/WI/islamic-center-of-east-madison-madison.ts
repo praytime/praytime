@@ -8,10 +8,10 @@ const ids: CrawlerModule["ids"] = [
     url: "http://www.islamiccenterofeastmadison.com/",
     timeZoneId: "America/Chicago",
     address: "4002 Lien Rd, Madison, WI 53704, USA",
-    placeId: "ChIJibxq3HNUBogRM8JxM2EPQaI",
+    placeId: "ChIJG5waXZpWBogR4kAsIDIOwWA",
     geo: {
-      latitude: 43.12128490000001,
-      longitude: -89.3145507,
+      latitude: 43.1212983,
+      longitude: -89.3145254,
     },
   },
 ];

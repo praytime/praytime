@@ -7,12 +7,12 @@ const ids: CrawlerModule["ids"] = [
     name: "Islamic Center of Puget Sound",
     url: "http://icpugetsound.org/",
     timeZoneId: "America/Los_Angeles",
-    address: "Suite B1, 13319 Mukilteo Speedway, Lynnwood, WA 98087, USA",
+    address: "15709 Hwy 99, Lynnwood, WA 98087, USA",
     geo: {
-      latitude: 47.874552,
-      longitude: -122.274526,
+      latitude: 47.85614109999999,
+      longitude: -122.2885226,
     },
-    placeId: "ChIJxZgT7RUEkFQRTv6E2cWAtL8",
+    placeId: "ChIJxRve_RQFkFQReey2T-_3xBA",
   },
 ];
 export const crawler: CrawlerModule = {

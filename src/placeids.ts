@@ -234,10 +234,16 @@ export const pickBestPlaceCandidate = (
   return best;
 };
 
-type PlaceIdLiteralRange = {
+type StringLiteralRange = {
   end: number;
   quote: '"' | "'";
   start: number;
+  value: string;
+};
+
+type RecordLiteralRanges = {
+  placeId?: StringLiteralRange;
+  url?: StringLiteralRange;
 };
 
 const getPropertyName = (propertyName: ts.PropertyName): string | null => {
@@ -259,9 +265,9 @@ const getStringLiteralText = (expression: ts.Expression): string | null => {
   return null;
 };
 
-const collectPlaceIdLiteralRanges = (
+const collectRecordLiteralRanges = (
   sourceText: string,
-): Map<string, PlaceIdLiteralRange> => {
+): Map<string, RecordLiteralRanges> => {
   const sourceFile = ts.createSourceFile(
     "crawler.ts",
     sourceText,
@@ -269,12 +275,13 @@ const collectPlaceIdLiteralRanges = (
     true,
     ts.ScriptKind.TS,
   );
-  const ranges = new Map<string, PlaceIdLiteralRange>();
+  const ranges = new Map<string, RecordLiteralRanges>();
 
   const visit = (node: ts.Node): void => {
     if (ts.isObjectLiteralExpression(node)) {
       let uuid4: string | null = null;
       let placeIdInitializer: ts.Expression | null = null;
+      let urlInitializer: ts.Expression | null = null;
 
       for (const property of node.properties) {
         if (!ts.isPropertyAssignment(property)) {
@@ -286,23 +293,53 @@ const collectPlaceIdLiteralRanges = (
           uuid4 = getStringLiteralText(property.initializer);
         } else if (name === "placeId") {
           placeIdInitializer = property.initializer;
+        } else if (name === "url") {
+          urlInitializer = property.initializer;
         }
       }
 
-      const placeIdValue =
-        placeIdInitializer && getStringLiteralText(placeIdInitializer);
-      if (uuid4 && placeIdInitializer && placeIdValue !== null) {
-        const start = placeIdInitializer.getStart(sourceFile);
-        const quote = sourceText[start];
-        if (quote !== '"' && quote !== "'") {
-          throw new Error(`unsupported placeId literal for uuid4 ${uuid4}`);
+      if (uuid4) {
+        const recordRanges: RecordLiteralRanges = {};
+
+        if (placeIdInitializer) {
+          const value = getStringLiteralText(placeIdInitializer);
+          if (value !== null) {
+            const start = placeIdInitializer.getStart(sourceFile);
+            const quote = sourceText[start];
+            if (quote !== '"' && quote !== "'") {
+              throw new Error(`unsupported placeId literal for uuid4 ${uuid4}`);
+            }
+
+            recordRanges.placeId = {
+              end: placeIdInitializer.getEnd(),
+              quote,
+              start,
+              value,
+            };
+          }
         }
 
-        ranges.set(uuid4, {
-          end: placeIdInitializer.getEnd(),
-          quote,
-          start,
-        });
+        if (urlInitializer) {
+          const value = getStringLiteralText(urlInitializer);
+          if (value !== null) {
+            const start = urlInitializer.getStart(sourceFile);
+            const quote = sourceText[start];
+            if (quote !== '"' && quote !== "'") {
+              throw new Error(`unsupported url literal for uuid4 ${uuid4}`);
+            }
+
+            recordRanges.url = {
+              end: urlInitializer.getEnd(),
+              quote,
+              start,
+              value,
+            };
+          }
+        }
+
+        if (recordRanges.placeId || recordRanges.url) {
+          ranges.set(uuid4, recordRanges);
+        }
       }
     }
 
@@ -325,12 +362,12 @@ export const updateSourceTextPlaceIds = (
   sourceText: string,
   replacements: Array<{ placeId: string; uuid4: string }>,
 ): string => {
-  const ranges = collectPlaceIdLiteralRanges(sourceText);
+  const ranges = collectRecordLiteralRanges(sourceText);
   let nextSourceText = sourceText;
 
   const sortedReplacements = replacements
     .map((replacement) => {
-      const range = ranges.get(replacement.uuid4);
+      const range = ranges.get(replacement.uuid4)?.placeId;
       if (!range) {
         throw new Error(
           `unable to find placeId for uuid4 ${replacement.uuid4}`,
@@ -349,6 +386,70 @@ export const updateSourceTextPlaceIds = (
     nextSourceText =
       nextSourceText.slice(0, replacement.start) +
       quoteString(replacement.nextPlaceId, replacement.quote) +
+      nextSourceText.slice(replacement.end);
+  }
+
+  return nextSourceText;
+};
+
+const trySyncGoogleMapsUrl = (
+  urlText: string,
+  placeId: string,
+): string | null => {
+  try {
+    const url = new URL(urlText);
+    if (
+      !url.hostname.includes("google.") ||
+      !url.searchParams.has("query_place_id")
+    ) {
+      return null;
+    }
+
+    if (url.searchParams.get("query_place_id") === placeId) {
+      return null;
+    }
+
+    url.searchParams.set("query_place_id", placeId);
+    return url.toString();
+  } catch {
+    return null;
+  }
+};
+
+export const syncGoogleMapsQueryPlaceIdsInSource = (
+  sourceText: string,
+): string => {
+  const ranges = collectRecordLiteralRanges(sourceText);
+  let nextSourceText = sourceText;
+
+  const replacements = [...ranges.values()]
+    .flatMap((recordRanges) => {
+      const placeId = recordRanges.placeId?.value;
+      const urlRange = recordRanges.url;
+      if (!placeId || !urlRange) {
+        return [];
+      }
+
+      const nextUrl = trySyncGoogleMapsUrl(urlRange.value, placeId);
+      if (!nextUrl || nextUrl === urlRange.value) {
+        return [];
+      }
+
+      return [
+        {
+          end: urlRange.end,
+          nextUrl,
+          quote: urlRange.quote,
+          start: urlRange.start,
+        },
+      ];
+    })
+    .sort((left, right) => right.start - left.start);
+
+  for (const replacement of replacements) {
+    nextSourceText =
+      nextSourceText.slice(0, replacement.start) +
+      quoteString(replacement.nextUrl, replacement.quote) +
       nextSourceText.slice(replacement.end);
   }
 

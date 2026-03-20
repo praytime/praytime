@@ -4,13 +4,13 @@ const ids: CrawlerModule["ids"] = [
   {
     uuid4: "fa598138-8bd5-4fc3-951e-eac72a4c0b35",
     name: "Ar-Rashid Masjid",
-    url: "https://www.google.com/maps/search/?api\u003D1\u0026query\u003DAr-Rashid+Masjid\u0026query_place_id\u003DChIJ0V_TRoyXyFYRmk0v9iJcdQQ",
+    url: "https://www.google.com/maps/search/?api=1&query=Ar-Rashid+Masjid&query_place_id=ChIJ9YQvR4yXyFYRzK3uTnk7BZM",
     timeZoneId: "America/Anchorage",
     address: "5841 Arctic Blvd STE 203, Anchorage, AK 99518, USA",
-    placeId: "ChIJ0V_TRoyXyFYRmk0v9iJcdQQ",
+    placeId: "ChIJ9YQvR4yXyFYRzK3uTnk7BZM",
     geo: {
-      latitude: 61.1680475,
-      longitude: -149.8973024,
+      latitude: 61.1680364,
+      longitude: -149.8974459,
     },
   },
 ];

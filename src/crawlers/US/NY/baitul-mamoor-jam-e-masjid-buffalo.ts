@@ -4,7 +4,7 @@ const ids: CrawlerModule["ids"] = [
   {
     uuid4: "1ec2b745-e99f-4fc9-8041-47af041b05b6",
     name: "Baitul Mamoor Jam-E-Masjid",
-    url: "https://www.google.com/maps/search/?api\u003D1\u0026query\u003DBaitul+Mamoor+Jam-E-Masjid\u0026query_place_id\u003DChIJY4huIHYN04kRSL1m5vCRI_o",
+    url: "https://www.google.com/maps/search/?api=1&query=Baitul+Mamoor+Jam-E-Masjid&query_place_id=ChIJaTtDJ3YN04kRWJbg-caT1pk",
     timeZoneId: "America/New_York",
     address: "64 Titus Ave, Buffalo, NY 14212, USA",
     placeId: "ChIJaTtDJ3YN04kRWJbg-caT1pk",
