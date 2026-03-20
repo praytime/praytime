@@ -201,10 +201,44 @@ type AdamsMasjidAppPayload = {
   };
 };
 
+type SettledPromise<T> =
+  | {
+      ok: true;
+      value: T;
+    }
+  | {
+      ok: false;
+      error: unknown;
+    };
+
 const normalizeSpace = (text: string): string =>
   text.replace(/[’]/g, "'").replace(/\s+/g, " ").trim();
 
 const uniqueTimes = (times: string[]): string[] => Array.from(new Set(times));
+
+const settlePromise = async <T>(
+  promise: Promise<T>,
+): Promise<SettledPromise<T>> => {
+  try {
+    return {
+      ok: true,
+      value: await promise,
+    };
+  } catch (error: unknown) {
+    return {
+      ok: false,
+      error,
+    };
+  }
+};
+
+const unwrapSettledPromise = <T>(result: SettledPromise<T>): T => {
+  if (!result.ok) {
+    throw result.error;
+  }
+
+  return result.value;
+};
 
 const extractAdamsJumaSection = (
   text: string,
@@ -309,17 +343,25 @@ const run = async () => {
   const browser = await puppeteer.launch();
   try {
     const page = await browser.newPage();
-    const framePromise = util.waitForFrame(page, "masjidbox.com");
-    const adamsJumaTimesPromise = loadAdamsJumaTimes();
-    const tysonsJumaTimesPromise = loadTysonsJumaTimes();
+    // These requests can fail before page navigation completes, so settle them
+    // immediately to avoid an unhandled rejection aborting the whole batch.
+    const framePromise = settlePromise(
+      util.waitForFrame(page, "masjidbox.com"),
+    );
+    const adamsJumaTimesPromise = settlePromise(loadAdamsJumaTimes());
+    const tysonsJumaTimesPromise = settlePromise(loadTysonsJumaTimes());
 
     await page.goto(ADAMS_IQAMA_WIDGET_URL, { waitUntil: "networkidle0" });
 
-    const [frame, adamsJumaTimes, tysonsJumaTimes] = await Promise.all([
-      framePromise,
-      adamsJumaTimesPromise,
-      tysonsJumaTimesPromise,
-    ]);
+    const [frameResult, adamsJumaTimesResult, tysonsJumaTimesResult] =
+      await Promise.all([
+        framePromise,
+        adamsJumaTimesPromise,
+        tysonsJumaTimesPromise,
+      ]);
+    const frame = unwrapSettledPromise(frameResult);
+    const adamsJumaTimes = unwrapSettledPromise(adamsJumaTimesResult);
+    const tysonsJumaTimes = unwrapSettledPromise(tysonsJumaTimesResult);
 
     const iqamaTimes = await frame.$$eval("div.iqamah div.time", (divs) =>
       divs.map((div) => {
