@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://www.google.com/maps/search/?api\u003D1\u0026query\u003DMuslim+Association+of+the+NW\u0026query_place_id\u003DChIJud-YeREQkFQRJFi0aZvFxA0",
     timeZoneId: "America/Los_Angeles",
     address: "5507 238th St SW, Mountlake Terrace, WA 98043, USA",
-    placeId: "ChIJud-YeREQkFQRJFi0aZvFxA0",
+    placeId: "ChIJ72pkeREQkFQRPfXKYMX141g",
     geo: {
       latitude: 47.783217,
       longitude: -122.307945,

@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://www.minhaj.org/english/USA",
     timeZoneId: "America/Chicago",
     address: "3751 N Josey Ln, Carrollton, TX 75007, USA",
-    placeId: "ChIJS_bR3a8lTIYRO7mPrvnIw0M",
+    placeId: "ChIJyRe2568lTIYRrytj0E5pqwI",
     geo: {
       latitude: 33.0133564,
       longitude: -96.8875091,

@@ -8,7 +8,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://taqwabrooklyn.org/",
     timeZoneId: "America/New_York",
     address: "1188 Fulton St, Brooklyn, NY 11216, USA",
-    placeId: "ChIJLzi5H5pbwokR8XG55bRJdzk",
+    placeId: "ChIJywK230BbwokRol74mugarhc",
     geo: {
       latitude: 40.6805556,
       longitude: -73.9536111,

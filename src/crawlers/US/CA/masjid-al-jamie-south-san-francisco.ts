@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "http://fjia.org/",
     timeZoneId: "America/Los_Angeles",
     address: "373 Alta Vista Dr, South San Francisco, CA 94080, USA",
-    placeId: "ChIJNbrX5pF5j4ARFkeLZUz0dak",
+    placeId: "ChIJz_1H3pF5j4AR2b9BZWBNIGw",
     geo: {
       latitude: 37.6398981,
       longitude: -122.4351421,

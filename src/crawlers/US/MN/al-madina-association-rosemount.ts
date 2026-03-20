@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "http://www.almadina-association.org/",
     timeZoneId: "America/Chicago",
     address: "14555 S Robert Trail, Rosemount, MN 55068, USA",
-    placeId: "ChIJb1rrlWQz9ocRymuhdp-nCLs",
+    placeId: "ChIJHcqMvGQz9ocRm78eCtzAi3I",
     geo: {
       latitude: 44.73860629999999,
       longitude: -93.12647109999999,

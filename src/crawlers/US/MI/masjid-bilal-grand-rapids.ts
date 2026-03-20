@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://www.google.com/maps/search/?api\u003D1\u0026query\u003DMasjid+Bilal\u0026query_place_id\u003DChIJ4_tCCRGtGYgRpvjPKjY_ykU",
     timeZoneId: "America/Detroit",
     address: "1260 Jefferson Ave SE, Grand Rapids, MI 49507, USA",
-    placeId: "ChIJ4_tCCRGtGYgRpvjPKjY_ykU",
+    placeId: "ChIJaQ4IEACtGYgRwldR7wSW1Jo",
     geo: {
       latitude: 42.9396959,
       longitude: -85.6633493,

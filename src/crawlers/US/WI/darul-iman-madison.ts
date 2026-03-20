@@ -8,7 +8,7 @@ const ids: CrawlerModule["ids"] = [
     url: "http://darul-iman.org/",
     timeZoneId: "America/Chicago",
     address: "638 Grand Canyon Dr, Madison, WI 53719, USA",
-    placeId: "ChIJoYx2GF-uB4gR7VsPymo-w08",
+    placeId: "ChIJa0EaaQCvB4gRkZ3OzVcoUSM",
     geo: {
       latitude: 43.0541468,
       longitude: -89.4979393,

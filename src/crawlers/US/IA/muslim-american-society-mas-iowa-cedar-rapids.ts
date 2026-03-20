@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "http://www.masiowa.org/",
     timeZoneId: "America/Chicago",
     address: "2121 N Towne Ln NE # B, Cedar Rapids, IA 52402, USA",
-    placeId: "ChIJvekVQ3nw5IcRjnG3b1r7nmo",
+    placeId: "ChIJR91QaHnw5IcRSlakz_1krP0",
     geo: {
       latitude: 42.03277509999999,
       longitude: -91.6719389,

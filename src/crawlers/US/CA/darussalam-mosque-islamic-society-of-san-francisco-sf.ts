@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "http://islamsf.org/",
     timeZoneId: "America/Los_Angeles",
     address: "20 Jones St, San Francisco, CA 94102, USA",
-    placeId: "ChIJucn4J4WAhYARDAhpfUI7cxM",
+    placeId: "ChIJcRtc2ISAhYARrFC58RpAhXE",
     geo: {
       latitude: 37.7815675,
       longitude: -122.4119737,

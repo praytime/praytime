@@ -459,7 +459,7 @@ const refreshTarget = async (
     }
 
     if (status === "NOT_FOUND" || status === "INVALID_REQUEST") {
-      return resolveObsoletePlaceId(apiKey, target);
+      return await resolveObsoletePlaceId(apiKey, target);
     }
 
     const message = response.error_message

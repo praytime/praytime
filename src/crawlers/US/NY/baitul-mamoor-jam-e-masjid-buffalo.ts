@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://www.google.com/maps/search/?api\u003D1\u0026query\u003DBaitul+Mamoor+Jam-E-Masjid\u0026query_place_id\u003DChIJY4huIHYN04kRSL1m5vCRI_o",
     timeZoneId: "America/New_York",
     address: "64 Titus Ave, Buffalo, NY 14212, USA",
-    placeId: "ChIJY4huIHYN04kRSL1m5vCRI_o",
+    placeId: "ChIJaTtDJ3YN04kRWJbg-caT1pk",
     geo: {
       latitude: 42.89788060000001,
       longitude: -78.82305389999999,

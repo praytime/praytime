@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://www.google.com/maps/search/?api\u003D1\u0026query\u003DMasjid+Al+Tawfiq+Islamic+Culture\u0026query_place_id\u003DChIJe1_lw-i01okRtE_3MxTPnys",
     timeZoneId: "America/New_York",
     address: "775 S Plymouth Ave, Rochester, NY 14608, USA",
-    placeId: "ChIJe1_lw-i01okRtE_3MxTPnys",
+    placeId: "ChIJowa-xOi01okRQNVxX8suLpc",
     geo: {
       latitude: 43.1410167,
       longitude: -77.6213052,

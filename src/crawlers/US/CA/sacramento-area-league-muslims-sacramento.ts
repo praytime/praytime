@@ -8,7 +8,7 @@ const ids: CrawlerModule["ids"] = [
     url: "http://salamcenter.org/",
     timeZoneId: "America/Los_Angeles",
     address: "4545 College Oak Dr, Sacramento, CA 95841, USA",
-    placeId: "ChIJj-D9ZcremoARxeDqqg6HZBU",
+    placeId: "ChIJAQDAYcremoARqsMwnalMKrY",
     geo: {
       latitude: 38.647282,
       longitude: -121.35102,

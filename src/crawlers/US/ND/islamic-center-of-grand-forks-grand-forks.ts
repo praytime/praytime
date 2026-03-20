@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://www.facebook.com/islamiccenterofgf/",
     timeZoneId: "America/Chicago",
     address: "2122 17th Ave S, Grand Forks, ND 58201, USA",
-    placeId: "ChIJEZKl3KmBxlIRzH2psDnwohc",
+    placeId: "ChIJW8LNWQCBxlIRG-sjM6WhUb4",
     geo: {
       latitude: 47.9044576,
       longitude: -97.0583005,

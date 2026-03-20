@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://iscf.org/masjid/masjid-al-mumin/",
     timeZoneId: "America/New_York",
     address: "1011 S Washington Ave, Titusville, FL 32780, USA",
-    placeId: "ChIJ42C2eS2z4IgRVZekgIIgZoI",
+    placeId: "ChIJX4b7eS2z4IgR8Ay-H-rUqG0",
     geo: {
       latitude: 28.6049697,
       longitude: -80.8073531,

@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "http://www.awqat.net/Masjids/BCQueensBNW/qbnw.html",
     timeZoneId: "America/Vancouver",
     address: "205 Wood St, New Westminster, BC V3M 5K5, Canada",
-    placeId: "ChIJiWIvprXZhVQRmOJtO9CpO7s",
+    placeId: "ChIJQ4mQvY3YhVQRPqc1_gue1SA",
     geo: {
       latitude: 49.1871085,
       longitude: -122.9369715,

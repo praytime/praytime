@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "http://masjid-al-mu-mineen.jany.io/",
     timeZoneId: "America/Los_Angeles",
     address: "1280 3rd Ave, Chula Vista, CA 91911, USA",
-    placeId: "ChIJ6YjAmYhO2YARzZdgPebL1ec",
+    placeId: "ChIJ_YTAmYhO2YARpENeGktvgLA",
     geo: {
       latitude: 32.6074436,
       longitude: -117.0669928,

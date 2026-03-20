@@ -8,7 +8,7 @@ const ids: CrawlerModule["ids"] = [
     url: "http://www.masjidalwahyain.com/",
     timeZoneId: "America/Chicago",
     address: "2429 University Ave W, St Paul, MN 55114, USA",
-    placeId: "ChIJX_IABLgss1IRx8kOa9TNchg",
+    placeId: "ChIJa3byA7gss1IRXQk8YorIiVc",
     geo: {
       latitude: 44.9647902,
       longitude: -93.1989276,

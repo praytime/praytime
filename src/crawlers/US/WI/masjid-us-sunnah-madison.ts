@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "http://madisonmuslims.org/",
     timeZoneId: "America/Chicago",
     address: "4718 Hammersley Rd, Madison, WI 53711, USA",
-    placeId: "ChIJgS8VTMCtB4gRl2UFDzZDgdI",
+    placeId: "ChIJk1GarsGtB4gR7hBskgudSEA",
     geo: {
       latitude: 43.0396728,
       longitude: -89.45796680000001,

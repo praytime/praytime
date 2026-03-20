@@ -22,7 +22,7 @@ const ids: CrawlerModule["ids"] = [
     name: "Dar-us-Salaam - Off Site Juma",
     url: "https://darussalaam.org/",
     address: "9450 Cherry Hill Rd, College Park, MD 20740, USA",
-    placeId: "ChIJBZgZgmrEt4kRPtq--ArcS5s",
+    placeId: "ChIJi42ZLmvEt4kR0naBrOMi674",
     timeZoneId: "America/New_York",
     geo: {
       latitude: 39.020607,

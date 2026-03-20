@@ -32,7 +32,7 @@ const ids: CrawlerModule["ids"] = [
     url: "http://www.bisweb.org/",
     timeZoneId: "America/Chicago",
     address: "4506 Gary Ave, Fairfield, AL 35064, USA",
-    placeId: "ChIJAXdiBx3iiIgRWIgikPBAjwc",
+    placeId: "ChIJSRODqR3iiIgRCCG8x1qqxSU",
     geo: {
       latitude: 33.4921688,
       longitude: -86.9149705,

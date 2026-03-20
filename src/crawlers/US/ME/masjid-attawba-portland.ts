@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://www.google.com/maps/search/?api\u003D1\u0026query\u003DMasjid+Attawba\u0026query_place_id\u003DChIJVefzUXmbskwRn2BJtEhWE5Q",
     timeZoneId: "America/New_York",
     address: "734 Riverside St, Portland, ME 04103, USA",
-    placeId: "ChIJVefzUXmbskwRn2BJtEhWE5Q",
+    placeId: "ChIJ67U9Vu6askwRi8t_HpXFtpQ",
     geo: {
       latitude: 43.7005908,
       longitude: -70.32243369999999,

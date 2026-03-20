@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://ribat.org/",
     timeZoneId: "America/Chicago",
     address: "318 S Westmore Ave, Lombard, IL 60148, USA",
-    placeId: "ChIJX5BkzSNNDogRI8zyH1eFQ-0",
+    placeId: "ChIJMZdAkWpNDogRYJJAgDblBKo",
     geo: {
       latitude: 41.88148090000001,
       longitude: -87.99386160000002,

@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://www.google.com/maps/search/?api\u003D1\u0026query\u003DLincoln+Road+Mosque\u0026query_place_id\u003DChIJuVahi8AsO4gRP6qLUADHL7Y",
     timeZoneId: "America/Toronto",
     address: "659 Lincoln Road, Windsor, ON N8Y 2G8, Canada",
-    placeId: "ChIJuVahi8AsO4gRP6qLUADHL7Y",
+    placeId: "ChIJUZGFbcAsO4gRFyWEwClt4rY",
     geo: {
       latitude: 42.3210808,
       longitude: -83.0157706,

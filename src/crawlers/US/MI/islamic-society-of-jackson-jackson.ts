@@ -7,7 +7,7 @@ const ids: CrawlerModule["ids"] = [
     url: "https://www.facebook.com/jacksonmasjid/",
     timeZoneId: "America/Detroit",
     address: "410 McNeal St, Jackson, MI 49203, USA",
-    placeId: "ChIJs1rUuhUlPYgRoi1vmGNmQGM",
+    placeId: "ChIJzRNuuxUlPYgRBvcVWj4xnDQ",
     geo: {
       latitude: 42.23529269999999,
       longitude: -84.4155679,

@@ -9,7 +9,7 @@ const ids: CrawlerModule["ids"] = [
     name: "Muslim Society Inc",
     url: "http://www.muslimsocietyinc.org/",
     address: "1785 Bloomingdale Rd., Glendale Heights, IL 60139, USA",
-    placeId: "ChIJ_9tTBZisD4gRB8UhMdNO4zM",
+    placeId: "ChIJLXNcEpisD4gRdq5lUx4FvkE",
     timeZoneId: "America/Chicago",
     geo: {
       latitude: 41.9240867,

@@ -8,7 +8,7 @@ const ids: CrawlerModule["ids"] = [
     url: "http://www.ampoonline.com/",
     timeZoneId: "America/Chicago",
     address: "25667 Hillview Ct, Mundelein, IL 60060, USA",
-    placeId: "ChIJt3zQsouYD4gRt7JyII_rpwA",
+    placeId: "ChIJxTEytIuYD4gRfRvwGwNUe6c",
     geo: {
       latitude: 42.2359857,
       longitude: -88.05368299999999,
