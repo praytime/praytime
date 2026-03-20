@@ -20,6 +20,7 @@
     "report": "bun run . --run-report",
     "start": "bun run .",
     "list": "bun run . --list",
+    "refresh-place-ids": "bun run src/refresh-place-ids.ts",
     "typecheck": "tsc --noEmit",
     "lintfix": "biome check --write",
     "lint": "biome check --error-on-warnings",
