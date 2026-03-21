@@ -1145,6 +1145,25 @@ export const normalizeLooseClock = (value: unknown): string => {
   return extractTimeAmPm(trimmed) || extractTime(trimmed) || trimmed;
 };
 
+export const normalize24HourClock = (
+  value: string | null | undefined,
+): string => {
+  const match = value?.trim().match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
+  if (!match?.[1] || !match[2]) {
+    return "";
+  }
+
+  const hours24 = Number.parseInt(match[1], 10);
+  const minutes = match[2];
+  if (!Number.isFinite(hours24)) {
+    return "";
+  }
+
+  const suffix = hours24 >= 12 ? "PM" : "AM";
+  const hours12 = ((hours24 + 11) % 12) + 1;
+  return `${hours12}:${minutes} ${suffix}`;
+};
+
 export const normalizeIsoClock = (
   value: unknown,
   timeZoneId: string,

@@ -17,17 +17,33 @@ const ids: CrawlerModule["ids"] = [
 ];
 const run = async () => {
   const $ = await util.load(ids[0].url);
+  const prayerTimes = new Map<string, string>();
 
-  const a = util.mapToText($, ".jamah");
+  $("table tr").each((_, row) => {
+    const prayerName = $(row).find(".prayerName").first().text().trim();
+    const prayerKey = util.getStandardPrayerKey(prayerName);
+    if (!prayerKey) {
+      return;
+    }
 
-  if (util.isJumaToday(ids[0])) {
-    const j = util.mapToText($, '.prayerName:contains("Jumuah") + td');
-    a.splice(1, 0, j[0] ?? "");
-    util.setIqamaTimes(ids[0], a);
-    util.setJumaTimes(ids[0], j);
-  } else {
-    util.setTimes(ids[0], a);
-  }
+    const iqamaTime = util.normalizeLooseClock(
+      $(row).find("td.jamah").first().text(),
+    );
+    if (iqamaTime) {
+      prayerTimes.set(prayerKey, iqamaTime);
+    }
+  });
+
+  util.setIqamaTimes(
+    ids[0],
+    util.requireStandardPrayerTimes(
+      prayerTimes,
+      "failed to parse Masjid Al-Huda iqama times",
+    ),
+  );
+  // The site currently publishes Jumu'ah on an image banner rather than
+  // machine-readable HTML, so keep a contract-safe placeholder.
+  util.setJumaTimes(ids[0], ["check website"]);
 
   return ids;
 };

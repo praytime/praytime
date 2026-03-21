@@ -1,3 +1,4 @@
+import * as cheerio from "cheerio";
 import puppeteer from "puppeteer";
 import type { CrawlerModule } from "../../../types";
 import * as util from "../../../util";
@@ -167,6 +168,8 @@ const ids: CrawlerModule["ids"] = [
 const ADAMS_IQAMA_WIDGET_URL =
   "https://www-adamscenter-org.filesusr.com/html/a49bbb_018741b5b83d5042e9cf79cb18576f7b.html";
 const ADAMS_JUMUAH_URL = "https://www.adamscenter.org/jumuah/";
+const ADAMS_JUMUAH_API_URL =
+  "https://www.adamscenter.org/wp-json/wp/v2/pages?slug=jumuah&_fields=content.rendered";
 const MCLEAN_PRAYER_URL = "https://themasjidapp.org/40/prayers";
 const ADAMS_JUMUAH_LABELS = [
   "Sterling Jumu'ah",
@@ -201,6 +204,23 @@ type AdamsMasjidAppPayload = {
   };
 };
 
+type AdamsWordPressPage = {
+  content?: {
+    rendered?: unknown;
+  };
+};
+
+type AdamsJumaTimes = {
+  ashburn: string[];
+  fairfax: string[];
+  gainesville: string[];
+  leesburg: string[];
+  leesburgSatellite: string[];
+  reston: string[];
+  sterling: string[];
+  sully: string[];
+};
+
 type SettledPromise<T> =
   | {
       ok: true;
@@ -215,6 +235,7 @@ const normalizeSpace = (text: string): string =>
   text.replace(/[’]/g, "'").replace(/\s+/g, " ").trim();
 
 const uniqueTimes = (times: string[]): string[] => Array.from(new Set(times));
+const adamsCheckWebsiteTimes = (): string[] => ["check website"];
 
 const settlePromise = async <T>(
   promise: Promise<T>,
@@ -278,26 +299,103 @@ const extractAdamsJumaTimes = (
   return times;
 };
 
-const loadAdamsJumaTimes = async () => {
-  const $ = await util.load(ADAMS_JUMUAH_URL);
-  const bodyText = normalizeSpace($("body").text());
+const fallbackAdamsJumaTimes = (): AdamsJumaTimes => ({
+  ashburn: adamsCheckWebsiteTimes(),
+  fairfax: adamsCheckWebsiteTimes(),
+  gainesville: adamsCheckWebsiteTimes(),
+  leesburg: adamsCheckWebsiteTimes(),
+  leesburgSatellite: adamsCheckWebsiteTimes(),
+  reston: adamsCheckWebsiteTimes(),
+  sterling: adamsCheckWebsiteTimes(),
+  sully: adamsCheckWebsiteTimes(),
+});
+
+const extractAdamsJumaTimesFromSources = (
+  texts: string[],
+): AdamsJumaTimes | null => {
+  const extractFromSources = (
+    label: (typeof ADAMS_JUMUAH_LABELS)[number],
+  ): string[] | null => {
+    for (const text of texts) {
+      if (text.includes(label)) {
+        try {
+          return extractAdamsJumaTimes(text, label);
+        } catch {}
+      }
+    }
+
+    return null;
+  };
+
+  const ashburn = extractFromSources("Ashburn Jumu'ah");
+  const fairfax = extractFromSources("Fairfax Jumu'ah");
+  const gainesville = extractFromSources("Gainesville Satellite Jumu'ah");
+  const leesburg = extractFromSources("Leesburg Jumu'ah");
+  const leesburgSatellite = extractFromSources("Leesburg Satellite Jumu'ah");
+  const reston = extractFromSources("Reston Jumu'ah");
+  const sterling = extractFromSources("Sterling Jumu'ah");
+  const sully = extractFromSources("Sully Jumu'ah");
+  if (
+    !ashburn ||
+    !fairfax ||
+    !gainesville ||
+    !leesburg ||
+    !leesburgSatellite ||
+    !reston ||
+    !sterling ||
+    !sully
+  ) {
+    return null;
+  }
 
   return {
-    ashburn: extractAdamsJumaTimes(bodyText, "Ashburn Jumu'ah"),
-    fairfax: extractAdamsJumaTimes(bodyText, "Fairfax Jumu'ah"),
-    gainesville: extractAdamsJumaTimes(
-      bodyText,
-      "Gainesville Satellite Jumu'ah",
-    ),
-    leesburg: extractAdamsJumaTimes(bodyText, "Leesburg Jumu'ah"),
-    leesburgSatellite: extractAdamsJumaTimes(
-      bodyText,
-      "Leesburg Satellite Jumu'ah",
-    ),
-    reston: extractAdamsJumaTimes(bodyText, "Reston Jumu'ah"),
-    sterling: extractAdamsJumaTimes(bodyText, "Sterling Jumu'ah"),
-    sully: extractAdamsJumaTimes(bodyText, "Sully Jumu'ah"),
+    ashburn,
+    fairfax,
+    gainesville,
+    leesburg,
+    leesburgSatellite,
+    reston,
+    sterling,
+    sully,
   };
+};
+
+const loadAdamsJumaTimes = async (): Promise<AdamsJumaTimes> => {
+  const [$, apiPages] = await Promise.all([
+    util.load(ADAMS_JUMUAH_URL),
+    util.loadJson<AdamsWordPressPage[]>(ADAMS_JUMUAH_API_URL),
+  ]);
+  const renderedContent = Array.isArray(apiPages)
+    ? apiPages.find((entry) => typeof entry.content?.rendered === "string")
+        ?.content?.rendered
+    : "";
+  const renderedContentText =
+    typeof renderedContent === "string"
+      ? normalizeSpace(cheerio.load(renderedContent).text())
+      : "";
+  const sourceTexts = [
+    normalizeSpace($("body").text()),
+    renderedContentText,
+    normalizeSpace($('meta[name="description"]').attr("content") ?? ""),
+    normalizeSpace($('meta[property="og:description"]').attr("content") ?? ""),
+    normalizeSpace($('meta[name="twitter:description"]').attr("content") ?? ""),
+  ].filter((text) => text.length > 0);
+
+  const parsed = extractAdamsJumaTimesFromSources(sourceTexts);
+  if (parsed) {
+    return parsed;
+  }
+
+  if (
+    typeof renderedContent === "string" &&
+    /wp-content\/uploads\/\d{4}\/\d{2}\/[^"' >]*(jummah|jumuah|jum['’]?ah)[^"' >]*\.(png|jpe?g)/i.test(
+      renderedContent,
+    )
+  ) {
+    return fallbackAdamsJumaTimes();
+  }
+
+  throw new Error("missing ADAMS Jumu'ah schedule");
 };
 
 const loadTysonsJumaTimes = async (): Promise<string[]> => {

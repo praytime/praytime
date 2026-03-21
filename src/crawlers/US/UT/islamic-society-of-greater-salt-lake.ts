@@ -20,6 +20,24 @@ const ramadanIqamaTimes = (line: string): string[] => {
   ];
 };
 
+const hasCurrentEidNotice = (
+  text: string,
+  record: CrawlerModule["ids"][number] | undefined,
+): boolean => {
+  if (!record) {
+    return false;
+  }
+
+  const month = util.strftime("%B", record);
+  const day = String(Number.parseInt(util.strftime("%d", record), 10));
+  const normalized = util.normalizeSpace(text);
+
+  return (
+    /eid/i.test(normalized) &&
+    new RegExp(`\\b${month}\\s+${day}\\b`, "i").test(normalized)
+  );
+};
+
 const ids: CrawlerModule["ids"] = [
   {
     uuid4: "9fe30cc6-6683-46c3-808e-71646b1e124d",
@@ -107,6 +125,11 @@ const run = async () => {
     anchored: true,
     trailingPattern: "\\w+\\b",
   });
+  if (!row && hasCurrentEidNotice(pdfText, first)) {
+    util.setCheckWebsiteTimes(first);
+    util.setCheckWebsiteTimes(second);
+    return ids;
+  }
   const currentIqamaTimes = row ? ramadanIqamaTimes(row) : null;
 
   // The live Google sheet is stale during Ramadan; the published PDF calendar

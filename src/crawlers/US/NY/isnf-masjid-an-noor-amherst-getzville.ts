@@ -8,13 +8,16 @@ const AMHERST_RAMADAN_PDF_URL =
 const BUFFALO_RAMADAN_PDF_URL =
   "https://isnfwny.org/s/ISNF-Masjid-At-Taqwa-2026-Ramadan-Schedule.pdf";
 
-const ramadanIqamaTimes = (line: string): string[] => {
+const ramadanIqamaTimes = (line: string): string[] | null => {
   const times =
     [...(line.match(/\d{1,2}:\d{2}\s*[AP]M/gi) ?? [])]
       .map(util.extractTimeAmPm)
       .filter((value): value is string => Boolean(value)) ?? [];
 
   if (times.length < 8) {
+    if (/eid/i.test(line)) {
+      return null;
+    }
     throw new Error("unexpected ISNF Ramadan row format");
   }
 
@@ -80,13 +83,21 @@ const run = async () => {
   const amherstPdfText = await loadPdfText(AMHERST_RAMADAN_PDF_URL);
   const amherstRow = findPdfDateLine(amherstPdfText, amherst);
   if (amherstRow) {
-    util.setIqamaTimes(amherst, ramadanIqamaTimes(amherstRow));
+    const amherstTimes = ramadanIqamaTimes(amherstRow);
+    if (amherstTimes) {
+      util.setIqamaTimes(amherst, amherstTimes);
+    }
   }
 
   const buffaloPdfText = await loadPdfText(BUFFALO_RAMADAN_PDF_URL);
   const buffaloRow = findPdfDateLine(buffaloPdfText, buffalo);
   if (buffaloRow) {
-    util.setIqamaTimes(buffalo, ramadanIqamaTimes(buffaloRow));
+    const buffaloTimes = ramadanIqamaTimes(buffaloRow);
+    if (buffaloTimes) {
+      util.setIqamaTimes(buffalo, buffaloTimes);
+    } else if (/eid/i.test(buffaloRow)) {
+      util.setCheckWebsiteTimes(buffalo);
+    }
   }
 
   return ids;

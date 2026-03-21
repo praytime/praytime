@@ -73,21 +73,6 @@ const setLocationTimes = (
     throw new Error("missing Mosque Aisha record");
   }
 
-  const fajr = util.normalizeLooseClock(findPrayer(times, /^fajr$/i)?.time);
-  const zuhr = util.normalizeLooseClock(
-    findPrayer(times, /^dhuhr$|^duhur$|^zuhr$/i)?.time,
-  );
-  const asr = util.normalizeLooseClock(findPrayer(times, /^asr$/i)?.time);
-  const maghribPrayer = findPrayer(times, /^maghrib$/i);
-  const maghrib =
-    util.normalizeLooseClock(maghribPrayer?.start) ||
-    util.normalizeLooseClock(maghribPrayer?.time);
-  const isha = util.normalizeLooseClock(findPrayer(times, /^isha$/i)?.time);
-
-  if (!fajr || !zuhr || !asr || !maghrib || !isha) {
-    throw new Error(`missing iqama times for ${record.name}`);
-  }
-
   const jumaTimes = times
     .filter(
       (entry) =>
@@ -99,6 +84,22 @@ const setLocationTimes = (
     .map((entry) => util.normalizeLooseClock(entry.time))
     .filter((time): time is string => Boolean(time))
     .slice(0, 3);
+
+  const fajr = util.normalizeLooseClock(findPrayer(times, /^fajr$/i)?.time);
+  const zuhr =
+    util.normalizeLooseClock(
+      findPrayer(times, /^dhuhr$|^duhur$|^zuhr$/i)?.time,
+    ) || (util.isJumaToday(record) ? (jumaTimes[0] ?? "") : "");
+  const asr = util.normalizeLooseClock(findPrayer(times, /^asr$/i)?.time);
+  const maghribPrayer = findPrayer(times, /^maghrib$/i);
+  const maghrib =
+    util.normalizeLooseClock(maghribPrayer?.start) ||
+    util.normalizeLooseClock(maghribPrayer?.time);
+  const isha = util.normalizeLooseClock(findPrayer(times, /^isha$/i)?.time);
+
+  if (!fajr || !zuhr || !asr || !maghrib || !isha) {
+    throw new Error(`missing iqama times for ${record.name}`);
+  }
 
   util.setIqamaTimes(record, [fajr, zuhr, asr, maghrib, isha]);
   util.setJumaTimes(record, jumaTimes);

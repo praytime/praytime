@@ -1,3 +1,4 @@
+import type * as cheerio from "cheerio";
 import type { CrawlerIds, CrawlerRun } from "./types";
 import * as util from "./util";
 
@@ -32,7 +33,18 @@ type MasjidBoxWidgetResponse = {
   timetable?: unknown;
 };
 
-const widgetJumuahValues = (day: MasjidBoxWidgetDay): unknown[] => {
+type MasjidBoxLandingState = {
+  masjidbox?: {
+    masjidboxAthany?: {
+      settings?: {
+        timezone?: unknown;
+      };
+      timetable?: unknown;
+    };
+  };
+};
+
+const masjidBoxJumuahValues = (day: MasjidBoxWidgetDay): unknown[] => {
   if (Array.isArray(day.jumuah)) {
     return day.jumuah;
   }
@@ -41,6 +53,78 @@ const widgetJumuahValues = (day: MasjidBoxWidgetDay): unknown[] => {
   }
 
   return [];
+};
+
+const currentMasjidBoxDay = (
+  timetable: MasjidBoxWidgetDay[],
+  timeZoneId: string,
+): MasjidBoxWidgetDay | undefined => {
+  if (timetable.length === 0) {
+    return undefined;
+  }
+
+  const today = util.strftime("%F", { timeZoneId });
+  return (
+    timetable.find(
+      (entry) => typeof entry.date === "string" && entry.date.startsWith(today),
+    ) ?? timetable[0]
+  );
+};
+
+const currentMasjidBoxJumuahDay = (
+  timetable: MasjidBoxWidgetDay[],
+  currentDay: MasjidBoxWidgetDay | undefined,
+): MasjidBoxWidgetDay | undefined => {
+  if (!currentDay) {
+    return timetable.find((entry) => masjidBoxJumuahValues(entry).length > 0);
+  }
+
+  const currentDayIndex = Math.max(0, timetable.indexOf(currentDay));
+  return (
+    timetable
+      .slice(currentDayIndex)
+      .find((entry) => masjidBoxJumuahValues(entry).length > 0) ??
+    timetable.find((entry) => masjidBoxJumuahValues(entry).length > 0)
+  );
+};
+
+const loadMasjidBoxLandingState = (
+  $: cheerio.CheerioAPI,
+): { timeZoneId: string; timetable: MasjidBoxWidgetDay[] } | null => {
+  const reduxStateText =
+    $("script")
+      .toArray()
+      .map((script) => $(script).text())
+      .find((text) => text.includes("window.REDUX_STATE")) ?? "";
+  const match = reduxStateText.match(/window\.REDUX_STATE\s*=\s*'([^']+)'/);
+  if (!match?.[1]) {
+    return null;
+  }
+
+  try {
+    const decoded = decodeURIComponent(
+      match[1].replace(/%(?![0-9a-f]{2})/gi, "%25"),
+    );
+    const payload = JSON.parse(decoded) as MasjidBoxLandingState;
+    const athany = payload.masjidbox?.masjidboxAthany;
+    const timeZoneId =
+      typeof athany?.settings?.timezone === "string"
+        ? athany.settings.timezone
+        : "";
+    const timetable = Array.isArray(athany?.timetable)
+      ? (athany.timetable as MasjidBoxWidgetDay[])
+      : [];
+    if (!timeZoneId || timetable.length === 0) {
+      return null;
+    }
+
+    return {
+      timeZoneId,
+      timetable,
+    };
+  } catch {
+    return null;
+  }
 };
 
 export const parseMasjidBoxTime = (value: string): string => {
@@ -69,6 +153,63 @@ export const loadMasjidBoxTimes = async (
   url: string,
 ): Promise<{ iqamaTimes: string[]; jumaTimes: string[] }> => {
   const $ = await util.load(url);
+
+  const landingState = loadMasjidBoxLandingState($);
+  if (landingState) {
+    const currentDay = currentMasjidBoxDay(
+      landingState.timetable,
+      landingState.timeZoneId,
+    );
+    const jumuahDay = currentMasjidBoxJumuahDay(
+      landingState.timetable,
+      currentDay,
+    );
+    const iqamah = currentDay?.iqamah;
+    const iqamaTimes = uniqueTimes([
+      util.normalizeIsoClock(
+        iqamah?.fajr,
+        landingState.timeZoneId,
+        parseMasjidBoxTime,
+      ),
+      util.normalizeIsoClock(
+        iqamah?.dhuhr,
+        landingState.timeZoneId,
+        parseMasjidBoxTime,
+      ),
+      util.normalizeIsoClock(
+        iqamah?.asr,
+        landingState.timeZoneId,
+        parseMasjidBoxTime,
+      ),
+      util.normalizeIsoClock(
+        iqamah?.maghrib,
+        landingState.timeZoneId,
+        parseMasjidBoxTime,
+      ),
+      util.normalizeIsoClock(
+        iqamah?.isha,
+        landingState.timeZoneId,
+        parseMasjidBoxTime,
+      ),
+    ]);
+    const jumaTimes = uniqueTimes(
+      masjidBoxJumuahValues(jumuahDay ?? currentDay ?? {})
+        .map((value) =>
+          util.normalizeIsoClock(
+            value,
+            landingState.timeZoneId,
+            parseMasjidBoxTime,
+          ),
+        )
+        .filter(Boolean),
+    );
+    if (iqamaTimes.length >= 5 && jumaTimes.length > 0) {
+      return {
+        iqamaTimes: iqamaTimes.slice(0, 5),
+        jumaTimes: jumaTimes.slice(0, 3),
+      };
+    }
+  }
 
   const iqamaTimes = uniqueTimes(
     util.mapToText($, "div.iqamah div.time").map(parseMasjidBoxTime),
@@ -122,11 +263,7 @@ export const loadMasjidBoxWidgetTimes = async (
     throw new Error("failed to load masjidbox widget timetable");
   }
 
-  const today = util.strftime("%F", { timeZoneId });
-  const currentDay =
-    timetable.find(
-      (entry) => typeof entry.date === "string" && entry.date.startsWith(today),
-    ) ?? timetable[0];
+  const currentDay = currentMasjidBoxDay(timetable, timeZoneId);
   if (!currentDay) {
     throw new Error("missing current masjidbox widget prayer day");
   }
@@ -143,13 +280,8 @@ export const loadMasjidBoxWidgetTimes = async (
     throw new Error("failed to parse masjidbox widget iqama timings");
   }
 
-  const currentDayIndex = Math.max(0, timetable.indexOf(currentDay));
-  const jumuahDay =
-    timetable
-      .slice(currentDayIndex)
-      .find((entry) => widgetJumuahValues(entry).length > 0) ??
-    timetable.find((entry) => widgetJumuahValues(entry).length > 0);
-  const jumuah = jumuahDay ? widgetJumuahValues(jumuahDay) : [];
+  const jumuahDay = currentMasjidBoxJumuahDay(timetable, currentDay);
+  const jumuah = jumuahDay ? masjidBoxJumuahValues(jumuahDay) : [];
   const jumaTimes = uniqueTimes(
     jumuah.map((value) =>
       util.normalizeIsoClock(value, timeZoneId, parseMasjidBoxTime),

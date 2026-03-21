@@ -16,23 +16,6 @@ type BarkaatJummahTime = {
   iqama_time3?: string | null;
 };
 
-const normalizeApiClock = (value: string | null | undefined): string => {
-  const match = value?.trim().match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/);
-  if (!match?.[1] || !match[2]) {
-    return "";
-  }
-
-  const hours24 = Number.parseInt(match[1], 10);
-  const minutes = match[2];
-  if (!Number.isFinite(hours24)) {
-    return "";
-  }
-
-  const suffix = hours24 >= 12 ? "PM" : "AM";
-  const hours12 = ((hours24 + 11) % 12) + 1;
-  return `${hours12}:${minutes} ${suffix}`;
-};
-
 const parseInlineJson = <T>(html: string, label: string): T => {
   const match = html.match(
     new RegExp(
@@ -77,13 +60,13 @@ const run = async () => {
   const maghribIqama =
     prayerTimes.magrib_i && prayerTimes.magrib_i === prayerTimes.sunrise
       ? "sunset"
-      : normalizeApiClock(prayerTimes.magrib_i);
+      : util.normalize24HourClock(prayerTimes.magrib_i);
   const iqamaTimes = [
-    normalizeApiClock(prayerTimes.fajr_i),
-    normalizeApiClock(prayerTimes.dahur_i),
-    normalizeApiClock(prayerTimes.asar_i),
+    util.normalize24HourClock(prayerTimes.fajr_i),
+    util.normalize24HourClock(prayerTimes.dahur_i),
+    util.normalize24HourClock(prayerTimes.asar_i),
     maghribIqama,
-    normalizeApiClock(prayerTimes.isha_i),
+    util.normalize24HourClock(prayerTimes.isha_i),
   ];
 
   if (iqamaTimes.some((value) => value.length === 0)) {
@@ -94,9 +77,9 @@ const run = async () => {
   util.setJumaTimes(
     ids[0],
     [
-      normalizeApiClock(jummahTimes.iqama_time1),
-      normalizeApiClock(jummahTimes.iqama_time2),
-      normalizeApiClock(jummahTimes.iqama_time3),
+      util.normalize24HourClock(jummahTimes.iqama_time1),
+      util.normalize24HourClock(jummahTimes.iqama_time2),
+      util.normalize24HourClock(jummahTimes.iqama_time3),
     ].filter((value): value is string => value.length > 0),
   );
 
