@@ -61,8 +61,12 @@ export const crawler: CrawlerModule = {
     ];
     const hasAnyDailyIqama = dailyIqamaTimes.some((value) => value.length > 0);
     const hasAllDailyIqama = dailyIqamaTimes.every((value) => value.length > 0);
-    if (hasAnyDailyIqama && !hasAllDailyIqama) {
-      throw new Error("partial MadinaApps iqamah payload");
+    if (!hasAllDailyIqama) {
+      throw new Error(
+        hasAnyDailyIqama
+          ? "partial MadinaApps iqamah payload"
+          : "missing MadinaApps iqamah payload",
+      );
     }
 
     const jumaTimes = (
@@ -80,19 +84,7 @@ export const crawler: CrawlerModule = {
       throw new Error("missing juma times payload");
     }
 
-    if (hasAllDailyIqama) {
-      util.setIqamaTimes(ids[0], dailyIqamaTimes);
-    } else {
-      // The live MadinaApps payload currently omits all five daily iqamah
-      // fields, so fail closed while preserving the published Jumu'ah slots.
-      util.setIqamaTimes(ids[0], [
-        "check website",
-        "check website",
-        "check website",
-        "check website",
-        "check website",
-      ]);
-    }
+    util.setIqamaTimes(ids[0], dailyIqamaTimes);
     util.setJumaTimes(ids[0], jumaTimes);
 
     return ids;

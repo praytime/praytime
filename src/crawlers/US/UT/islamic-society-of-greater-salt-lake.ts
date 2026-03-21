@@ -126,9 +126,9 @@ const run = async () => {
     trailingPattern: "\\w+\\b",
   });
   if (!row && hasCurrentEidNotice(pdfText, first)) {
-    util.setCheckWebsiteTimes(first);
-    util.setCheckWebsiteTimes(second);
-    return ids;
+    throw new Error(
+      "ISGSL Ramadan calendar lists Eid instead of current iqama times",
+    );
   }
   const currentIqamaTimes = row ? ramadanIqamaTimes(row) : null;
 

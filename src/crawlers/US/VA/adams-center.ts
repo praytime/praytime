@@ -235,7 +235,6 @@ const normalizeSpace = (text: string): string =>
   text.replace(/[’]/g, "'").replace(/\s+/g, " ").trim();
 
 const uniqueTimes = (times: string[]): string[] => Array.from(new Set(times));
-const adamsCheckWebsiteTimes = (): string[] => ["check website"];
 
 const settlePromise = async <T>(
   promise: Promise<T>,
@@ -298,17 +297,6 @@ const extractAdamsJumaTimes = (
   }
   return times;
 };
-
-const fallbackAdamsJumaTimes = (): AdamsJumaTimes => ({
-  ashburn: adamsCheckWebsiteTimes(),
-  fairfax: adamsCheckWebsiteTimes(),
-  gainesville: adamsCheckWebsiteTimes(),
-  leesburg: adamsCheckWebsiteTimes(),
-  leesburgSatellite: adamsCheckWebsiteTimes(),
-  reston: adamsCheckWebsiteTimes(),
-  sterling: adamsCheckWebsiteTimes(),
-  sully: adamsCheckWebsiteTimes(),
-});
 
 const extractAdamsJumaTimesFromSources = (
   texts: string[],
@@ -384,15 +372,6 @@ const loadAdamsJumaTimes = async (): Promise<AdamsJumaTimes> => {
   const parsed = extractAdamsJumaTimesFromSources(sourceTexts);
   if (parsed) {
     return parsed;
-  }
-
-  if (
-    typeof renderedContent === "string" &&
-    /wp-content\/uploads\/\d{4}\/\d{2}\/[^"' >]*(jummah|jumuah|jum['’]?ah)[^"' >]*\.(png|jpe?g)/i.test(
-      renderedContent,
-    )
-  ) {
-    return fallbackAdamsJumaTimes();
   }
 
   throw new Error("missing ADAMS Jumu'ah schedule");

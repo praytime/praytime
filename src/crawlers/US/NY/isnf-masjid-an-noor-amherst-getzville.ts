@@ -86,6 +86,10 @@ const run = async () => {
     const amherstTimes = ramadanIqamaTimes(amherstRow);
     if (amherstTimes) {
       util.setIqamaTimes(amherst, amherstTimes);
+    } else {
+      throw new Error(
+        "ISNF Amherst Ramadan calendar lists Eid instead of iqama times",
+      );
     }
   }
 
@@ -95,8 +99,10 @@ const run = async () => {
     const buffaloTimes = ramadanIqamaTimes(buffaloRow);
     if (buffaloTimes) {
       util.setIqamaTimes(buffalo, buffaloTimes);
-    } else if (/eid/i.test(buffaloRow)) {
-      util.setCheckWebsiteTimes(buffalo);
+    } else {
+      throw new Error(
+        "ISNF Buffalo Ramadan calendar lists Eid instead of iqama times",
+      );
     }
   }
 
