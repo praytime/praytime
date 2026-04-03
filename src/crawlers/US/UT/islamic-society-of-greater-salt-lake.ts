@@ -1,42 +1,4 @@
-import { parse } from "csv-parse/sync";
-import { findPdfDateLine, loadPdfText } from "../../../pdftext";
 import type { CrawlerModule } from "../../../types";
-import * as util from "../../../util";
-
-const RAMADAN_PDF_URL = "https://www.utahmuslims.com/s/Calander-PDF.pdf";
-
-const ramadanIqamaTimes = (line: string): string[] => {
-  const times = line.match(/\d{1,2}:\d{2}/g) ?? [];
-  if (times.length < 10) {
-    throw new Error("unexpected ISGSL Ramadan row format");
-  }
-
-  return [
-    `${times[1]} AM`,
-    `${times[4]} PM`,
-    `${times[6]} PM`,
-    "Sunset",
-    `${times[9]} PM`,
-  ];
-};
-
-const hasCurrentEidNotice = (
-  text: string,
-  record: CrawlerModule["ids"][number] | undefined,
-): boolean => {
-  if (!record) {
-    return false;
-  }
-
-  const month = util.strftime("%B", record);
-  const day = String(Number.parseInt(util.strftime("%d", record), 10));
-  const normalized = util.normalizeSpace(text);
-
-  return (
-    /eid/i.test(normalized) &&
-    new RegExp(`\\b${month}\\s+${day}\\b`, "i").test(normalized)
-  );
-};
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -65,85 +27,8 @@ const ids: CrawlerModule["ids"] = [
   },
 ];
 
-const run = async () => {
-  const csvResponse = await util.get(
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vTFca2lbPuRp4XteUyuiMlBUupPh5AL5O5raB2s_QNbq4QN4qX0RHfhPOh21IVMXryJtX67k55djrNe/pub?gid=0&single=true&output=csv",
-  );
-  const rows = parse(csvResponse.data, {
-    relaxColumnCount: true,
-    skipEmptyLines: false,
-  }) as unknown as string[][];
-  const header = rows[0];
-  if (!header) {
-    throw new Error("missing sheet header");
-  }
-
-  const khadeejaIndex = header.findIndex((value) => /khadeeja/i.test(value));
-  const noorIndex = header.findIndex((value) => /al-noor/i.test(value));
-  if (khadeejaIndex < 0 || noorIndex < 0) {
-    throw new Error("missing masjid columns in sheet");
-  }
-
-  const first = ids[0];
-  const second = ids[1];
-  if (!first || !second) {
-    throw new Error("missing crawler ids");
-  }
-
-  const getColumnValue = (label: RegExp, columnIndex: number): string => {
-    const row = rows.find((candidate) => {
-      const firstCell = candidate[0];
-      return typeof firstCell === "string" && label.test(firstCell.trim());
-    });
-    const value = row?.[columnIndex]?.trim();
-    if (!value) {
-      throw new Error(`missing ${label.source} value in sheet`);
-    }
-    return value;
-  };
-
-  const getJumaTimes = (columnIndex: number): string[] => {
-    const jumaText = getColumnValue(/Juma'h/i, columnIndex);
-    const jumaTimes = util.matchTimeG(jumaText) ?? [];
-    if (jumaTimes.length > 0) {
-      return jumaTimes;
-    }
-    throw new Error("missing juma times in sheet");
-  };
-
-  const timesByColumn = (columnIndex: number): string[] => [
-    getColumnValue(/^Fajr$/i, columnIndex),
-    getColumnValue(/^Zuhr$/i, columnIndex),
-    getColumnValue(/^Asar$/i, columnIndex),
-    getColumnValue(/^Maghrib$/i, columnIndex),
-    getColumnValue(/^Isha$/i, columnIndex),
-  ];
-
-  const pdfText = await loadPdfText(RAMADAN_PDF_URL);
-  const row = findPdfDateLine(pdfText, first, {
-    monthFormat: "%B",
-    anchored: true,
-    trailingPattern: "\\w+\\b",
-  });
-  if (!row && hasCurrentEidNotice(pdfText, first)) {
-    throw new Error(
-      "ISGSL Ramadan calendar lists Eid instead of current iqama times",
-    );
-  }
-  const currentIqamaTimes = row ? ramadanIqamaTimes(row) : null;
-
-  // The live Google sheet is stale during Ramadan; the published PDF calendar
-  // is the authoritative current schedule while it covers today's date.
-  util.setIqamaTimes(first, currentIqamaTimes ?? timesByColumn(khadeejaIndex));
-  util.setJumaTimes(first, getJumaTimes(khadeejaIndex));
-  util.setIqamaTimes(second, currentIqamaTimes ?? timesByColumn(noorIndex));
-  util.setJumaTimes(second, getJumaTimes(noorIndex));
-
-  return ids;
-};
-
 export const crawler: CrawlerModule = {
   name: "US/UT/islamic-society-of-greater-salt-lake",
   ids,
-  run,
+  // The published sheet and PDF are stale and no longer cover the current date.
 };
