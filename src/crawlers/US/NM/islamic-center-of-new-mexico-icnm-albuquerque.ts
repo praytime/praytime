@@ -20,6 +20,20 @@ type AppsScriptInitPayload = {
   userHtml?: string;
 };
 
+type ServerDataPrayerScheduleEntry = {
+  iqamahFormatted?: unknown;
+  name?: unknown;
+};
+
+type ServerDataPayload = {
+  jumahNotice?: unknown;
+  prayerSchedule?: unknown;
+};
+
+const normalizeClock = (value: unknown): string =>
+  util.extractTimeAmPm(typeof value === "string" ? value : undefined) ||
+  util.extractTime(typeof value === "string" ? value : undefined);
+
 const parseAppsScriptUserHtml = (rawHtml: string): string => {
   const initPayload = rawHtml.match(
     /goog\.script\.init\("([\s\S]*?)",\s*""\s*,\s*undefined,\s*true/s,
@@ -39,6 +53,28 @@ const parseAppsScriptUserHtml = (rawHtml: string): string => {
   return payload.userHtml;
 };
 
+const parseServerData = (userHtml: string): ServerDataPayload | null => {
+  const payload = userHtml.match(
+    /const\s+serverData\s*=\s*(\{[\s\S]*?\});/s,
+  )?.[1];
+  if (!payload) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(payload) as ServerDataPayload;
+  } catch {
+    throw new Error("failed to parse apps script serverData");
+  }
+};
+
+const prayerScheduleEntries = (
+  serverData: ServerDataPayload | null,
+): ServerDataPrayerScheduleEntry[] =>
+  Array.isArray(serverData?.prayerSchedule)
+    ? (serverData.prayerSchedule as ServerDataPrayerScheduleEntry[])
+    : [];
+
 const run = async () => {
   const $ = await util.load(ids[0].url);
   const prayerIframeSrc = $("iframe[aria-label='Apps Script']")
@@ -54,6 +90,50 @@ const run = async () => {
   }
 
   const userHtml = parseAppsScriptUserHtml(response.data);
+  const serverData = parseServerData(userHtml);
+  const schedule = prayerScheduleEntries(serverData);
+
+  if (schedule.length > 0) {
+    const scheduleByName = new Map<string, string>();
+    const jumuahTimes: string[] = [];
+
+    for (const entry of schedule) {
+      const label =
+        typeof entry.name === "string"
+          ? entry.name.toLowerCase().replace(/[^a-z]/g, "")
+          : "";
+      const time = normalizeClock(entry.iqamahFormatted);
+      if (!label || !time) {
+        continue;
+      }
+
+      if (label.includes("jumu")) {
+        jumuahTimes.push(time);
+      }
+
+      scheduleByName.set(label, time);
+    }
+
+    const iqamaTimes = [
+      scheduleByName.get("fajr") ?? "",
+      scheduleByName.get("dhuhr") ?? scheduleByName.get("jumuah") ?? "",
+      scheduleByName.get("asr") ?? "",
+      scheduleByName.get("maghrib") ?? "",
+      scheduleByName.get("isha") ?? "",
+    ];
+    if (iqamaTimes.some((time) => !time)) {
+      throw new Error("failed to parse iqamah times");
+    }
+
+    util.setIqamaTimes(ids[0], iqamaTimes);
+
+    if (jumuahTimes.length > 0) {
+      util.setJumaTimes(ids[0], jumuahTimes);
+    }
+
+    return ids;
+  }
+
   const iqamaTimes = [...userHtml.matchAll(/"iqamahFormatted":"([^"]+)"/g)]
     .map((match) => match[1])
     .slice(0, 5);
@@ -63,7 +143,9 @@ const run = async () => {
 
   util.setIqamaTimes(ids[0], iqamaTimes);
 
-  const jumahNotice = userHtml.match(/"jumahNotice":"([^"]+)"/)?.[1];
+  const jumahNotice =
+    (typeof serverData?.jumahNotice === "string" && serverData.jumahNotice) ||
+    userHtml.match(/"jumahNotice":"([^"]+)"/)?.[1];
   const jumahTimes = util.matchTimeAmPmG(jumahNotice);
   if (jumahTimes?.length) {
     util.setJumaTimes(ids[0], jumahTimes);

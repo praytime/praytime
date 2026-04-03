@@ -1,4 +1,3 @@
-import { createMuslimFeedRun } from "../../../muslimfeed";
 import type { CrawlerModule } from "../../../types";
 
 const ids: CrawlerModule["ids"] = [
@@ -18,5 +17,5 @@ const ids: CrawlerModule["ids"] = [
 export const crawler: CrawlerModule = {
   name: "US/WA/icops-lynnwood",
   ids,
-  run: createMuslimFeedRun(ids, "2105"),
+  // MuslimFeed no longer exposes current iqama times for this masjid.
 };

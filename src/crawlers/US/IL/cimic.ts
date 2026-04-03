@@ -28,7 +28,7 @@ export const crawler: CrawlerModule = {
       selector: "#daily .prayer_iqama_div",
     },
     juma: {
-      filterPattern: /khateeb/i,
+      filterPattern: /khutba/i,
       parser: "extractTime",
       selector: "#jummah li",
     },
