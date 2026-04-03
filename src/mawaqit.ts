@@ -135,9 +135,19 @@ const extractPrayerTimes = (
     throw new Error(`failed to parse mawaqit iqamah time: ${entry}`);
   });
 
+  const seenJumaTimes = new Set<string>();
   const jumaTimes = [payload.jumua, payload.jumua2, payload.jumua3]
     .map(normalizeClock)
-    .filter((time): time is string => time.length > 0);
+    .filter((time): time is string => time.length > 0)
+    .filter((time) => {
+      const key = time.replace(/\s+/g, "").toLowerCase();
+      if (!key || seenJumaTimes.has(key)) {
+        return false;
+      }
+
+      seenJumaTimes.add(key);
+      return true;
+    });
   if (jumaTimes.length === 0) {
     throw new Error("failed to parse mawaqit juma times");
   }

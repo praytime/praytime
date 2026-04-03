@@ -1,5 +1,6 @@
-import { createDptTimetableRun } from "../../../dpt";
+import { loadDptTimetableTimes } from "../../../dpt";
 import type { CrawlerModule } from "../../../types";
+import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -18,7 +19,21 @@ const ids: CrawlerModule["ids"] = [
 export const crawler: CrawlerModule = {
   name: "US/CO/masjid-abu-bakr-msjd-denver",
   ids,
-  run: createDptTimetableRun(ids, ids[0].url, {
-    errorContext: "Colorado Muslim Society timetable",
-  }),
+  run: async () => {
+    const { iqamaTimes, jumaTimes } = await loadDptTimetableTimes(
+      ids[0].url ?? "",
+      {
+        errorContext: "Colorado Muslim Society timetable",
+      },
+    );
+
+    if (util.isJumaToday(ids[0])) {
+      iqamaTimes[1] = "Juma";
+    }
+
+    util.setIqamaTimes(ids[0], iqamaTimes);
+    util.setJumaTimes(ids[0], jumaTimes.slice(0, 3));
+
+    return ids;
+  },
 };
