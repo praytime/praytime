@@ -1,5 +1,5 @@
-import { createSelectorRun } from "../../../selectors";
 import type { CrawlerModule } from "../../../types";
+import * as util from "../../../util";
 
 const ids: CrawlerModule["ids"] = [
   {
@@ -18,8 +18,27 @@ const ids: CrawlerModule["ids"] = [
 export const crawler: CrawlerModule = {
   name: "US/NC/apex-mosque-apex",
   ids,
-  run: createSelectorRun(ids, {
-    iqama: { limit: 5, selector: ".jamah" },
-    juma: { parser: "extractTimeAmPm", selector: "span.dsJumuah" },
-  }),
+  run: async () => {
+    const $ = await util.load(ids[0].url ?? "");
+    const iqamaTimes = util.mapToText($, ".dptTimetable td.jamah").slice(0, 5);
+    const jumaTimes = util
+      .mapToText($, ".dptTimetable .dsJumuah")
+      .map(util.extractTimeAmPm)
+      .filter((value): value is string => Boolean(value));
+
+    if (iqamaTimes.length < 5) {
+      throw new Error(
+        `failed to parse selector iqama times from ${ids[0].url}`,
+      );
+    }
+
+    if (util.isJumaToday(ids[0])) {
+      iqamaTimes[1] = "Juma";
+    }
+
+    util.setIqamaTimes(ids[0], iqamaTimes);
+    util.setJumaTimes(ids[0], jumaTimes);
+
+    return ids;
+  },
 };
