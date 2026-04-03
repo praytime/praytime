@@ -218,7 +218,7 @@ export const pickBestPlaceCandidate = (
     });
 
   const best = scoredCandidates[0];
-  if (!best || !best.accepted) {
+  if (!best?.accepted) {
     return null;
   }
 

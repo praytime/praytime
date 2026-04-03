@@ -34,14 +34,14 @@
     "csv-parse": "^6.2.1",
     "firebase-admin": "^13.7.0",
     "geofire-common": "^6.0.0",
-    "officeparser": "^6.0.4",
+    "officeparser": "^6.0.7",
     "puppeteer": "^24.40.0",
     "timezone": "^1.0.23"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.4.8",
+    "@biomejs/biome": "^2.4.10",
     "@types/bun": "latest",
     "jscpd": "^4.0.8",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.2"
   }
 }
